@@ -1,0 +1,49 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Net/Serialization/FastArraySerializer.h"
+#include "UObject/Object.h"
+#include "BuzzzFastArray.generated.h"
+
+
+class UBuzzzItemInstance;
+
+USTRUCT(BlueprintType)
+struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
+{
+    GENERATED_BODY()
+
+    FBuzzzContainerCell()
+    {
+    };
+
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<UBuzzzItemInstance> ItemInstance;
+
+    UPROPERTY(BlueprintReadOnly)
+    int32 StackCount = 0;
+};
+
+USTRUCT(BlueprintType)
+struct BUZZZ_API FBuzzzContainerHive : public FFastArraySerializer
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly)
+    TArray<FBuzzzContainerCell> Cells;
+
+    bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
+    {
+        return FastArrayDeltaSerialize<FBuzzzContainerCell, FBuzzzContainerHive>(
+            Cells, DeltaParams, *this);
+    }
+};
+
+
+template <>
+struct TStructOpsTypeTraits<FBuzzzContainerHive> : TStructOpsTypeTraitsBase2<FBuzzzContainerHive>
+{
+    enum { WithNetDeltaSerializer = true };
+};

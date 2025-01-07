@@ -3,16 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
-#include "BuzzzLibrary.generated.h"
+#include "UObject/Object.h"
+#include "CopyRightTest.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BUZZZ_API UBuzzzLibrary : public UBlueprintFunctionLibrary
+class BUZZZ_API UCopyRightTest : public UObject
 {
     GENERATED_BODY()
-
-    
 };

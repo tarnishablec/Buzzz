@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuzzzItemDefinition.h"
 #include "UObject/Object.h"
 #include "BuzzzItemInstance.generated.h"
 
@@ -66,8 +67,15 @@ public:
         return (T*)(FindFragmentByClass(T::StaticClass(), Exact));
     }
 
+    UFUNCTION(BlueprintNativeEvent, meta=(ForceAsFunction))
+    UBuzzzItemInstance* OnInstantiation(const UBuzzzItemDefinition* ItemDefinition);
+
+    UFUNCTION(BlueprintNativeEvent)
+    UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition) const;
+
 protected:
     bool bInitialized = false;
     virtual void InitializeFragments();
-    virtual void InitializeInstance(const UBuzzzItemDefinition* ItemDefinition) = delete;
+
+    virtual void InitializeInstance();
 };

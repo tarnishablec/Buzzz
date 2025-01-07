@@ -14,6 +14,6 @@ class BUZZZ_API UBuzzzLibrary : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz")
+    // UFUNCTION(BlueprintPure, Category = "Buzzz")
     
 };

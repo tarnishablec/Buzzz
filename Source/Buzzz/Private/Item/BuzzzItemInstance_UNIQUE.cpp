@@ -5,18 +5,17 @@
 #include "Item/BuzzzItemDefinition.h"
 
 
-void UBuzzzItemInstance_UNIQUE::InitializeInstance(const UBuzzzItemDefinition* ItemDefinition)
-{
-    Definition = ItemDefinition;
-    check(IsValid(Definition));
-
-    InitializeFragments();
-    OnInitialized();
-    bInitialized = true;
-}
-
 void UBuzzzItemInstance_UNIQUE::OnInitialized_Implementation()
 {
     check(IsValid(Definition));
 }
 
+UBuzzzItemInstance* UBuzzzItemInstance_UNIQUE::MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const
+{
+    check(IsValid(InDefinition))
+
+    const auto Instance = NewObject<UBuzzzItemInstance_UNIQUE>(GetTransientPackage(), InDefinition->InstanceClass);
+    Instance->Definition = InDefinition;
+    Instance->InitializeInstance();
+    return Instance;
+}

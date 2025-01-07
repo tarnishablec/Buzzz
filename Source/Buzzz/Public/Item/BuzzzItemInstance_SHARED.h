@@ -10,16 +10,16 @@
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable, Const)
+UCLASS(NotBlueprintable, Const, BlueprintType)
 class BUZZZ_API UBuzzzItemInstance_SHARED : public UBuzzzItemInstance
 {
     GENERATED_BODY()
 
     UBuzzzItemInstance_SHARED();
 
-    virtual void InitializeInstance(const UBuzzzItemDefinition* ItemDefinition) override;
+public:
+    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const override;
 
 protected:
-    UPROPERTY()
-    TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance_SHARED*> InstanceMap = {};
+    static TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance_SHARED*> InstanceMap;
 };

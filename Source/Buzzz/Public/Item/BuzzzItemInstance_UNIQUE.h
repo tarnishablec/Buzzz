@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuzzzItemDefinition.h"
 #include "BuzzzItemInstance.h"
 #include "BuzzzItemInstance_UNIQUE.generated.h"
 
@@ -16,8 +17,8 @@ class BUZZZ_API UBuzzzItemInstance_UNIQUE : public UBuzzzItemInstance
     GENERATED_BODY()
 
 public:
-    virtual void InitializeInstance(const UBuzzzItemDefinition* ItemDefinition) override;
-
     UFUNCTION(BlueprintNativeEvent, Category = "Buzzz")
     void OnInitialized();
+
+    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const override;
 };

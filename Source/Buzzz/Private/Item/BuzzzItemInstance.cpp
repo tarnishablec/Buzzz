@@ -87,6 +87,19 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(const TSubclassOf<
         });
 }
 
+UBuzzzItemInstance* UBuzzzItemInstance::OnInstantiation_Implementation(const UBuzzzItemDefinition* ItemDefinition)
+{
+    check(IsValid(ItemDefinition))
+    Definition = ItemDefinition;
+    return nullptr;
+}
+
+
+UBuzzzItemInstance* UBuzzzItemInstance::MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const
+{
+    checkNoEntry();
+    return nullptr;
+}
 
 void UBuzzzItemInstance::InitializeFragments()
 {
@@ -104,6 +117,12 @@ void UBuzzzItemInstance::InitializeFragments()
             Fragment->InitializeFragment();
         }
     }
+}
+
+void UBuzzzItemInstance::InitializeInstance()
+{
+    InitializeFragments();
+    OnInstantiation(Definition);
 }
 
 void UBuzzzItemInstance::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)

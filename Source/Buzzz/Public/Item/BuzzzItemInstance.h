@@ -68,7 +68,7 @@ public:
     }
 
     UFUNCTION(BlueprintNativeEvent, meta=(ForceAsFunction))
-    UBuzzzItemInstance* OnInstantiation(const UBuzzzItemDefinition* ItemDefinition);
+    void OnInitialization();
 
     UFUNCTION(BlueprintNativeEvent)
     UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition) const;
@@ -76,6 +76,5 @@ public:
 protected:
     bool bInitialized = false;
     virtual void InitializeFragments();
-
     virtual void InitializeInstance();
 };

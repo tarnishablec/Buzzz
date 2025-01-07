@@ -16,6 +16,5 @@ UBuzzzItemInstance* UBuzzzItemInstance_UNIQUE::MakeInstance_Implementation(const
 
     const auto Instance = NewObject<UBuzzzItemInstance_UNIQUE>(GetTransientPackage(), InDefinition->InstanceClass);
     Instance->Definition = InDefinition;
-    Instance->InitializeInstance();
     return Instance;
 }

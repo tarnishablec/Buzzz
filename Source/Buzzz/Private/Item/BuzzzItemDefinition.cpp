@@ -9,6 +9,12 @@ const UBuzzzItemInstance* UBuzzzItemDefinition::Instantiate_Implementation() con
 {
     check(IsValid(InstanceClass))
     const auto Instance = InstanceClass.GetDefaultObject()->MakeInstance(this);
+
+    if (Instance->bInitialized == false)
+    {
+        Instance->InitializeInstance();
+    }
+
     return Instance;
 }
 

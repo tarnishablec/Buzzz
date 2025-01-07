@@ -9,13 +9,10 @@
 class UBuzzzContainer;
 class UBuzzzItemInstance;
 class UBuzzzFragment;
-/**
- * 
- */
 
 #define BUZZZ_ITEM_DEFINITION_ASSET_NAME TEXT("BuzzzItemDefinition")
 
-UCLASS(Blueprintable, Abstract)
+UCLASS(Blueprintable, Abstract, Const)
 class BUZZZ_API UBuzzzItemDefinition : public UPrimaryDataAsset
 {
     GENERATED_BODY()
@@ -25,13 +22,13 @@ public:
 
     virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Instance", NoClear)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Instance", NoClear, meta=(AllowAbstract=false))
     TSubclassOf<UBuzzzItemInstance> InstanceClass;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Fragments", Instanced, NoClear,
         meta = (NoElementDuplicate))
     TArray<TObjectPtr<UBuzzzFragment>> FragmentsTemplate;
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly)
-    UBuzzzItemInstance* CreateItemInstance(UObject* Instigator);
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, BlueprintAuthorityOnly)
+    const UBuzzzItemInstance* Instantiate() const;
 };

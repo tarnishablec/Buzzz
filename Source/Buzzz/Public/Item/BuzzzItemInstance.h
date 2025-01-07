@@ -12,13 +12,14 @@ class UBuzzzContainer;
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS(BlueprintType, Abstract, NotBlueprintable)
 class BUZZZ_API UBuzzzItemInstance : public UObject
 {
     GENERATED_BODY()
 
 public:
     friend class UBuzzzContainer;
+    friend class UBuzzzItemDefinition;
 
     UBuzzzItemInstance();
     virtual bool IsSupportedForNetworking() const override { return true; };
@@ -27,12 +28,12 @@ public:
     virtual bool CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
                                     FFrame* Stack) override;
 
+    virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList) override;
+    virtual auto BeginDestroy() -> void override;
+
 protected:
     UPROPERTY(Replicated)
     TObjectPtr<const UBuzzzItemDefinition> Definition;
-
-    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
-    TObjectPtr<const UObject> Creator;
 
     UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
     FGuid ItemGuid;
@@ -41,34 +42,19 @@ protected:
     TArray<TObjectPtr<UBuzzzFragment>> Fragments;
 
 public:
-    UPROPERTY(EditDefaultsOnly, Category = "Buzzz Item Instance")
+    UPROPERTY(EditDefaultsOnly, Category = "Buzzz")
     bool ShouldReplicate = true;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Item | Instance")
+    UFUNCTION(BlueprintPure, Category = "Buzzz")
     UBuzzzContainer* GetOwningContainer() const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Item | Instance")
-    const UObject* GetCreator() const;
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Item | Instance")
+    UFUNCTION(BlueprintPure, Category = "Buzzz")
     FGuid GetItemGuid() const;
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz | Item | Instance")
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
     const UBuzzzItemDefinition* GetDefinition() const;
 
-    UFUNCTION(BlueprintCallable, Category = "Buzzz | Item | Instance")
-    void Destroy();
-
-    UFUNCTION()
-    void InitializeItemInstance(const UBuzzzItemDefinition* ItemDefinition);
-
-    UFUNCTION(BlueprintNativeEvent, Category = "Buzzz | Item | Instance")
-    void OnInitialized();
-
-    UFUNCTION()
-    void InitializeFragments();
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Item | Instance", meta = (DeterminesOutputType = "FragmentClass"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (DeterminesOutputType = "FragmentClass"))
     const UBuzzzFragment* FindFragmentByClass(
         UPARAM(meta=(AllowAbstract=true)) const TSubclassOf<UBuzzzFragment>& FragmentClass, bool Exact = true) const;
 
@@ -79,4 +65,9 @@ public:
         // ReSharper disable once CppCStyleCast
         return (T*)(FindFragmentByClass(T::StaticClass(), Exact));
     }
+
+protected:
+    bool bInitialized = false;
+    virtual void InitializeFragments();
+    virtual void InitializeInstance(const UBuzzzItemDefinition* ItemDefinition) = delete;
 };

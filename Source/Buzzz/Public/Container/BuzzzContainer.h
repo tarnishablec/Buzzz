@@ -78,30 +78,30 @@ public:
     UBuzzzContainer();
 
 #pragma region Helpers
-    UFUNCTION(BlueprintNativeEvent, Category = "Buzzz | Container", BlueprintPure)
-    bool CheckItemCompatible(UBuzzzItemInstance* ItemInstance) const;
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
+    bool CheckItemCompatible(const UBuzzzItemInstance* ItemInstance) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container")
-    bool CheckItemInstanceOwned(UBuzzzItemInstance* ItemInstance) const;
+    UFUNCTION(BlueprintPure, Category = "Buzzz")
+    bool CheckItemInstanceOwned(const UBuzzzItemInstance* ItemInstance) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container", meta = (AutoCreateRefTerm = "Index"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     bool CheckCellEmpty(const int32& Index) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container", meta = (AutoCreateRefTerm = "Index"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     const FBuzzzContainerCell& GetCell(const int32& Index, bool& IsValidIndex) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container", meta = (AutoCreateRefTerm = "Index"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     bool CheckCellHasItem(const int32& Index, const UBuzzzItemDefinition* ItemDefinition) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container", meta=(ReturnDisplayName="Amount"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="Amount"))
     int32 CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDefinition);
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz | Container", meta=(ReturnDisplayName="EmptyIndex"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="EmptyIndex"))
     int32 FindEmptySlot(bool& Found) const;
 #pragma endregion Helpers
 
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz | Container",
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Context"))
     void AssignCell(UPARAM(ref) FBuzzzContainerAssignOperationContext& Context,
                     FBuzzzContainerAssignOperationContext& OutContext);

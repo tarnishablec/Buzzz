@@ -25,10 +25,13 @@ public:
                                     FFrame* Stack) override;
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-    virtual void InitializeFragment(UBuzzzItemInstance* HostItemInstance);
+    virtual void InitializeFragment();
 
     UFUNCTION(BlueprintNativeEvent)
     void OnInitialized(UBuzzzItemInstance* ItemInstance);
+
+    UFUNCTION(BlueprintNativeEvent)
+    void OnDestroy();
 
     UFUNCTION(BlueprintPure)
     UBuzzzItemInstance* GetHostItemInstance() const;

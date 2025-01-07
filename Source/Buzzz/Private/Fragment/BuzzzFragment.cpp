@@ -48,14 +48,13 @@ bool UBuzzzFragment::CallRemoteFunction(UFunction* Function, void* Params, struc
     return false;
 }
 
-void UBuzzzFragment::InitializeFragment(UBuzzzItemInstance* HostItemInstance)
+void UBuzzzFragment::InitializeFragment()
 {
-    if (!IsValid(HostItemInstance))
-    {
-        return;
-    }
+    OnInitialized(GetHostItemInstance());
+}
 
-    OnInitialized(HostItemInstance);
+void UBuzzzFragment::OnDestroy_Implementation()
+{
 }
 
 UBuzzzItemInstance* UBuzzzFragment::GetHostItemInstance() const

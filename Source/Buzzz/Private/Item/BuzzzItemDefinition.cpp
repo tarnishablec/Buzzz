@@ -2,20 +2,31 @@
 
 #include "Item/BuzzzItemDefinition.h"
 #include "Item/BuzzzItemInstance.h"
+#include "Item/BuzzzItemInstance_SHARED.h"
+#include "Item/BuzzzItemInstance_UNIQUE.h"
 
 const FPrimaryAssetType UBuzzzItemDefinition::DataAssetType = BUZZZ_ITEM_DEFINITION_ASSET_NAME;
 
-UBuzzzItemInstance* UBuzzzItemDefinition::CreateItemInstance_Implementation(UObject* Instigator)
+const UBuzzzItemInstance* UBuzzzItemDefinition::Instantiate_Implementation() const
 {
-    if (!IsValid(Instigator))
+    const UBuzzzItemInstance* FinalInstance = nullptr;
+
+    if (InstanceClass->IsChildOf(UBuzzzItemInstance_SHARED::StaticClass()))
+    {
+        FinalInstance = InstanceClass.GetDefaultObject();
+    }
+    else if (InstanceClass->IsChildOf(UBuzzzItemInstance_UNIQUE::StaticClass()))
+    {
+        const auto UniqueInstance = NewObject<UBuzzzItemInstance_UNIQUE>(GetTransientPackage(), InstanceClass);
+        UniqueInstance->InitializeInstance(this);
+        FinalInstance = UniqueInstance;
+    }
+    else
     {
         checkNoEntry();
-        return nullptr;
     }
 
-    const auto Instance = NewObject<UBuzzzItemInstance>(Instigator, InstanceClass);
-    Instance->InitializeItemInstance(this);
-    return Instance;
+    return FinalInstance;
 }
 
 FPrimaryAssetId UBuzzzItemDefinition::GetPrimaryAssetId() const

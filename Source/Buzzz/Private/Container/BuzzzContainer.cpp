@@ -2,8 +2,6 @@
 
 
 #include "Container/BuzzzContainer.h"
-
-#include "Fragment/BuzzzFragment.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
@@ -15,7 +13,7 @@ UBuzzzContainer::UBuzzzContainer()
     bWantsInitializeComponent = true;
 }
 
-bool UBuzzzContainer::CheckItemInstanceOwned(UBuzzzItemInstance* ItemInstance) const
+bool UBuzzzContainer::CheckItemInstanceOwned(const UBuzzzItemInstance* ItemInstance) const
 {
     for (auto&& Cell : Hive.Cells)
     {
@@ -140,18 +138,21 @@ void UBuzzzContainer::AssignCell_Implementation(FBuzzzContainerAssignOperationCo
 
         if (Context.ItemInstance->ShouldReplicate)
         {
+            TArray<UObject*> NetObjList{};
+            Context.ItemInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
+
             if (IsValid(Context.SourceContainer))
             {
                 Context.SourceContainer->RemoveReplicatedSubObject(Context.ItemInstance);
-                for (auto&& Fragment : Context.ItemInstance->Fragments)
+                for (auto&& NetSubObject : NetObjList)
                 {
-                    RemoveReplicatedSubObject(Fragment);
+                    Context.SourceContainer->RemoveReplicatedSubObject(NetSubObject);
                 }
             }
             AddReplicatedSubObject(Context.ItemInstance);
-            for (auto&& Fragment : Context.ItemInstance->Fragments)
+            for (auto&& NetSubObject : NetObjList)
             {
-                AddReplicatedSubObject(Fragment);
+                AddReplicatedSubObject(NetSubObject);
             }
         }
     }
@@ -168,7 +169,7 @@ void UBuzzzContainer::InitializeComponent()
 }
 
 
-bool UBuzzzContainer::CheckItemCompatible_Implementation(UBuzzzItemInstance* ItemInstance) const
+bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstance* ItemInstance) const
 {
     return true;
 }

@@ -18,7 +18,6 @@ void UBuzzzItemInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
     DOREPLIFETIME(ThisClass, Definition);
     DOREPLIFETIME(ThisClass, ItemGuid);
     DOREPLIFETIME(ThisClass, Fragments);
-    DOREPLIFETIME(ThisClass, Creator);
 
     if (const auto BPClass = Cast<UBlueprintGeneratedClass>(GetClass()))
     {
@@ -26,9 +25,14 @@ void UBuzzzItemInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
     }
 }
 
+void UBuzzzItemInstance::BeginDestroy()
+{
+    UObject::BeginDestroy();
+}
+
 int32 UBuzzzItemInstance::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 {
-    return GetOwningContainer()->GetFunctionCallspace(Function, Stack);
+    return GetOuter()->GetFunctionCallspace(Function, Stack);
 }
 
 bool UBuzzzItemInstance::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
@@ -48,12 +52,7 @@ bool UBuzzzItemInstance::CallRemoteFunction(UFunction* Function, void* Params, s
 
 UBuzzzContainer* UBuzzzItemInstance::GetOwningContainer() const
 {
-    return GetTypedOuter<UBuzzzContainer>();
-}
-
-const UObject* UBuzzzItemInstance::GetCreator() const
-{
-    return Creator;
+    return Cast<UBuzzzContainer>(GetOuter());
 }
 
 FGuid UBuzzzItemInstance::GetItemGuid() const
@@ -66,49 +65,6 @@ const UBuzzzItemDefinition* UBuzzzItemInstance::GetDefinition_Implementation() c
     return Definition;
 }
 
-void UBuzzzItemInstance::Destroy()
-{
-    if (IsValid(this))
-    {
-        MarkAsGarbage();
-    }
-}
-
-void UBuzzzItemInstance::InitializeItemInstance(const UBuzzzItemDefinition* ItemDefinition)
-{
-    Creator = GetOuter();
-    if (!IsValid(ItemDefinition))
-    {
-        checkNoEntry();
-        return;
-    }
-
-    Definition = ItemDefinition;
-    InitializeFragments();
-    OnInitialized();
-}
-
-void UBuzzzItemInstance::OnInitialized_Implementation()
-{
-}
-
-void UBuzzzItemInstance::InitializeFragments()
-{
-    check(IsValid(Definition));
-
-    Fragments.Empty();
-
-    for (auto&& FragmentTemplate : Definition->FragmentsTemplate)
-    {
-        if (FragmentTemplate != nullptr)
-        {
-            const auto Fragment = NewObject<UBuzzzFragment>(this, FragmentTemplate.GetClass(), NAME_None, RF_NoFlags,
-                                                            FragmentTemplate);
-            Fragments.AddUnique(Fragment);
-            Fragment->InitializeFragment(this);
-        }
-    }
-}
 
 const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(const TSubclassOf<UBuzzzFragment>& FragmentClass,
                                                               bool Exact) const
@@ -129,4 +85,34 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(const TSubclassOf<
             }
             return Fragment.IsA(FragmentClass);
         });
+}
+
+
+void UBuzzzItemInstance::InitializeFragments()
+{
+    check(IsValid(Definition));
+
+    Fragments.Empty();
+
+    for (auto&& FragmentTemplate : Definition->FragmentsTemplate)
+    {
+        if (FragmentTemplate != nullptr)
+        {
+            const auto Fragment = NewObject<UBuzzzFragment>(this, FragmentTemplate.GetClass(), NAME_None, RF_NoFlags,
+                                                            FragmentTemplate);
+            Fragments.AddUnique(Fragment);
+            Fragment->InitializeFragment();
+        }
+    }
+}
+
+void UBuzzzItemInstance::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)
+{
+    for (auto&& BuzzzFragment : Fragments)
+    {
+        if (BuzzzFragment->IsSupportedForNetworking())
+        {
+            ObjList.AddUnique(BuzzzFragment);
+        }
+    }
 }

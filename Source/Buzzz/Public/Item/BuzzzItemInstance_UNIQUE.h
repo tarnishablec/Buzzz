@@ -42,5 +42,7 @@ protected:
     UPROPERTY()
     TObjectPtr<UBuzzzAction_WaitForContainerOperation> RemoveAction;
 
+    virtual void ChangeOwnerContainer(UBuzzzContainer* NewContainer);
+
     virtual void InitializeInstance() override;
 };

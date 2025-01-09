@@ -5,7 +5,7 @@
 
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
 #include "Item/BuzzzItemDefinition.h"
-
+#include "Misc/EngineVersionComparison.h"
 
 UBuzzzItemInstance* UBuzzzItemInstance_UNIQUE::MakeInstance_Implementation(
     const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const
@@ -26,7 +26,7 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzOperationContext& Con
 {
     if (IsValid(Context.TargetContainer))
     {
-        this->LowLevelRename(this->GetFName(), Context.TargetContainer);
+        this->ChangeOwnerContainer(Context.TargetContainer);
     }
 }
 
@@ -34,7 +34,27 @@ void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzOperationContext& Con
 {
     if (IsValid(Context.FromContainer))
     {
-        this->LowLevelRename(this->GetFName(), GetTransientPackage());
+        this->ChangeOwnerContainer(nullptr);
+    }
+}
+
+void UBuzzzItemInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContainer)
+{
+    if (IsValid(NewContainer))
+    {
+        this->Rename(nullptr, NewContainer
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+                     ,REN_ForceNoResetLoaders
+#endif
+        );
+    }
+    else
+    {
+        this->Rename(nullptr, GetTransientPackage()
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+                     ,REN_ForceNoResetLoaders
+#endif
+        );
     }
 }
 

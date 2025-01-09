@@ -116,6 +116,7 @@ bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzOperati
 bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContainer* FromContainer,
                                                 const int32& FromIndex)
 {
+#pragma region Validation Checks
     if (!IsValid(FromContainer) || !CheckIndexIsValid(Index))
     {
         return false;
@@ -134,23 +135,25 @@ bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContai
     {
         return false;
     }
+#pragma endregion
 
-    FBuzzzOperationContext Context{};
-    Context.TargetContainer = this;
-    Context.TargetIndex = Index;
+    FBuzzzOperationContext InContext{};
+    InContext.TargetContainer = this;
+    InContext.TargetIndex = Index;
 
-    Context.UpcomingStackCount = UpcomingCellInfo.StackCount + Hive.Cells[Index].StackCount;
-    Context.UpcomingInstance = UpcomingCellInfo.ItemInstance;
+    InContext.UpcomingStackCount = UpcomingCellInfo.StackCount + Hive.Cells[Index].StackCount;
+    InContext.UpcomingInstance = UpcomingCellInfo.ItemInstance;
 
-    Context.FromContainer = FromContainer;
-    Context.FromIndex = FromIndex;
-    AssignCell(Context);
+    InContext.FromContainer = FromContainer;
+    InContext.FromIndex = FromIndex;
+    AssignCell(InContext);
 
-    if (Context.bFinished && Context.bSuccess)
+    if (InContext.bFinished && InContext.bSuccess)
     {
         FBuzzzOperationContext FromContext{};
         const auto Result = FromContainer->ClearCell(FromIndex, FromContext);
         check(Result);
+
         return Result;
     }
 
@@ -158,29 +161,68 @@ bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContai
 }
 
 
-bool UBuzzzContainer::SwitchCells_Implementation(const int32& Index, UBuzzzContainer* FromContainer,
-                                                 const int32& FromIndex)
+bool UBuzzzContainer::SwapCells_Implementation(const int32& Index, UBuzzzContainer* FromContainer,
+                                               const int32& FromIndex)
 {
-    if (!IsValid(FromContainer) || CheckIndexIsValid(Index))
+#pragma region Validation Checks
+
+    if (!IsValid(FromContainer) || !CheckIndexIsValid(Index))
     {
         return false;
     }
 
-    FBuzzzOperationContext Context{};
-    Context.TargetContainer = this;
-    Context.TargetIndex = Index;
+    bool IsFromIndexValid;
+    const auto UpcomingCellInfo = FromContainer->GetCell(FromIndex, IsFromIndexValid);
 
+    if (!IsFromIndexValid)
+    {
+        return false;
+    }
 
-    return true;
+    // Check Is Not Same Instance So We Can Swap
+    if (UpcomingCellInfo.ItemInstance == Hive.Cells[Index].ItemInstance)
+    {
+        return false;
+    }
+#pragma endregion
+
+    FBuzzzOperationContext InContext{};
+    InContext.TargetContainer = this;
+    InContext.TargetIndex = Index;
+
+    InContext.UpcomingStackCount = UpcomingCellInfo.StackCount;
+    InContext.UpcomingInstance = UpcomingCellInfo.ItemInstance;
+
+    InContext.FromContainer = FromContainer;
+    InContext.FromIndex = FromIndex;
+
+    AssignCell(InContext);
+
+    if (InContext.bFinished && InContext.bSuccess)
+    {
+        FBuzzzOperationContext FromContext{};
+        FromContext.TargetContainer = FromContainer;
+        FromContext.TargetIndex = FromIndex;
+
+        FromContext.UpcomingStackCount = InContext.PreviousStackCount;
+        FromContext.UpcomingInstance = InContext.PreviousInstance;
+
+        FromContext.FromContainer = this;
+        FromContext.FromIndex = Index;
+        FromContainer->AssignCell(FromContext);
+
+        return FromContext.bFinished && FromContext.bSuccess;
+    }
+
+    return false;
 }
 
 
-FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOperationContext& InContext)
+FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperationContext& Context)
 {
     FScopeLock ScopeLock(&ContainerCS);
 
-    // Make A Copy
-    auto Context = InContext;
+    // Make Sure TargetContainer is Set
     Context.TargetContainer = this;
 
     // Check Index Valid
@@ -206,7 +248,10 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
     if (!IsValid(Context.UpcomingInstance))
     {
         check(Context.UpcomingStackCount == 0);
-        Context.bFinished = true;
+        if (Context.UpcomingStackCount != 0)
+        {
+            Context.bFinished = true;
+        }
     }
 
     // CheckCompatible
@@ -240,6 +285,21 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
+    // Remove Previous Replication First
+    if (IsValid(Context.PreviousInstance))
+    {
+        if (Context.PreviousInstance->ShouldReplicate)
+        {
+            RemoveReplicatedSubObject(Context.PreviousInstance);
+            TArray<UObject*> NetObjList{};
+            Context.PreviousInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
+            for (auto&& NetSubObject : NetObjList)
+            {
+                RemoveReplicatedSubObject(NetSubObject);
+            }
+        }
+    }
+
     // Set Upcoming Replication
     if (IsValid(Context.UpcomingInstance))
     {
@@ -255,21 +315,6 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
         }
     }
 
-    // Remove Previous Replication
-    if (IsValid(Context.PreviousInstance))
-    {
-        if (Context.PreviousInstance->ShouldReplicate)
-        {
-            RemoveReplicatedSubObject(Context.PreviousInstance);
-            TArray<UObject*> NetObjList{};
-            Context.PreviousInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
-            for (auto&& NetSubObject : NetObjList)
-            {
-                RemoveReplicatedSubObject(NetSubObject);
-            }
-        }
-    }
-
     // On Change Callback
     {
         OnCellChange.Broadcast(Context);
@@ -280,10 +325,9 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
         Hive.MarkItemDirty(Hive.Cells[Context.TargetIndex]);
     }
 
-    // Mark as Finished & Success
+    // Mark as Success
     {
         Context.bSuccess = true;
-        Context.bFinished = true;
     }
 
     // Forward To Subsystem
@@ -293,6 +337,11 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
         {
             BuzzzSubsystem->ReceivedContainerMutation.Broadcast(Context);
         }
+    }
+
+    // Mark as Finished
+    {
+        Context.bFinished = true;
     }
 
     // Post Change Callback

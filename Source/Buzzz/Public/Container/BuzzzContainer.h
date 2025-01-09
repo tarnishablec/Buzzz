@@ -111,7 +111,7 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     bool CheckIndexIsValid(const int32& Index) const;
-#pragma endregion Helpers
+#pragma endregion
 
 protected:
 #pragma region Delegates
@@ -123,29 +123,29 @@ protected:
     FBuzzzContainerOperationDelegate OnCellChange;
     UPROPERTY(BlueprintAssignable)
     FBuzzzContainerOperationDelegate OnAssignFailed;
-#pragma endregion Delegates
+#pragma endregion
 
 #pragma region Callbacks
 
-#pragma endregion Callbacks
+#pragma endregion
 
 public:
 #pragma region Assign
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
-    FBuzzzOperationContext AssignCell(const FBuzzzOperationContext& Context);
-#pragma endregion Assign
+    FBuzzzOperationContext AssignCell(UPARAM(ref) FBuzzzOperationContext& Context);
+#pragma endregion
 
 #pragma region Wrapper Operations
-    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
     bool ClearCell(const int32& Index, FBuzzzOperationContext& OutContext);
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
     bool MergeCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
-    bool SwitchCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
-#pragma endregion Wrapper Operations
+    bool SwapCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
+#pragma endregion
 };

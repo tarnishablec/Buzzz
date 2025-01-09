@@ -61,9 +61,15 @@ void UBuzzzAction_WaitForContainerOperation::Cancel()
 {
     Super::Cancel();
 
-    const auto BuzzzSubsystem = ItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-    if (BuzzzSubsystem)
+    if (ItemInstance)
     {
-        BuzzzSubsystem->ReceivedContainerMutation.RemoveAll(this);
+        if (const auto World = ItemInstance->GetWorld())
+        {
+            const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+            if (BuzzzSubsystem)
+            {
+                BuzzzSubsystem->ReceivedContainerMutation.RemoveAll(this);
+            }
+        }
     }
 }

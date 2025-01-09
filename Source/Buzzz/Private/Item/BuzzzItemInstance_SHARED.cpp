@@ -4,21 +4,22 @@
 #include "Item/BuzzzItemInstance_SHARED.h"
 #include "Item/BuzzzItemDefinition.h"
 
-TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance_SHARED*> UBuzzzItemInstance_SHARED::InstanceMap = {};
+TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance*> UBuzzzItemInstance_SHARED::InstanceMap = {};
 
 UBuzzzItemInstance_SHARED::UBuzzzItemInstance_SHARED()
 {
 }
 
 UBuzzzItemInstance* UBuzzzItemInstance_SHARED::MakeInstance_Implementation(
-    const UBuzzzItemDefinition* InDefinition) const
+    const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const
 {
-    check(IsValid(InDefinition))
+    check(IsValid(InDefinition));
 
-    const auto ExistInstance = InstanceMap.Find(InDefinition);
-    if (ExistInstance != nullptr && IsValid(*ExistInstance))
+    const auto ExistInstancePtr = InstanceMap.Find(InDefinition);
+
+    if (ExistInstancePtr)
     {
-        return *ExistInstance;
+        return *ExistInstancePtr;
     }
 
     const auto FreshInstance = NewObject<UBuzzzItemInstance_SHARED>(GetTransientPackage(), InDefinition->InstanceClass);

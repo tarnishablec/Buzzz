@@ -2,7 +2,6 @@
 
 
 #include "Item/BuzzzItemInstance.h"
-#include "Container/BuzzzContainer.h"
 #include "Fragment/BuzzzFragment.h"
 #include "Item/BuzzzItemDefinition.h"
 #include "Net/UnrealNetwork.h"
@@ -38,7 +37,7 @@ int32 UBuzzzItemInstance::GetFunctionCallspace(UFunction* Function, FFrame* Stac
 bool UBuzzzItemInstance::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
                                             FFrame* Stack)
 {
-    const auto OwningActor = GetOwningContainer()->GetOwner();
+    const auto OwningActor = GetTypedOuter<AActor>();
     check(OwningActor);
 
     if (const auto NewDriver = OwningActor->GetNetDriver())
@@ -50,10 +49,6 @@ bool UBuzzzItemInstance::CallRemoteFunction(UFunction* Function, void* Params, s
     return false;
 }
 
-UBuzzzContainer* UBuzzzItemInstance::GetOwningContainer() const
-{
-    return Cast<UBuzzzContainer>(GetOuter());
-}
 
 FGuid UBuzzzItemInstance::GetItemGuid() const
 {
@@ -87,12 +82,18 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(const TSubclassOf<
         });
 }
 
+AActor* UBuzzzItemInstance::GetOwnerActor_Implementation() const
+{
+    return GetTypedOuter<AActor>();
+}
+
 void UBuzzzItemInstance::OnInitialization_Implementation()
 {
 }
 
 
-UBuzzzItemInstance* UBuzzzItemInstance::MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const
+UBuzzzItemInstance* UBuzzzItemInstance::MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition,
+                                                                    AActor* Instigator) const
 {
     checkNoEntry();
     return nullptr;

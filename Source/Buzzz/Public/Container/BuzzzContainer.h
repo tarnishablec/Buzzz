@@ -12,28 +12,23 @@ class UBuzzzItemInstance;
 class UBuzzzContainer;
 
 USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzContainerAssignOperationContext
+struct BUZZZ_API FBuzzzOperationContext
 {
     GENERATED_BODY()
 
-    FBuzzzContainerAssignOperationContext()
-    {
-        ContainerOperationId = FGuid::NewGuid();
-    }
+    // Input
 
-    FGuid ContainerOperationId{};
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<UBuzzzContainer> TargetContainer;
 
     UPROPERTY(BlueprintReadWrite)
     int32 TargetIndex = INDEX_NONE;
 
     UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzItemInstance> ItemInstance;
+    TObjectPtr<UBuzzzItemInstance> UpcomingInstance;
 
     UPROPERTY(BlueprintReadWrite)
-    int32 FinalStackCount = 0;
-
-    UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzContainer> TargetContainer;
+    int32 UpcomingStackCount = -1;
 
     UPROPERTY(BlueprintReadWrite)
     TObjectPtr<UBuzzzContainer> SourceContainer;
@@ -41,8 +36,13 @@ struct BUZZZ_API FBuzzzContainerAssignOperationContext
     UPROPERTY(BlueprintReadWrite)
     int32 SourceIndex = INDEX_NONE;
 
+    // Output
+
     UPROPERTY(BlueprintReadOnly)
-    FBuzzzContainerCell PreviousCellInfo{};
+    TObjectPtr<UBuzzzItemInstance> PreviousInstance;
+
+    UPROPERTY(BlueprintReadOnly)
+    int32 PreviousStackCount = -1;
 
     UPROPERTY(BlueprintReadOnly)
     bool bSuccess = false;
@@ -51,6 +51,26 @@ struct BUZZZ_API FBuzzzContainerAssignOperationContext
     bool bFinished = false;
 };
 
+USTRUCT(BlueprintType)
+struct BUZZZ_API FBuzzzCellMutationInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly)
+    int32 Index = INDEX_NONE;
+
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<UBuzzzContainer> Container;
+
+    UPROPERTY(BlueprintReadOnly)
+    FBuzzzContainerCell PreviousCellInfo{};
+
+    UPROPERTY(BlueprintReadOnly)
+    FBuzzzContainerCell UpcomingCellInfo{};
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerCellChangeDelegate, const FBuzzzCellMutationInfo&, Info);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -65,7 +85,6 @@ protected:
     int32 Capacity = 0;
 
 public:
-    // virtual void BeginReplication() override;
     virtual void InitializeComponent() override;
     virtual void BeginPlay() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -74,7 +93,6 @@ private:
     FCriticalSection ContainerCS;
 
 public:
-    // Sets default values for this component's properties
     UBuzzzContainer();
 
 #pragma region Helpers
@@ -100,9 +118,30 @@ public:
     int32 FindEmptySlot(bool& Found) const;
 #pragma endregion Helpers
 
+protected:
+#pragma region Delegates
+    UPROPERTY(BlueprintAssignable)
+    FBuzzzContainerCellChangeDelegate PreCellChange;
+    UPROPERTY(BlueprintAssignable)
+    FBuzzzContainerCellChangeDelegate PostCellChange;
+    UPROPERTY(BlueprintAssignable)
+    FBuzzzContainerCellChangeDelegate OnCellChange;
+#pragma endregion Delegates
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
-        meta = (AutoCreateRefTerm = "Context"))
-    void AssignCell(UPARAM(ref) FBuzzzContainerAssignOperationContext& Context,
-                    FBuzzzContainerAssignOperationContext& OutContext);
+#pragma region Callbacks
+    UFUNCTION(BlueprintNativeEvent, Category = "Buzzz")
+    void OnAssignFailed(const FBuzzzOperationContext& Context);
+#pragma endregion Callbacks
+
+public:
+#pragma region Assign
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
+    FBuzzzOperationContext AssignCell(const FBuzzzOperationContext& Context);
+#pragma endregion Assign
+
+#pragma region Wrapper Operations
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
+        meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
+    void ClearCell(const int32 Index, FBuzzzOperationContext& OutContext);
+#pragma endregion Wrapper Operations
 };

@@ -30,5 +30,5 @@ public:
     TArray<TObjectPtr<UBuzzzFragment>> FragmentsTemplate;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, BlueprintAuthorityOnly)
-    const UBuzzzItemInstance* Instantiate() const;
+    const UBuzzzItemInstance* Instantiate(AActor* Instigator) const;
 };

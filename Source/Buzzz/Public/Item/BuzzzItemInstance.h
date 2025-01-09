@@ -9,7 +9,6 @@
 
 class UBuzzzFragment;
 class UBuzzzItemDefinition;
-class UBuzzzContainer;
 /**
  * 
  */
@@ -19,7 +18,6 @@ class BUZZZ_API UBuzzzItemInstance : public UObject
     GENERATED_BODY()
 
 public:
-    friend class UBuzzzContainer;
     friend class UBuzzzItemDefinition;
 
     UBuzzzItemInstance();
@@ -46,9 +44,7 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Buzzz")
     bool ShouldReplicate = true;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz")
-    UBuzzzContainer* GetOwningContainer() const;
-
+#pragma region Helpers
     UFUNCTION(BlueprintPure, Category = "Buzzz")
     FGuid GetItemGuid() const;
 
@@ -67,11 +63,15 @@ public:
         return (T*)(FindFragmentByClass(T::StaticClass(), Exact));
     }
 
-    UFUNCTION(BlueprintNativeEvent, meta=(ForceAsFunction))
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
+    AActor* GetOwnerActor() const;
+#pragma endregion Helpers
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, meta=(ForceAsFunction))
     void OnInitialization();
 
     UFUNCTION(BlueprintNativeEvent)
-    UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition) const;
+    UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const;
 
 protected:
     bool bInitialized = false;

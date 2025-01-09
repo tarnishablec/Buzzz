@@ -5,10 +5,10 @@
 
 const FPrimaryAssetType UBuzzzItemDefinition::DataAssetType = BUZZZ_ITEM_DEFINITION_ASSET_NAME;
 
-const UBuzzzItemInstance* UBuzzzItemDefinition::Instantiate_Implementation() const
+const UBuzzzItemInstance* UBuzzzItemDefinition::Instantiate_Implementation(AActor* Instigator) const
 {
     check(IsValid(InstanceClass))
-    const auto Instance = InstanceClass.GetDefaultObject()->MakeInstance(this);
+    const auto Instance = InstanceClass.GetDefaultObject()->MakeInstance(this, Instigator);
 
     if (Instance->bInitialized == false)
     {

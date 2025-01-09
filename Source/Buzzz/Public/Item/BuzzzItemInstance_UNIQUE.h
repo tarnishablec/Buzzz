@@ -20,5 +20,7 @@ public:
     UFUNCTION(BlueprintNativeEvent, Category = "Buzzz")
     void OnInitialized();
 
-    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition) const override;
+    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition,
+                                                            AActor* Instigator) const override;
+
 };

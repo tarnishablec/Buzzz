@@ -2,6 +2,8 @@
 
 
 #include "Container/BuzzzContainer.h"
+
+#include "Container/BuzzzSubsystem.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
@@ -89,67 +91,107 @@ int32 UBuzzzContainer::FindEmptySlot(bool& Found) const
     return Index;
 }
 
-void UBuzzzContainer::AssignCell_Implementation(FBuzzzContainerAssignOperationContext& Context,
-                                                FBuzzzContainerAssignOperationContext& OutContext)
+void UBuzzzContainer::OnAssignFailed_Implementation(const FBuzzzOperationContext& Context)
+{
+    
+}
+
+void UBuzzzContainer::ClearCell(const int32 Index, FBuzzzOperationContext& OutContext)
+{
+    OutContext = FBuzzzOperationContext{};
+    OutContext.TargetIndex = Index;
+    OutContext.UpcomingStackCount = 0;
+    AssignCell(OutContext);
+}
+
+
+FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOperationContext& InContext)
 {
     FScopeLock ScopeLock(&ContainerCS);
 
+    // Make A Copy
+    auto Context = InContext;
     Context.TargetContainer = this;
-    if (!IsValid(Context.TargetContainer) || !Context.TargetContainer->Hive.Cells.IsValidIndex(Context.TargetIndex))
+
+    // Check Index Valid
+    if (!Hive.Cells.IsValidIndex(Context.TargetIndex))
     {
         Context.bFinished = true;
-        return;
     }
-
-    if (!CheckItemCompatible(Context.ItemInstance))
-    {
-        Context.bFinished = true;
-        return;
-    }
-
-    // Cache Previous Instance
-    {
-        Context.PreviousCellInfo.ItemInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
-        Context.PreviousCellInfo.StackCount = Hive.Cells[Context.TargetIndex].StackCount;
-    }
-
     // Nothing Changed
-    if (Context.PreviousCellInfo.ItemInstance == Context.ItemInstance
-        && Context.PreviousCellInfo.StackCount == Context.FinalStackCount)
+    else if (Hive.Cells[Context.TargetIndex].ItemInstance == Context.UpcomingInstance && Hive.Cells[Context.TargetIndex]
+        .StackCount == Context.UpcomingStackCount)
     {
         Context.bFinished = true;
-        return;
+    }
+
+    // StackCount Should be Positive
+    check(Context.UpcomingStackCount >= 0);
+    if (Context.UpcomingStackCount < 0)
+    {
+        Context.bFinished = true;
+    }
+
+    // if Empty Instance, StackCount Should Be 0
+    if (!IsValid(Context.UpcomingInstance))
+    {
+        check(Context.UpcomingStackCount == 0);
+        Context.bFinished = true;
+    }
+
+    // CheckCompatible
+    if (IsValid(Context.UpcomingInstance) && !CheckItemCompatible(Context.UpcomingInstance))
+    {
+        Context.bFinished = true;
+    }
+
+    // Handle Failed
+    if (Context.bFinished && !Context.bSuccess)
+    {
+        OnAssignFailed(Context);
+        return Context;
+    }
+
+    // Cache PreviousCell
+    FBuzzzContainerCell PreviousCellInfo;
+    PreviousCellInfo.ItemInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
+    PreviousCellInfo.StackCount = Hive.Cells[Context.TargetIndex].StackCount;
+
+    FBuzzzContainerCell UpcomingCellInfo;
+    UpcomingCellInfo.ItemInstance = Context.UpcomingInstance;
+    UpcomingCellInfo.StackCount = Context.UpcomingStackCount;
+
+    // Fill up OutContext
+    {
+        Context.PreviousInstance = PreviousCellInfo.ItemInstance;
+        Context.PreviousStackCount = PreviousCellInfo.StackCount;
+    }
+
+    FBuzzzCellMutationInfo MutationInfo;
+    MutationInfo.Container = this;
+    MutationInfo.PreviousCellInfo = PreviousCellInfo;
+    MutationInfo.UpcomingCellInfo = UpcomingCellInfo;
+    MutationInfo.Index = InContext.TargetIndex;
+
+    // Pre Change Callback
+    {
+        PreCellChange.Broadcast(MutationInfo);
     }
 
     // Operate Assign
     {
-        Hive.Cells[Context.TargetIndex].ItemInstance = Context.ItemInstance;
-        if (Context.ItemInstance == nullptr)
-        {
-            ensure(Context.FinalStackCount == 0);
-        }
-        Hive.Cells[Context.TargetIndex].StackCount = Context.FinalStackCount;
+        Hive.Cells[Context.TargetIndex].ItemInstance = Context.UpcomingInstance;
+        Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
-    // Set Outer | Replicate
-    if (IsValid(Context.ItemInstance))
+    // Set Upcoming Replication
+    if (IsValid(Context.UpcomingInstance))
     {
-        Context.ItemInstance->Rename(nullptr, this);
-
-        if (Context.ItemInstance->ShouldReplicate)
+        if (Context.UpcomingInstance->ShouldReplicate)
         {
+            AddReplicatedSubObject(Context.UpcomingInstance);
             TArray<UObject*> NetObjList{};
-            Context.ItemInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
-
-            if (IsValid(Context.SourceContainer))
-            {
-                Context.SourceContainer->RemoveReplicatedSubObject(Context.ItemInstance);
-                for (auto&& NetSubObject : NetObjList)
-                {
-                    Context.SourceContainer->RemoveReplicatedSubObject(NetSubObject);
-                }
-            }
-            AddReplicatedSubObject(Context.ItemInstance);
+            Context.UpcomingInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
             for (auto&& NetSubObject : NetObjList)
             {
                 AddReplicatedSubObject(NetSubObject);
@@ -157,11 +199,53 @@ void UBuzzzContainer::AssignCell_Implementation(FBuzzzContainerAssignOperationCo
         }
     }
 
-    Hive.MarkItemDirty(Hive.Cells[Context.TargetIndex]);
-    Context.bSuccess = true;
-    Context.bFinished = true;
-}
+    // Remove Previous Replication
+    if (IsValid(Context.PreviousInstance))
+    {
+        if (Context.PreviousInstance->ShouldReplicate)
+        {
+            RemoveReplicatedSubObject(Context.PreviousInstance);
+            TArray<UObject*> NetObjList{};
+            Context.PreviousInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
+            for (auto&& NetSubObject : NetObjList)
+            {
+                RemoveReplicatedSubObject(NetSubObject);
+            }
+        }
+    }
 
+    // On Change Callback
+    {
+        OnCellChange.Broadcast(MutationInfo);
+    }
+
+    // FastArray Mark Dirty
+    {
+        Hive.MarkItemDirty(Hive.Cells[Context.TargetIndex]);
+    }
+
+    // Mark as Finished & Success
+    {
+        Context.bSuccess = true;
+        Context.bFinished = true;
+    }
+
+    // Forward To Subsystem
+    {
+        const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+        if (IsValid(BuzzzSubsystem))
+        {
+            BuzzzSubsystem->ReceivedContainerMutation.Broadcast(Context);
+        }
+    }
+
+    // Post Change Callback
+    {
+        PostCellChange.Broadcast(MutationInfo);
+    }
+
+    return Context;
+}
 
 void UBuzzzContainer::InitializeComponent()
 {

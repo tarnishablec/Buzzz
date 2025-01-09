@@ -2,8 +2,6 @@
 
 
 #include "Fragment/BuzzzFragment.h"
-
-#include "Container/BuzzzContainer.h"
 #include "Item/BuzzzItemInstance.h"
 
 void UBuzzzFragment::OnInitialized_Implementation(UBuzzzItemInstance* ItemInstance)
@@ -31,21 +29,7 @@ int32 UBuzzzFragment::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 
 bool UBuzzzFragment::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams, FFrame* Stack)
 {
-    const auto OwningContainer = GetHostItemInstance()->GetOwningContainer();
-
-    if (OwningContainer)
-    {
-        const auto OwningActor = OwningContainer->GetOwner();
-        check(OwningActor);
-
-        if (const auto NewDriver = OwningActor->GetNetDriver())
-        {
-            NewDriver->CallRemoteFunction(Function, Params, OutParams, Stack);
-            return true;
-        }
-    }
-
-    return false;
+    return GetHostItemInstance()->CallRemoteFunction(Function, Params, OutParams, Stack);
 }
 
 void UBuzzzFragment::InitializeFragment()

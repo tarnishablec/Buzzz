@@ -91,12 +91,87 @@ int32 UBuzzzContainer::FindEmptySlot(bool& Found) const
     return Index;
 }
 
-void UBuzzzContainer::ClearCell(const int32 Index, FBuzzzOperationContext& OutContext)
+bool UBuzzzContainer::CheckIndexIsValid(const int32& Index) const
 {
-    OutContext = FBuzzzOperationContext{};
+    return Hive.Cells.IsValidIndex(Index);
+}
+
+
+bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzOperationContext& OutContext)
+{
+    if (!CheckIndexIsValid(Index))
+    {
+        return false;
+    }
+
+    OutContext.Reset();
     OutContext.TargetIndex = Index;
     OutContext.UpcomingStackCount = 0;
+    OutContext.TargetContainer = this;
     AssignCell(OutContext);
+
+    return OutContext.bFinished && OutContext.bSuccess;
+}
+
+bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContainer* FromContainer,
+                                                const int32& FromIndex)
+{
+    if (!IsValid(FromContainer) || !CheckIndexIsValid(Index))
+    {
+        return false;
+    }
+
+    bool IsFromIndexValid;
+    const auto UpcomingCellInfo = FromContainer->GetCell(FromIndex, IsFromIndexValid);
+
+    if (!IsFromIndexValid)
+    {
+        return false;
+    }
+
+    // Check Is Same Instance So We Can Merge
+    if (UpcomingCellInfo.ItemInstance != Hive.Cells[Index].ItemInstance)
+    {
+        return false;
+    }
+
+    FBuzzzOperationContext Context{};
+    Context.TargetContainer = this;
+    Context.TargetIndex = Index;
+
+    Context.UpcomingStackCount = UpcomingCellInfo.StackCount + Hive.Cells[Index].StackCount;
+    Context.UpcomingInstance = UpcomingCellInfo.ItemInstance;
+
+    Context.FromContainer = FromContainer;
+    Context.FromIndex = FromIndex;
+    AssignCell(Context);
+
+    if (Context.bFinished && Context.bSuccess)
+    {
+        FBuzzzOperationContext FromContext{};
+        const auto Result = FromContainer->ClearCell(FromIndex, FromContext);
+        check(Result);
+        return Result;
+    }
+
+    return false;
+}
+
+
+bool UBuzzzContainer::SwitchCells_Implementation(const int32& Index, UBuzzzContainer* FromContainer,
+                                                 const int32& FromIndex)
+{
+    if (!IsValid(FromContainer) || CheckIndexIsValid(Index))
+    {
+        return false;
+    }
+
+    FBuzzzOperationContext Context{};
+    Context.TargetContainer = this;
+    Context.TargetIndex = Index;
+
+
+    return true;
 }
 
 
@@ -109,7 +184,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
     Context.TargetContainer = this;
 
     // Check Index Valid
-    if (!Hive.Cells.IsValidIndex(Context.TargetIndex))
+    if (!CheckIndexIsValid(Context.TargetIndex))
     {
         Context.bFinished = true;
     }

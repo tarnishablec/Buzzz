@@ -31,10 +31,10 @@ struct BUZZZ_API FBuzzzOperationContext
     int32 UpcomingStackCount = -1;
 
     UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzContainer> SourceContainer;
+    TObjectPtr<UBuzzzContainer> FromContainer;
 
     UPROPERTY(BlueprintReadWrite)
-    int32 SourceIndex = INDEX_NONE;
+    int32 FromIndex = INDEX_NONE;
 
     // Output
 
@@ -49,8 +49,18 @@ struct BUZZZ_API FBuzzzOperationContext
 
     UPROPERTY(BlueprintReadOnly)
     bool bFinished = false;
-};
 
+    static FBuzzzOperationContext& GetEmptyContext()
+    {
+        thread_local FBuzzzOperationContext EmptyContext{};
+        return EmptyContext;
+    }
+
+    void Reset()
+    {
+        *this = GetEmptyContext();
+    }
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzOperationContext&, Context);
 
@@ -98,6 +108,9 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="EmptyIndex"))
     int32 FindEmptySlot(bool& Found) const;
+
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
+    bool CheckIndexIsValid(const int32& Index) const;
 #pragma endregion Helpers
 
 protected:
@@ -113,7 +126,7 @@ protected:
 #pragma endregion Delegates
 
 #pragma region Callbacks
-  
+
 #pragma endregion Callbacks
 
 public:
@@ -123,8 +136,16 @@ public:
 #pragma endregion Assign
 
 #pragma region Wrapper Operations
-    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
-    void ClearCell(const int32 Index, FBuzzzOperationContext& OutContext);
+    bool ClearCell(const int32& Index, FBuzzzOperationContext& OutContext);
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
+        meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
+    bool MergeCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Buzzz",
+        meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
+    bool SwitchCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
 #pragma endregion Wrapper Operations
 };

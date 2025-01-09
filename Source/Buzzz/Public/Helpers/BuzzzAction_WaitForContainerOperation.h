@@ -24,6 +24,7 @@ class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyn
     GENERATED_BODY()
 public:
     virtual void Activate() override;
+    virtual void Cancel() override;
 
     enum EOperationMode
     {
@@ -49,7 +50,4 @@ protected:
 
     UFUNCTION()
     void HandleReceivedContainerMutation(const FBuzzzOperationContext& Context);
-
-public:
-    virtual void Cancel() override;
 };

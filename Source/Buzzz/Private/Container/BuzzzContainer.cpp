@@ -96,6 +96,28 @@ bool UBuzzzContainer::CheckIndexIsValid(const int32& Index) const
     return Hive.Cells.IsValidIndex(Index);
 }
 
+bool UBuzzzContainer::Resize(const int32& NewCapacity)
+{
+    check(NewCapacity >= 0);
+
+    for (int i = NewCapacity; i < Capacity; ++i)
+    {
+        FBuzzzOperationContext Context{};
+        ClearCell(i, Context);
+
+        if (!(Context.bFinished && Context.bSuccess))
+        {
+            return false;
+        }
+    }
+
+    Capacity = NewCapacity;
+    Hive.Cells.SetNum(Capacity);
+    Hive.MarkArrayDirty();
+
+    return true;
+}
+
 
 bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzOperationContext& OutContext)
 {
@@ -367,8 +389,7 @@ bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstanc
 void UBuzzzContainer::BeginPlay()
 {
     Super::BeginPlay();
-    Hive.Cells.SetNum(Capacity);
-    Hive.MarkArrayDirty();
+    Resize(Capacity);
 }
 
 void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

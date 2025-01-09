@@ -70,10 +70,10 @@ class BUZZZ_API UBuzzzContainer : public UActorComponent
     GENERATED_BODY()
 
 protected:
-    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess))
     FBuzzzContainerHive Hive;
 
-    UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
+    UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess))
     int32 Capacity = 0;
 
 public:
@@ -133,6 +133,11 @@ public:
 #pragma region Assign
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
     FBuzzzOperationContext AssignCell(UPARAM(ref) FBuzzzOperationContext& Context);
+#pragma endregion
+
+#pragma region Capacity
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", meta = (AutoCreateRefTerm = "NewCapacity"))
+    bool Resize(const int32& NewCapacity);
 #pragma endregion
 
 #pragma region Wrapper Operations

@@ -50,7 +50,7 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
     const UBuzzzItemDefinition* GetDefinition() const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (DeterminesOutputType = "FragmentClass"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (DeterminesOutputType = "FragmentClass", AutoCreateRefTerm="FragmentClass"))
     const UBuzzzFragment* FindFragmentByClass(
         UPARAM(meta=(AllowAbstract=true)) const TSubclassOf<UBuzzzFragment>& FragmentClass, bool Exact = true) const;
 
@@ -58,8 +58,7 @@ public:
                   T, UBuzzzFragment>::Value>::Type>
     T* FindFragmentByClass(bool Exact) const
     {
-        // ReSharper disable once CppCStyleCast
-        return (T*)(FindFragmentByClass(T::StaticClass(), Exact));
+        return Cast<T>(FindFragmentByClass(T::StaticClass(), Exact));
     }
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")

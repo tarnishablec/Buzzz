@@ -10,8 +10,11 @@ void UBuzzzAction_WaitForContainerOperation::Activate()
 {
     Super::Activate();
     const auto BuzzzSubsystem = ItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-    BuzzzSubsystem->ReceivedContainerMutation.AddDynamic(
-        this, &UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation);
+    if (BuzzzSubsystem)
+    {
+        BuzzzSubsystem->ReceivedContainerMutation.AddDynamic(
+            this, &UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation);
+    }
 }
 
 UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(
@@ -51,5 +54,16 @@ void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
         {
             Triggered.Broadcast(Context);
         }
+    }
+}
+
+void UBuzzzAction_WaitForContainerOperation::Cancel()
+{
+    Super::Cancel();
+
+    const auto BuzzzSubsystem = ItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+    if (BuzzzSubsystem)
+    {
+        BuzzzSubsystem->ReceivedContainerMutation.RemoveAll(this);
     }
 }

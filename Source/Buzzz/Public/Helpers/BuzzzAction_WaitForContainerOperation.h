@@ -7,6 +7,7 @@
 #include "Engine/CancellableAsyncAction.h"
 #include "BuzzzAction_WaitForContainerOperation.generated.h"
 
+class UBuzzzSubsystem;
 struct FBuzzzOperationContext;
 class UBuzzzItemInstance;
 /**
@@ -55,4 +56,6 @@ public:
     {
         Super::BeginDestroy();
     }
+
+    virtual void Cancel() override;
 };

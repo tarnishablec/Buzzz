@@ -91,10 +91,6 @@ int32 UBuzzzContainer::FindEmptySlot(bool& Found) const
     return Index;
 }
 
-void UBuzzzContainer::OnAssignFailed_Implementation(const FBuzzzOperationContext& Context)
-{
-}
-
 void UBuzzzContainer::ClearCell(const int32 Index, FBuzzzOperationContext& OutContext)
 {
     OutContext = FBuzzzOperationContext{};
@@ -147,7 +143,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
     // Handle Failed
     if (Context.bFinished && !Context.bSuccess)
     {
-        OnAssignFailed(Context);
+        OnAssignFailed.Broadcast(Context);
         return Context;
     }
 

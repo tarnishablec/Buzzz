@@ -52,7 +52,7 @@ struct BUZZZ_API FBuzzzOperationContext
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerCellChangeDelegate, const FBuzzzOperationContext&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzOperationContext&, Context);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -103,16 +103,17 @@ public:
 protected:
 #pragma region Delegates
     UPROPERTY(BlueprintAssignable)
-    FBuzzzContainerCellChangeDelegate PreCellChange;
+    FBuzzzContainerOperationDelegate PreCellChange;
     UPROPERTY(BlueprintAssignable)
-    FBuzzzContainerCellChangeDelegate PostCellChange;
+    FBuzzzContainerOperationDelegate PostCellChange;
     UPROPERTY(BlueprintAssignable)
-    FBuzzzContainerCellChangeDelegate OnCellChange;
+    FBuzzzContainerOperationDelegate OnCellChange;
+    UPROPERTY(BlueprintAssignable)
+    FBuzzzContainerOperationDelegate OnAssignFailed;
 #pragma endregion Delegates
 
 #pragma region Callbacks
-    UFUNCTION(BlueprintNativeEvent, Category = "Buzzz")
-    void OnAssignFailed(const FBuzzzOperationContext& Context);
+  
 #pragma endregion Callbacks
 
 public:

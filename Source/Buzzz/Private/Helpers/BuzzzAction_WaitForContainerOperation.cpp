@@ -63,6 +63,8 @@ void UBuzzzAction_WaitForContainerOperation::Cancel()
 
     if (ItemInstance)
     {
+        Triggered.RemoveAll(ItemInstance);
+
         if (const auto World = ItemInstance->GetWorld())
         {
             const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();

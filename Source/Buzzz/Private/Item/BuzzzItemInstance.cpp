@@ -24,11 +24,6 @@ void UBuzzzItemInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
     }
 }
 
-void UBuzzzItemInstance::BeginDestroy()
-{
-    UObject::BeginDestroy();
-}
-
 int32 UBuzzzItemInstance::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 {
     return GetOuter()->GetFunctionCallspace(Function, Stack);

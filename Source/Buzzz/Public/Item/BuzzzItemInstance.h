@@ -28,7 +28,6 @@ public:
                                     FFrame* Stack) override;
 
     virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList) override;
-    virtual auto BeginDestroy() -> void override;
 
 protected:
     UPROPERTY(Replicated)
@@ -67,7 +66,7 @@ public:
     AActor* GetOwnerActor() const;
 #pragma endregion Helpers
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, meta=(ForceAsFunction))
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
     void OnInitialization();
 
     UFUNCTION(BlueprintNativeEvent)

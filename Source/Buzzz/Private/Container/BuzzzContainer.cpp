@@ -330,15 +330,6 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
         Context.bSuccess = true;
     }
 
-    // Forward To Subsystem
-    {
-        const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-        if (IsValid(BuzzzSubsystem))
-        {
-            BuzzzSubsystem->ReceivedContainerMutation.Broadcast(Context);
-        }
-    }
-
     // Mark as Finished
     {
         Context.bFinished = true;
@@ -347,6 +338,15 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
     // Post Change Callback
     {
         PostCellChange.Broadcast(Context);
+    }
+
+    // Forward To Subsystem
+    {
+        const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+        if (IsValid(BuzzzSubsystem))
+        {
+            BuzzzSubsystem->ReceivedContainerMutation.Broadcast(Context);
+        }
     }
 
     return Context;

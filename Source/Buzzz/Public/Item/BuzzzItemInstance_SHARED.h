@@ -11,7 +11,7 @@
  * 
  */
 UCLASS(NotBlueprintable, Const, BlueprintType)
-class BUZZZ_API UBuzzzItemInstance_SHARED : public UBuzzzItemInstance
+class BUZZZ_API UBuzzzItemInstance_SHARED final : public UBuzzzItemInstance
 {
     GENERATED_BODY()
 

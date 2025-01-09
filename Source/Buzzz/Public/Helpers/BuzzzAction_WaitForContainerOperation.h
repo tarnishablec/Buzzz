@@ -22,7 +22,7 @@ UCLASS()
 class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyncAction
 {
     GENERATED_BODY()
-
+public:
     virtual void Activate() override;
 
     enum EOperationMode
@@ -31,7 +31,6 @@ class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyn
         Remove
     };
 
-public:
     UPROPERTY(BlueprintAssignable)
     FBuzzzTask_WaitForContainerOperationTriggered Triggered;
 
@@ -52,10 +51,5 @@ protected:
     void HandleReceivedContainerMutation(const FBuzzzOperationContext& Context);
 
 public:
-    virtual void BeginDestroy() override
-    {
-        Super::BeginDestroy();
-    }
-
     virtual void Cancel() override;
 };

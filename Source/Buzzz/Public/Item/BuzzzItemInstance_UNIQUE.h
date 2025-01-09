@@ -4,9 +4,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuzzzItemDefinition.h"
 #include "BuzzzItemInstance.h"
 #include "BuzzzItemInstance_UNIQUE.generated.h"
+
+class UBuzzzAction_WaitForContainerOperation;
+class UBuzzzContainer;
+class UBuzzzItemDefinition;
+struct FBuzzzOperationContext;
 
 /**
  * 
@@ -17,10 +21,26 @@ class BUZZZ_API UBuzzzItemInstance_UNIQUE : public UBuzzzItemInstance
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintNativeEvent, Category = "Buzzz")
-    void OnInitialized();
-
     virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition,
                                                             AActor* Instigator) const override;
 
+    UFUNCTION(BlueprintPure, Category = "Buzzz")
+    UBuzzzContainer* GetOwnerContainer() const;
+
+    virtual void BeginDestroy() override;
+
+protected:
+    UFUNCTION()
+    void OnAssignAction(const FBuzzzOperationContext& Context);
+
+    UFUNCTION()
+    void OnRemoveAction(const FBuzzzOperationContext& Context);
+
+    UPROPERTY()
+    TObjectPtr<UBuzzzAction_WaitForContainerOperation> AssignAction;
+
+    UPROPERTY()
+    TObjectPtr<UBuzzzAction_WaitForContainerOperation> RemoveAction;
+
+    virtual void InitializeInstance() override;
 };

@@ -51,26 +51,8 @@ struct BUZZZ_API FBuzzzOperationContext
     bool bFinished = false;
 };
 
-USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzCellMutationInfo
-{
-    GENERATED_BODY()
 
-    UPROPERTY(BlueprintReadOnly)
-    int32 Index = INDEX_NONE;
-
-    UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzContainer> Container;
-
-    UPROPERTY(BlueprintReadOnly)
-    FBuzzzContainerCell PreviousCellInfo{};
-
-    UPROPERTY(BlueprintReadOnly)
-    FBuzzzContainerCell UpcomingCellInfo{};
-};
-
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerCellChangeDelegate, const FBuzzzCellMutationInfo&, Info);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerCellChangeDelegate, const FBuzzzOperationContext&, Context);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent

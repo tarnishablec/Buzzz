@@ -93,7 +93,6 @@ int32 UBuzzzContainer::FindEmptySlot(bool& Found) const
 
 void UBuzzzContainer::OnAssignFailed_Implementation(const FBuzzzOperationContext& Context)
 {
-    
 }
 
 void UBuzzzContainer::ClearCell(const int32 Index, FBuzzzOperationContext& OutContext)
@@ -152,30 +151,16 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
         return Context;
     }
 
-    // Cache PreviousCell
-    FBuzzzContainerCell PreviousCellInfo;
-    PreviousCellInfo.ItemInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
-    PreviousCellInfo.StackCount = Hive.Cells[Context.TargetIndex].StackCount;
 
-    FBuzzzContainerCell UpcomingCellInfo;
-    UpcomingCellInfo.ItemInstance = Context.UpcomingInstance;
-    UpcomingCellInfo.StackCount = Context.UpcomingStackCount;
-
-    // Fill up OutContext
+    // Fill up OutContext, Cache Previous Info
     {
-        Context.PreviousInstance = PreviousCellInfo.ItemInstance;
-        Context.PreviousStackCount = PreviousCellInfo.StackCount;
+        Context.PreviousInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
+        Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
     }
-
-    FBuzzzCellMutationInfo MutationInfo;
-    MutationInfo.Container = this;
-    MutationInfo.PreviousCellInfo = PreviousCellInfo;
-    MutationInfo.UpcomingCellInfo = UpcomingCellInfo;
-    MutationInfo.Index = InContext.TargetIndex;
 
     // Pre Change Callback
     {
-        PreCellChange.Broadcast(MutationInfo);
+        PreCellChange.Broadcast(Context);
     }
 
     // Operate Assign
@@ -216,7 +201,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
 
     // On Change Callback
     {
-        OnCellChange.Broadcast(MutationInfo);
+        OnCellChange.Broadcast(Context);
     }
 
     // FastArray Mark Dirty
@@ -241,7 +226,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(const FBuzzzOp
 
     // Post Change Callback
     {
-        PostCellChange.Broadcast(MutationInfo);
+        PostCellChange.Broadcast(Context);
     }
 
     return Context;

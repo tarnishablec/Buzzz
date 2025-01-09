@@ -24,7 +24,8 @@ UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
 
 void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzOperationContext& Context)
 {
-    if (IsValid(Context.TargetContainer))
+    // Might Be Moved among One Same Container
+    if (IsValid(Context.TargetContainer) && Context.TargetContainer != Context.FromContainer)
     {
         this->ChangeOwnerContainer(Context.TargetContainer);
     }
@@ -32,7 +33,8 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzOperationContext& Con
 
 void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzOperationContext& Context)
 {
-    if (IsValid(Context.FromContainer))
+    // Might Be Moved among One Same Container
+    if (IsValid(Context.FromContainer) && Context.TargetContainer != Context.FromContainer)
     {
         this->ChangeOwnerContainer(nullptr);
     }
@@ -60,13 +62,13 @@ void UBuzzzItemInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContain
 
 void UBuzzzItemInstance_UNIQUE::InitializeInstance()
 {
-    AssignAction = UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(this);
-    AssignAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnAssignAction);
-    AssignAction->Activate();
-
     RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForRemoveFromCell(this);
     RemoveAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnRemoveAction);
     RemoveAction->Activate();
+
+    AssignAction = UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(this);
+    AssignAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnAssignAction);
+    AssignAction->Activate();
 
     Super::InitializeInstance();
 }

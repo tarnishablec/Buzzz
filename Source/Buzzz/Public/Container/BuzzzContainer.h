@@ -72,10 +72,11 @@ struct BUZZZ_API FBuzzzCellOperationContext
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzCellOperationContext&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzCellOperationContext&,
+                                            Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzReplicationCallback, const TArray<int32>&, Indices,
-                                             EBuzzzHiveMutationType, Type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzHiveMutationDelegate, const TArray<int32>&, Indices,
+                                             const EBuzzzHiveMutationType, Type);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -100,6 +101,7 @@ public:
     UBuzzzContainer();
     virtual void InitializeComponent() override;
     virtual void BeginPlay() override;
+    virtual void BeginDestroy() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     /**
@@ -164,10 +166,13 @@ public:
      * Standalone: Triggered during each cell assignment; mutations are not batched.
      */
     UPROPERTY(BlueprintAssignable, Category="Buzzz | Client")
-    FBuzzzReplicationCallback Client_ReceiveHiveMutation;
+    FBuzzzHiveMutationDelegate Client_ReceiveHiveMutation;
 
     UFUNCTION()
     void HandleStandalonePostCellChanged(const FBuzzzCellOperationContext& Context);
+
+    UFUNCTION()
+    void HandleStandaloneHiveResize(const TArray<int32>& Indices, EBuzzzHiveMutationType ResizeType);
 #pragma endregion
 
 protected:
@@ -179,6 +184,8 @@ protected:
     FBuzzzContainerOperationDelegate PostCellChange;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate OnCellChange;
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
+    FBuzzzHiveMutationDelegate OnHiveResize;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate OnAssignFailed;
 

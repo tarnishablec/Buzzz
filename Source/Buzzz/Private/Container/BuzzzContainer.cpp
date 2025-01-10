@@ -182,6 +182,14 @@ void UBuzzzContainer::HandleStandalonePostCellChanged(const FBuzzzCellOperationC
     Client_ReceiveHiveMutation.Broadcast(IndexArray, Change);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UBuzzzContainer::HandleStandaloneHiveResize(const TArray<int32>& Indices, const EBuzzzHiveMutationType ResizeType)
+{
+    check(GetNetMode()==NM_Standalone && GetOwner()->HasAuthority());
+
+    Client_ReceiveHiveMutation.Broadcast(Indices, ResizeType);
+}
+
 bool UBuzzzContainer::Resize(const int32& NewCapacity)
 {
     check(NewCapacity >= 0);
@@ -215,17 +223,15 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
     Hive.Cells.SetNum(NewCapacity);
     Hive.MarkArrayDirty();
 
-    if (GetNetMode() == NM_Standalone)
-    {
-        if (RemovedIndices.Num() > 0)
-        {
-            Client_ReceiveHiveMutation.Broadcast(RemovedIndices, Remove);
-        }
 
-        if (AddedIndices.Num() > 0)
-        {
-            Client_ReceiveHiveMutation.Broadcast(AddedIndices, Add);
-        }
+    if (RemovedIndices.Num() > 0)
+    {
+        OnHiveResize.Broadcast(RemovedIndices, Remove);
+    }
+
+    if (AddedIndices.Num() > 0)
+    {
+        OnHiveResize.Broadcast(AddedIndices, Add);
     }
 
     return true;
@@ -495,11 +501,14 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
 void UBuzzzContainer::InitializeComponent()
 {
     Super::InitializeComponent();
+
     // Standalone 
     if (GetNetMode() == NM_Standalone && GetOwner()->HasAuthority())
     {
         PostCellChange.AddDynamic(this, &UBuzzzContainer::HandleStandalonePostCellChanged);
+        OnHiveResize.AddDynamic(this, &UBuzzzContainer::HandleStandaloneHiveResize);
     }
+    
     OnInitialization();
 
     if (GetOwner()->HasAuthority())
@@ -518,6 +527,11 @@ bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstanc
 void UBuzzzContainer::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+void UBuzzzContainer::BeginDestroy()
+{
+    Super::BeginDestroy();
 }
 
 void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

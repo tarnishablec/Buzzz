@@ -12,7 +12,7 @@ class UBuzzzItemInstance;
 class UBuzzzContainer;
 
 UENUM(BlueprintType)
-enum EBuzzzHiveMutationType
+enum class EBuzzzHiveMutationType : uint8
 {
     None UMETA(Hidden),
     Remove,
@@ -72,7 +72,7 @@ struct BUZZZ_API FBuzzzCellOperationContext
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzCellOperationContext&,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellOperationContext&,
                                             Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzHiveMutationDelegate, const TArray<int32>&, Indices,
@@ -179,27 +179,28 @@ protected:
 #pragma region Internal Authority Callbacks (Should Not Bind In Other Classes)
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzContainerOperationDelegate PreCellChange;
+    FBuzzzCellMutationDelegate PreCellChange;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzContainerOperationDelegate PostCellChange;
+    FBuzzzCellMutationDelegate PostCellChange;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzContainerOperationDelegate OnCellChange;
+    FBuzzzCellMutationDelegate OnCellChange;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzHiveMutationDelegate OnHiveResize;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzContainerOperationDelegate OnAssignFailed;
+    FBuzzzCellMutationDelegate OnAssignFailed;
 
-#pragma endregion
-
-#pragma region Assign
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
-    FBuzzzCellOperationContext AssignCell(UPARAM(ref) FBuzzzCellOperationContext& Context);
 #pragma endregion
 
 #pragma region Capacity
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", meta = (AutoCreateRefTerm = "NewCapacity"))
     bool Resize(const int32& NewCapacity);
 #pragma endregion
+
+#pragma region Assign Operation
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
+    FBuzzzCellOperationContext AssignCell(UPARAM(ref) FBuzzzCellOperationContext& Context);
+#pragma endregion
+
 
 #pragma region Wrapper Operations
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",

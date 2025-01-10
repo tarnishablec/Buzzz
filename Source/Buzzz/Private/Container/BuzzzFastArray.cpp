@@ -2,6 +2,7 @@
 
 
 // ReSharper disable CppMemberFunctionMayBeConst
+
 #include "Container/BuzzzFastArray.h"
 
 #include "Algo/ForEach.h"

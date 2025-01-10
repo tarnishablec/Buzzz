@@ -179,7 +179,7 @@ void UBuzzzContainer::HandleStandalonePostCellChanged(const FBuzzzCellOperationC
 
     TArray<int32> IndexArray{};
     IndexArray.Add(Context.TargetIndex);
-    Client_ReceiveHiveMutation.Broadcast(IndexArray, Change);
+    Client_ReceiveHiveMutation.Broadcast(IndexArray, EBuzzzHiveMutationType::Change);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -226,12 +226,12 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 
     if (RemovedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(RemovedIndices, Remove);
+        OnHiveResize.Broadcast(RemovedIndices, EBuzzzHiveMutationType::Remove);
     }
 
     if (AddedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(AddedIndices, Add);
+        OnHiveResize.Broadcast(AddedIndices, EBuzzzHiveMutationType::Add);
     }
 
     return true;

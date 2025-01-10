@@ -22,7 +22,7 @@ UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
     return Cast<UBuzzzContainer>(GetOuter());
 }
 
-void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzOperationContext& Context)
+void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellOperationContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.TargetContainer) && Context.TargetContainer != Context.FromContainer)
@@ -31,7 +31,7 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzOperationContext& Con
     }
 }
 
-void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzOperationContext& Context)
+void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellOperationContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.FromContainer) && Context.TargetContainer != Context.FromContainer)

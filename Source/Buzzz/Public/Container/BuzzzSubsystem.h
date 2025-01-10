@@ -6,10 +6,10 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "BuzzzSubsystem.generated.h"
 
-struct FBuzzzOperationContext;
+struct FBuzzzCellOperationContext;
 class UBuzzzContainer;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzSubsystemReceivedContainerMutation, const FBuzzzOperationContext&,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzSubsystemReceivedContainerMutation, const FBuzzzCellOperationContext&,
                                             Context);
 
 /**

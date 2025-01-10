@@ -10,8 +10,8 @@ void FBuzzzContainerHive::PreReplicatedRemove(const TArrayView<int32>& RemovedIn
 {
     if (IsValid(Container) && RemovedIndices.Num() > 0)
     {
-        Container->ReceiveReplication.Broadcast(TArray(RemovedIndices.GetData(), RemovedIndices.Num()),
-                                                EBuzzzHiveReplicationType::Remove);
+        Container->Client_ReceiveHiveMutation.Broadcast(TArray(RemovedIndices.GetData(), RemovedIndices.Num()),
+                                                EBuzzzHiveMutationType::Remove);
     }
 }
 
@@ -19,8 +19,8 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
 {
     if (IsValid(Container) && AddedIndices.Num() > 0)
     {
-        Container->ReceiveReplication.Broadcast(TArray(AddedIndices.GetData(), AddedIndices.Num()),
-                                                EBuzzzHiveReplicationType::Add);
+        Container->Client_ReceiveHiveMutation.Broadcast(TArray(AddedIndices.GetData(), AddedIndices.Num()),
+                                                EBuzzzHiveMutationType::Add);
     }
 }
 
@@ -28,7 +28,7 @@ void FBuzzzContainerHive::PostReplicatedChange(const TArrayView<int32>& ChangedI
 {
     if (IsValid(Container) && ChangedIndices.Num() > 0)
     {
-        Container->ReceiveReplication.Broadcast(TArray(ChangedIndices.GetData(), ChangedIndices.Num()),
-                                                EBuzzzHiveReplicationType::Change);
+        Container->Client_ReceiveHiveMutation.Broadcast(TArray(ChangedIndices.GetData(), ChangedIndices.Num()),
+                                                EBuzzzHiveMutationType::Change);
     }
 }

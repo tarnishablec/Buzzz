@@ -7,6 +7,10 @@
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
+// void UBuzzzContainer::OnRep_Hive_Implementation()
+// {
+// }
+
 UBuzzzContainer::UBuzzzContainer()
 {
     PrimaryComponentTick.bCanEverTick = true;
@@ -168,6 +172,16 @@ void UBuzzzContainer::FindIndexByDefinition(const UBuzzzItemDefinition* Definiti
     }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UBuzzzContainer::HandleStandalonePostCellChanged(const FBuzzzCellOperationContext& Context)
+{
+    check(GetNetMode()==NM_Standalone && GetOwner()->HasAuthority());
+
+    TArray<int32> IndexArray{};
+    IndexArray.Add(Context.TargetIndex);
+    Client_ReceiveHiveMutation.Broadcast(IndexArray, Change);
+}
+
 bool UBuzzzContainer::Resize(const int32& NewCapacity)
 {
     check(NewCapacity >= 0);
@@ -177,25 +191,48 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
         return false;
     }
 
+    TArray<int32> RemovedIndices{};
+    TArray<int32> AddedIndices{};
+
+    // Clear Cell While NewCapacity is smaller
     for (int i = NewCapacity; i < GetCapacity(); ++i)
     {
-        FBuzzzOperationContext Context{};
+        FBuzzzCellOperationContext Context{};
         ClearCell(i, Context);
 
         if (!(Context.bFinished && Context.bSuccess))
         {
             return false;
         }
+        RemovedIndices.Add(i);
+    }
+
+    for (int i = GetCapacity(); i < NewCapacity; ++i)
+    {
+        AddedIndices.Add(i);
     }
 
     Hive.Cells.SetNum(NewCapacity);
     Hive.MarkArrayDirty();
 
+    if (GetNetMode() == NM_Standalone)
+    {
+        if (RemovedIndices.Num() > 0)
+        {
+            Client_ReceiveHiveMutation.Broadcast(RemovedIndices, Remove);
+        }
+
+        if (AddedIndices.Num() > 0)
+        {
+            Client_ReceiveHiveMutation.Broadcast(AddedIndices, Add);
+        }
+    }
+
     return true;
 }
 
 
-bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzOperationContext& OutContext)
+bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzCellOperationContext& OutContext)
 {
     if (!CheckIndexIsValid(Index))
     {
@@ -235,7 +272,7 @@ bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContai
     }
 #pragma endregion
 
-    FBuzzzOperationContext InContext{};
+    FBuzzzCellOperationContext InContext{};
     InContext.TargetContainer = this;
     InContext.TargetIndex = Index;
 
@@ -248,7 +285,7 @@ bool UBuzzzContainer::MergeCells_Implementation(const int32& Index, UBuzzzContai
 
     if (InContext.bFinished && InContext.bSuccess)
     {
-        FBuzzzOperationContext FromContext{};
+        FBuzzzCellOperationContext FromContext{};
         const auto Result = FromContainer->ClearCell(FromIndex, FromContext);
         check(Result);
 
@@ -284,7 +321,7 @@ bool UBuzzzContainer::SwapCells_Implementation(const int32& Index, UBuzzzContain
     }
 #pragma endregion
 
-    FBuzzzOperationContext InContext{};
+    FBuzzzCellOperationContext InContext{};
     InContext.TargetContainer = this;
     InContext.TargetIndex = Index;
 
@@ -298,7 +335,7 @@ bool UBuzzzContainer::SwapCells_Implementation(const int32& Index, UBuzzzContain
 
     if (InContext.bFinished && InContext.bSuccess)
     {
-        FBuzzzOperationContext FromContext{};
+        FBuzzzCellOperationContext FromContext{};
         FromContext.TargetContainer = FromContainer;
         FromContext.TargetIndex = FromIndex;
 
@@ -316,12 +353,13 @@ bool UBuzzzContainer::SwapCells_Implementation(const int32& Index, UBuzzzContain
 }
 
 
-FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperationContext& Context)
+FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCellOperationContext& Context)
 {
     FScopeLock ScopeLock(&ContainerCS);
 
     // Make Sure TargetContainer is Set
     Context.TargetContainer = this;
+    // Context.MutationType = Change;
 
     // Check Index Valid
     if (!CheckIndexIsValid(Context.TargetIndex))
@@ -457,12 +495,17 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
 void UBuzzzContainer::InitializeComponent()
 {
     Super::InitializeComponent();
+    // Standalone 
+    if (GetNetMode() == NM_Standalone && GetOwner()->HasAuthority())
+    {
+        PostCellChange.AddDynamic(this, &UBuzzzContainer::HandleStandalonePostCellChanged);
+    }
+    OnInitialization();
+
     if (GetOwner()->HasAuthority())
     {
         Resize(InitialCapacity);
-        // Hive.OwningObject = this;
     }
-    OnInitialized();
 }
 
 
@@ -483,6 +526,6 @@ void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME_CONDITION(ThisClass, Hive, COND_OwnerOnly);
 }
 
-void UBuzzzContainer::OnInitialized_Implementation()
+void UBuzzzContainer::OnInitialization_Implementation()
 {
 }

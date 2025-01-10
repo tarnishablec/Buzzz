@@ -8,7 +8,7 @@
 #include "BuzzzAction_WaitForContainerOperation.generated.h"
 
 class UBuzzzSubsystem;
-struct FBuzzzOperationContext;
+struct FBuzzzCellOperationContext;
 class UBuzzzItemInstance;
 /**
  * 
@@ -16,7 +16,7 @@ class UBuzzzItemInstance;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzTask_WaitForContainerOperationTriggered,
-                                            const FBuzzzOperationContext&, Context);
+                                            const FBuzzzCellOperationContext&, Context);
 
 UCLASS()
 class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyncAction
@@ -49,5 +49,5 @@ protected:
     EOperationMode OperationMode;
 
     UFUNCTION()
-    void HandleReceivedContainerMutation(const FBuzzzOperationContext& Context);
+    void HandleReceivedContainerMutation(const FBuzzzCellOperationContext& Context);
 };

@@ -38,7 +38,7 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
-    const FBuzzzOperationContext& Context)
+    const FBuzzzCellOperationContext& Context)
 {
     if (OperationMode == EOperationMode::Assign)
     {

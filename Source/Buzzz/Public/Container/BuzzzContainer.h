@@ -11,8 +11,17 @@ class UBuzzzItemDefinition;
 class UBuzzzItemInstance;
 class UBuzzzContainer;
 
+UENUM(BlueprintType)
+enum EBuzzzHiveMutationType
+{
+    None UMETA(Hidden),
+    Remove,
+    Add,
+    Change,
+};
+
 USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzOperationContext
+struct BUZZZ_API FBuzzzCellOperationContext
 {
     GENERATED_BODY()
 
@@ -50,9 +59,9 @@ struct BUZZZ_API FBuzzzOperationContext
     UPROPERTY(BlueprintReadOnly)
     bool bFinished = false;
 
-    static FBuzzzOperationContext& GetEmptyContext()
+    static FBuzzzCellOperationContext& GetEmptyContext()
     {
-        thread_local FBuzzzOperationContext EmptyContext{};
+        thread_local FBuzzzCellOperationContext EmptyContext{};
         return EmptyContext;
     }
 
@@ -62,18 +71,11 @@ struct BUZZZ_API FBuzzzOperationContext
     }
 };
 
-UENUM(BlueprintType)
-enum EBuzzzHiveReplicationType
-{
-    Remove,
-    Add,
-    Change,
-};
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzOperationContext&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzContainerOperationDelegate, const FBuzzzCellOperationContext&, Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzReplicationCallback, const TArray<int32>&, Indices,
-                                             EBuzzzHiveReplicationType, Type);
+                                             EBuzzzHiveMutationType, Type);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -82,11 +84,14 @@ class BUZZZ_API UBuzzzContainer : public UActorComponent
 
 protected:
     UPROPERTY(
-        // We Dont use RepNotify, Use FastArray Callback Functions
+        // Instead of using RepNotify, Use FastArray Callback Functions
         // ReplicatedUsing="OnRep_Hive",
         Replicated,
         BlueprintReadOnly, meta=(AllowPrivateAccess), Category="Buzzz")
     FBuzzzContainerHive Hive;
+
+    // UFUNCTION(BlueprintNativeEvent, Category="Buzzz")
+    // void OnRep_Hive();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess), Category="Buzzz")
     int32 InitialCapacity = 0;
@@ -97,8 +102,11 @@ public:
     virtual void BeginPlay() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+    /**
+     * We Should Bind Delegates Inside This
+     */
     UFUNCTION(BlueprintNativeEvent, Category="Buzzz")
-    void OnInitialized();
+    void OnInitialization();
 
 private:
     FCriticalSection ContainerCS;
@@ -148,30 +156,37 @@ public:
                                bool& Found) const;
 #pragma endregion
 
-#pragma region Client Replication Callbacks Through FastArray Hooks
-    UPROPERTY(BlueprintAssignable, Category="Buzzz"
-        // , meta=(a)
-    )
-    FBuzzzReplicationCallback ReceiveReplication;
+#pragma region Client
+    /**
+     * Client/Standalone Hive Change Callbacks (Not Triggered on Server)
+     *
+     * Client: Triggered when the client receives replication data via FastArray callbacks; mutations are batched.
+     * Standalone: Triggered during each cell assignment; mutations are not batched.
+     */
+    UPROPERTY(BlueprintAssignable, Category="Buzzz | Client")
+    FBuzzzReplicationCallback Client_ReceiveHiveMutation;
+
+    UFUNCTION()
+    void HandleStandalonePostCellChanged(const FBuzzzCellOperationContext& Context);
 #pragma endregion
 
 protected:
-#pragma region Authority Callbacks
+#pragma region Internal Authority Callbacks (Should Not Bind In Other Classes)
 
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz")
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate PreCellChange;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz")
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate PostCellChange;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz")
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate OnCellChange;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz")
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzContainerOperationDelegate OnAssignFailed;
 
 #pragma endregion
 
 #pragma region Assign
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
-    FBuzzzOperationContext AssignCell(UPARAM(ref) FBuzzzOperationContext& Context);
+    FBuzzzCellOperationContext AssignCell(UPARAM(ref) FBuzzzCellOperationContext& Context);
 #pragma endregion
 
 #pragma region Capacity
@@ -182,7 +197,7 @@ protected:
 #pragma region Wrapper Operations
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
-    bool ClearCell(const int32& Index, FBuzzzOperationContext& OutContext);
+    bool ClearCell(const int32& Index, FBuzzzCellOperationContext& OutContext);
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))

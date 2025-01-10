@@ -21,6 +21,6 @@ class BUZZZ_API UBuzzzSubsystem : public UGameInstanceSubsystem
     GENERATED_BODY()
 
 public:
-    UPROPERTY(BlueprintAssignable, Category="Buzzz")
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzSubsystemReceivedContainerMutation ReceivedContainerMutation;
 };

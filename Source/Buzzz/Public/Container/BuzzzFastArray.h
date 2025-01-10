@@ -8,6 +8,7 @@
 #include "BuzzzFastArray.generated.h"
 
 
+class UBuzzzContainer;
 class UBuzzzItemInstance;
 
 USTRUCT(BlueprintType)
@@ -34,11 +35,20 @@ struct BUZZZ_API FBuzzzContainerHive : public FFastArraySerializer
     UPROPERTY(BlueprintReadOnly)
     TArray<FBuzzzContainerCell> Cells;
 
+    UPROPERTY()
+    TObjectPtr<UBuzzzContainer> Container;
+
     bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
     {
         return FastArrayDeltaSerialize<FBuzzzContainerCell, FBuzzzContainerHive>(
             Cells, DeltaParams, *this);
     }
+
+    void PreReplicatedRemove(const TArrayView<int32>& RemovedIndices, int32 FinalSize);
+
+    void PostReplicatedAdd(const TArrayView<int32>& AddedIndices, int32 FinalSize);
+
+    void PostReplicatedChange(const TArrayView<int32>& ChangedIndices, int32 FinalSize);
 };
 
 

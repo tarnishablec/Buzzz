@@ -12,7 +12,7 @@ class UBuzzzItemDefinition;
 /**
  * 
  */
-UCLASS(BlueprintType, Abstract, NotBlueprintable)
+UCLASS(BlueprintType, Abstract)
 class BUZZZ_API UBuzzzItemInstance : public UObject
 {
     GENERATED_BODY()

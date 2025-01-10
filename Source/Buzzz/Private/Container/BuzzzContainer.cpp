@@ -13,6 +13,12 @@ UBuzzzContainer::UBuzzzContainer()
     SetIsReplicatedByDefault(true);
     bReplicateUsingRegisteredSubObjectList = true;
     bWantsInitializeComponent = true;
+    Hive.Container = this;
+}
+
+int32 UBuzzzContainer::GetCapacity() const
+{
+    return Hive.Cells.Num();
 }
 
 bool UBuzzzContainer::CheckItemInstanceOwned(const UBuzzzItemInstance* ItemInstance) const
@@ -50,7 +56,7 @@ const FBuzzzContainerCell& UBuzzzContainer::GetCell(const int32& Index, bool& Is
     return Hive.Cells[Index];
 }
 
-bool UBuzzzContainer::CheckCellHasItem(const int32& Index, const UBuzzzItemDefinition* ItemDefinition) const
+bool UBuzzzContainer::CheckCellHasItemByDefinition(const int32& Index, const UBuzzzItemDefinition* ItemDefinition) const
 {
     const auto Instance = Hive.Cells[Index].ItemInstance;
     if (Instance == nullptr)
@@ -61,12 +67,30 @@ bool UBuzzzContainer::CheckCellHasItem(const int32& Index, const UBuzzzItemDefin
     return Instance->GetDefinition() == ItemDefinition;
 }
 
-int32 UBuzzzContainer::CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDefinition)
+bool UBuzzzContainer::CheckCellHasItemByDefinitionClass(const int32& Index,
+                                                        const TSubclassOf<UBuzzzItemDefinition>& DefinitionClass,
+                                                        const bool bStrict) const
+{
+    const auto Instance = Hive.Cells[Index].ItemInstance;
+    if (Instance == nullptr)
+    {
+        return false;
+    }
+
+    if (bStrict)
+    {
+        return Instance->GetDefinition()->GetClass() == DefinitionClass;
+    }
+
+    return Instance->GetDefinition()->IsA(DefinitionClass);
+}
+
+int32 UBuzzzContainer::CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDefinition) const
 {
     int32 Result = 0;
     for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
     {
-        if (CheckCellHasItem(Index, ItemDefinition))
+        if (CheckCellHasItemByDefinition(Index, ItemDefinition))
         {
             Result += Hive.Cells[Index].StackCount;
         }
@@ -75,7 +99,7 @@ int32 UBuzzzContainer::CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDef
     return Result;
 }
 
-int32 UBuzzzContainer::FindEmptySlot(bool& Found) const
+int32 UBuzzzContainer::FindEmptyCell(bool& Found) const
 {
     int32 Index = INDEX_NONE;
     Found = false;
@@ -96,11 +120,64 @@ bool UBuzzzContainer::CheckIndexIsValid(const int32& Index) const
     return Hive.Cells.IsValidIndex(Index);
 }
 
+void UBuzzzContainer::FindIndexByInstance(const UBuzzzItemInstance* ItemInstance, TArray<int32>& OutIndexArray,
+                                          int32& First,
+                                          int32& Last, bool& Found) const
+{
+    First = INDEX_NONE;
+    Last = INDEX_NONE;
+    OutIndexArray = {};
+
+    for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
+    {
+        if (Hive.Cells[Index].ItemInstance == ItemInstance)
+        {
+            OutIndexArray.Add(Index);
+        }
+    }
+
+    Found = OutIndexArray.Num() > 0;
+    if (Found)
+    {
+        First = OutIndexArray[0];
+        Last = OutIndexArray.Last();
+    }
+}
+
+void UBuzzzContainer::FindIndexByDefinition(const UBuzzzItemDefinition* Definition, bool bStrict,
+                                            TArray<int32>& OutIndexArray,
+                                            int32& First, int32& Last, bool& Found) const
+{
+    First = INDEX_NONE;
+    Last = INDEX_NONE;
+    OutIndexArray = {};
+
+    for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
+    {
+        if (CheckCellHasItemByDefinition(Index, Definition))
+        {
+            OutIndexArray.Add(Index);
+        }
+    }
+
+    Found = OutIndexArray.Num() > 0;
+    if (Found)
+    {
+        First = OutIndexArray[0];
+        Last = OutIndexArray.Last();
+    }
+}
+
 bool UBuzzzContainer::Resize(const int32& NewCapacity)
 {
     check(NewCapacity >= 0);
 
-    for (int i = NewCapacity; i < Capacity; ++i)
+    if (NewCapacity == GetCapacity())
+    {
+        return false;
+    }
+
+    for (int i = NewCapacity; i < GetCapacity(); ++i)
     {
         FBuzzzOperationContext Context{};
         ClearCell(i, Context);
@@ -111,8 +188,7 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
         }
     }
 
-    Capacity = NewCapacity;
-    Hive.Cells.SetNum(Capacity);
+    Hive.Cells.SetNum(NewCapacity);
     Hive.MarkArrayDirty();
 
     return true;
@@ -296,7 +372,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
         Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
     }
 
-    // Pre Change Callback
+    // Server Pre Change Callback
     {
         PreCellChange.Broadcast(Context);
     }
@@ -337,7 +413,7 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
         }
     }
 
-    // On Change Callback
+    // Server On Change Callback
     {
         OnCellChange.Broadcast(Context);
     }
@@ -357,11 +433,6 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
         Context.bFinished = true;
     }
 
-    // Post Change Callback
-    {
-        PostCellChange.Broadcast(Context);
-    }
-
     // Forward To Subsystem
     {
         const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
@@ -371,12 +442,27 @@ FBuzzzOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzOperatio
         }
     }
 
+    // Server Post Change Callback
+    {
+        PostCellChange.Broadcast(Context);
+    }
+
     return Context;
 }
+
+// void UBuzzzContainer::OnRep_Hive_Implementation()
+// {
+// }
 
 void UBuzzzContainer::InitializeComponent()
 {
     Super::InitializeComponent();
+    if (GetOwner()->HasAuthority())
+    {
+        Resize(InitialCapacity);
+        // Hive.OwningObject = this;
+    }
+    OnInitialized();
 }
 
 
@@ -389,12 +475,14 @@ bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstanc
 void UBuzzzContainer::BeginPlay()
 {
     Super::BeginPlay();
-    Resize(Capacity);
 }
 
 void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME_CONDITION(ThisClass, Hive, COND_OwnerOnly);
-    DOREPLIFETIME_CONDITION(ThisClass, Capacity, COND_OwnerOnly);
+}
+
+void UBuzzzContainer::OnInitialized_Implementation()
+{
 }

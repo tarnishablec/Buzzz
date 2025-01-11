@@ -22,11 +22,12 @@ UCLASS()
 class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyncAction
 {
     GENERATED_BODY()
+
 public:
     virtual void Activate() override;
     virtual void Cancel() override;
 
-    enum EOperationMode
+    enum class EOperationMode:uint8
     {
         Assign,
         Remove

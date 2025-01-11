@@ -100,6 +100,8 @@ protected:
 public:
     UBuzzzContainer();
     virtual void InitializeComponent() override;
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
+                               FActorComponentTickFunction* ThisTickFunction) override;
     virtual void BeginPlay() override;
     virtual void BeginDestroy() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -160,20 +162,38 @@ public:
 
 #pragma region Client
     /**
-     * Client/Standalone Hive Change Callbacks (Not Triggered on Server)
+     * Client/Standalone Hive Change Deferred Callbacks (Not Triggered on Server)
      *
-     * Client: Triggered when the client receives replication data via FastArray callbacks; mutations are batched.
-     * Standalone: Triggered during each cell assignment; mutations are not batched.
+     * Client: Triggered when the client receives replication data via FastArray callbacks; Mutations are batched.
+     * Standalone: Triggered during Next Tick; Mutations are batched.
      */
     UPROPERTY(BlueprintAssignable, Category="Buzzz | Client")
     FBuzzzHiveMutationDelegate Client_ReceiveHiveMutation;
 
-    UFUNCTION()
-    void HandleStandalonePostCellChanged(const FBuzzzCellOperationContext& Context);
+    /**
+     * Only used in Standalone Mode For Batching Indices
+     *
+     * Ensures consistency with the behavior in C/S Mode
+     */
+    UPROPERTY()
+    TArray<int32> Standalone_Batched_ChangedIndices;
+
+    UPROPERTY()
+    TArray<int32> Standalone_Batched_AddedIndices;
+
+    UPROPERTY()
+    TArray<int32> Standalone_Batched_RemovedIndices;
+
+    UFUNCTION(BlueprintInternalUseOnly)
+    void Standalone_TrySubmitMutations();
 
     UFUNCTION()
-    void HandleStandaloneHiveResize(const TArray<int32>& Indices, EBuzzzHiveMutationType ResizeType);
-#pragma endregion
+    void Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
+
+    UFUNCTION()
+    void Standalone_HandleHiveResize(const TArray<int32>& Indices, EBuzzzHiveMutationType ResizeType);
+
+#pragma endregion Client
 
 protected:
 #pragma region Internal Authority Callbacks (Should Not Bind In Other Classes)

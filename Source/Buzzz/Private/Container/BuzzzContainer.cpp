@@ -172,22 +172,65 @@ void UBuzzzContainer::FindIndexByDefinition(const UBuzzzItemDefinition* Definiti
     }
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzContainer::HandleStandalonePostCellChanged(const FBuzzzCellOperationContext& Context)
+void UBuzzzContainer::Standalone_TrySubmitMutations()
 {
-    check(GetNetMode()==NM_Standalone && GetOwner()->HasAuthority());
+    check(GetNetMode()==NM_Standalone);
 
-    TArray<int32> IndexArray{};
-    IndexArray.Add(Context.TargetIndex);
-    Client_ReceiveHiveMutation.Broadcast(IndexArray, EBuzzzHiveMutationType::Change);
+    if (Standalone_Batched_RemovedIndices.Num())
+    {
+        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
+    }
+
+    if (Standalone_Batched_AddedIndices.Num())
+    {
+        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
+    }
+
+    if (Standalone_Batched_ChangedIndices.Num())
+    {
+        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
+    }
+
+
+    Standalone_Batched_RemovedIndices.Reset();
+    Standalone_Batched_AddedIndices.Reset();
+    Standalone_Batched_ChangedIndices.Reset();
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzContainer::HandleStandaloneHiveResize(const TArray<int32>& Indices, const EBuzzzHiveMutationType ResizeType)
+void UBuzzzContainer::Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
 {
-    check(GetNetMode()==NM_Standalone && GetOwner()->HasAuthority());
+    check(GetNetMode()==NM_Standalone);
 
-    Client_ReceiveHiveMutation.Broadcast(Indices, ResizeType);
+    Standalone_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
+    // TArray<int32> IndexArray{};
+    // IndexArray.Add(Context.TargetIndex);
+    // Client_ReceiveHiveMutation.Broadcast(IndexArray, EBuzzzHiveMutationType::Change);
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UBuzzzContainer::Standalone_HandleHiveResize(const TArray<int32>& Indices, const EBuzzzHiveMutationType ResizeType)
+{
+    check(GetNetMode()==NM_Standalone);
+
+    if (ResizeType == EBuzzzHiveMutationType::Add)
+    {
+        for (auto Index : Indices)
+        {
+            Standalone_Batched_AddedIndices.AddUnique(Index);
+        }
+    }
+
+    if (ResizeType == EBuzzzHiveMutationType::Remove)
+    {
+        for (auto Index : Indices)
+        {
+            Standalone_Batched_ChangedIndices.AddUnique(Index);
+        }
+    }
+
+
+    // Client_ReceiveHiveMutation.Broadcast(Indices, ResizeType);
 }
 
 bool UBuzzzContainer::Resize(const int32& NewCapacity)
@@ -365,7 +408,6 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
 
     // Make Sure TargetContainer is Set
     Context.TargetContainer = this;
-    // Context.MutationType = Change;
 
     // Check Index Valid
     if (!CheckIndexIsValid(Context.TargetIndex))
@@ -402,18 +444,17 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Context.bFinished = true;
     }
 
+    // Fill up OutContext, Cache Previous Info
+    {
+        Context.PreviousInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
+        Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
+    }
+
     // Handle Failed
     if (Context.bFinished && !Context.bSuccess)
     {
         OnAssignFailed.Broadcast(Context);
         return Context;
-    }
-
-
-    // Fill up OutContext, Cache Previous Info
-    {
-        Context.PreviousInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
-        Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
     }
 
     // Server Pre Change Callback
@@ -503,17 +544,28 @@ void UBuzzzContainer::InitializeComponent()
     Super::InitializeComponent();
 
     // Standalone 
-    if (GetNetMode() == NM_Standalone && GetOwner()->HasAuthority())
+    if (GetNetMode() == NM_Standalone)
     {
-        PostCellChange.AddDynamic(this, &UBuzzzContainer::HandleStandalonePostCellChanged);
-        OnHiveResize.AddDynamic(this, &UBuzzzContainer::HandleStandaloneHiveResize);
+        PostCellChange.AddDynamic(this, &UBuzzzContainer::Standalone_HandlePostCellChanged);
+        OnHiveResize.AddDynamic(this, &UBuzzzContainer::Standalone_HandleHiveResize);
     }
-    
+
     OnInitialization();
 
     if (GetOwner()->HasAuthority())
     {
         Resize(InitialCapacity);
+    }
+}
+
+void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick TickType,
+                                    FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    if (GetNetMode() == NM_Standalone)
+    {
+        Standalone_TrySubmitMutations();
     }
 }
 

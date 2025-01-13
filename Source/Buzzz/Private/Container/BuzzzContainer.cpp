@@ -209,7 +209,7 @@ void UBuzzzContainer::Standalone_HandlePostCellChanged(const FBuzzzCellOperation
     Standalone_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
 }
 
-void UBuzzzContainer::Standalone_HandleHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+void UBuzzzContainer::Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                                   const EBuzzzHiveMutationType ResizeType)
 {
     check(GetNetMode()==NM_Standalone);
@@ -545,7 +545,7 @@ void UBuzzzContainer::InitializeComponent()
     if (GetNetMode() == NM_Standalone)
     {
         PostCellChange.AddDynamic(this, &UBuzzzContainer::Standalone_HandlePostCellChanged);
-        OnHiveResize.AddDynamic(this, &UBuzzzContainer::Standalone_HandleHiveResize);
+        OnHiveResize.AddDynamic(this, &UBuzzzContainer::Standalone_HandleOnHiveResize);
     }
 
     OnInitialization();

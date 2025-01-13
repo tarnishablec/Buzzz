@@ -199,7 +199,7 @@ private:
     virtual void Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
 
     UFUNCTION()
-    virtual void Standalone_HandleHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+    virtual void Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                              EBuzzzHiveMutationType ResizeType);
 #pragma endregion
 

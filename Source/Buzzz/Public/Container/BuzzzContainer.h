@@ -75,8 +75,9 @@ struct BUZZZ_API FBuzzzCellOperationContext
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellOperationContext&,
                                             Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzHiveMutationDelegate, const TArray<int32>&, Indices,
-                                             const EBuzzzHiveMutationType, Type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate, const UBuzzzContainer*, Container,
+                                               const TArray<int32>&, Indices,
+                                               const EBuzzzHiveMutationType, Type);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -98,6 +99,8 @@ protected:
     int32 InitialCapacity = 0;
 
 public:
+    friend struct FBuzzzContainerHive;
+
     UBuzzzContainer();
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -120,6 +123,9 @@ public:
 
     UFUNCTION(BlueprintPure, Category="Buzzz")
     int32 GetCapacity() const;
+
+    UFUNCTION(BlueprintPure, Category="Buzzz")
+    const TArray<FBuzzzContainerCell>& GetCells() const;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
     bool CheckItemCompatible(const UBuzzzItemInstance* ItemInstance) const;
@@ -169,7 +175,10 @@ public:
      */
     UPROPERTY(BlueprintAssignable, Category="Buzzz | Client")
     FBuzzzHiveMutationDelegate Client_ReceiveHiveMutation;
+#pragma endregion
 
+private:
+#pragma region Standalone
     /**
      * Only used in Standalone Mode For Batching Indices
      *
@@ -184,18 +193,17 @@ public:
     UPROPERTY()
     TArray<int32> Standalone_Batched_RemovedIndices;
 
-    UFUNCTION(BlueprintInternalUseOnly)
-    void Standalone_TrySubmitMutations();
+    virtual void Standalone_TrySubmitMutations();
 
     UFUNCTION()
-    void Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
+    virtual void Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
 
     UFUNCTION()
-    void Standalone_HandleHiveResize(const TArray<int32>& Indices, EBuzzzHiveMutationType ResizeType);
+    virtual void Standalone_HandleHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+                                             EBuzzzHiveMutationType ResizeType);
+#pragma endregion
 
-#pragma endregion Client
-
-protected:
+public:
 #pragma region Internal Authority Callbacks (Should Not Bind In Other Classes)
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")

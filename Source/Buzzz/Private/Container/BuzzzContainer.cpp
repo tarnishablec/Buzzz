@@ -25,6 +25,11 @@ int32 UBuzzzContainer::GetCapacity() const
     return Hive.Cells.Num();
 }
 
+const TArray<FBuzzzContainerCell>& UBuzzzContainer::GetCells() const
+{
+    return Hive.Cells;
+}
+
 bool UBuzzzContainer::CheckItemInstanceOwned(const UBuzzzItemInstance* ItemInstance) const
 {
     for (auto&& Cell : Hive.Cells)
@@ -178,17 +183,17 @@ void UBuzzzContainer::Standalone_TrySubmitMutations()
 
     if (Standalone_Batched_RemovedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
+        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
     }
 
     if (Standalone_Batched_AddedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
+        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
     }
 
     if (Standalone_Batched_ChangedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(Standalone_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
+        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
     }
 
 
@@ -197,19 +202,15 @@ void UBuzzzContainer::Standalone_TrySubmitMutations()
     Standalone_Batched_ChangedIndices.Reset();
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void UBuzzzContainer::Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
 {
     check(GetNetMode()==NM_Standalone);
 
     Standalone_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
-    // TArray<int32> IndexArray{};
-    // IndexArray.Add(Context.TargetIndex);
-    // Client_ReceiveHiveMutation.Broadcast(IndexArray, EBuzzzHiveMutationType::Change);
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzContainer::Standalone_HandleHiveResize(const TArray<int32>& Indices, const EBuzzzHiveMutationType ResizeType)
+void UBuzzzContainer::Standalone_HandleHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+                                                  const EBuzzzHiveMutationType ResizeType)
 {
     check(GetNetMode()==NM_Standalone);
 
@@ -228,9 +229,6 @@ void UBuzzzContainer::Standalone_HandleHiveResize(const TArray<int32>& Indices, 
             Standalone_Batched_ChangedIndices.AddUnique(Index);
         }
     }
-
-
-    // Client_ReceiveHiveMutation.Broadcast(Indices, ResizeType);
 }
 
 bool UBuzzzContainer::Resize(const int32& NewCapacity)
@@ -269,12 +267,12 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 
     if (RemovedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(RemovedIndices, EBuzzzHiveMutationType::Remove);
+        OnHiveResize.Broadcast(this, RemovedIndices, EBuzzzHiveMutationType::Remove);
     }
 
     if (AddedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(AddedIndices, EBuzzzHiveMutationType::Add);
+        OnHiveResize.Broadcast(this, AddedIndices, EBuzzzHiveMutationType::Add);
     }
 
     return true;

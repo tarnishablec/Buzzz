@@ -25,6 +25,7 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
 
     UPROPERTY(BlueprintReadOnly)
     int32 StackCount = 0;
+   
 };
 
 USTRUCT(BlueprintType)

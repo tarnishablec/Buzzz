@@ -52,7 +52,7 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (DeterminesOutputType = "FragmentClass", AutoCreateRefTerm="FragmentClass"))
     const UBuzzzFragment* FindFragmentByClass(
-        UPARAM(meta=(AllowAbstract=true)) const TSubclassOf<UBuzzzFragment>& FragmentClass, bool Exact = true) const;
+        UPARAM(meta=(AllowAbstract=true))  TSubclassOf<UBuzzzFragment> FragmentClass, bool Exact = true) const;
 
     template <class T, typename = typename TEnableIf<TPointerIsConvertibleFromTo<
                   T, UBuzzzFragment>::Value>::Type>

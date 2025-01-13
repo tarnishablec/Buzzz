@@ -56,7 +56,7 @@ const UBuzzzItemDefinition* UBuzzzItemInstance::GetDefinition_Implementation() c
 }
 
 
-const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(const TSubclassOf<UBuzzzFragment>& FragmentClass,
+const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzzFragment> FragmentClass,
                                                               bool Exact) const
 {
     check(IsValid(Definition));

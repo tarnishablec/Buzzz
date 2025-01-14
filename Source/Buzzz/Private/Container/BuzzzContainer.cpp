@@ -17,7 +17,6 @@ UBuzzzContainer::UBuzzzContainer()
     SetIsReplicatedByDefault(true);
     bReplicateUsingRegisteredSubObjectList = true;
     bWantsInitializeComponent = true;
-    Hive.Container = this;
 }
 
 int32 UBuzzzContainer::GetCapacity() const
@@ -210,7 +209,7 @@ void UBuzzzContainer::Standalone_HandlePostCellChanged(const FBuzzzCellOperation
 }
 
 void UBuzzzContainer::Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
-                                                  const EBuzzzHiveMutationType ResizeType)
+                                                    const EBuzzzHiveMutationType ResizeType)
 {
     check(GetNetMode()==NM_Standalone);
 
@@ -540,6 +539,11 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
 void UBuzzzContainer::InitializeComponent()
 {
     Super::InitializeComponent();
+
+    Hive.InternalHiveMutationDelegate.AddLambda([this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
+    {
+        Client_ReceiveHiveMutation.Broadcast(this, Indices, Type);
+    });
 
     // Standalone 
     if (GetNetMode() == NM_Standalone)

@@ -27,6 +27,11 @@ public:
     virtual bool CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
                                     FFrame* Stack) override;
 
+#if UE_WITH_IRIS
+    virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                              UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
+#endif
+
     virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList) override;
 
 protected:
@@ -50,9 +55,10 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
     const UBuzzzItemDefinition* GetDefinition() const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (DeterminesOutputType = "FragmentClass", AutoCreateRefTerm="FragmentClass"))
+    UFUNCTION(BlueprintPure, Category = "Buzzz",
+        meta = (DeterminesOutputType = "FragmentClass"))
     const UBuzzzFragment* FindFragmentByClass(
-        UPARAM(meta=(AllowAbstract=true))  TSubclassOf<UBuzzzFragment> FragmentClass, bool Exact = true) const;
+        UPARAM(meta=(AllowAbstract=true)) TSubclassOf<UBuzzzFragment> FragmentClass, bool Exact = true) const;
 
     template <class T, typename = typename TEnableIf<TPointerIsConvertibleFromTo<
                   T, UBuzzzFragment>::Value>::Type>

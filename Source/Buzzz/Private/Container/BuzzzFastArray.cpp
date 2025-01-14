@@ -6,15 +6,14 @@
 #include "Container/BuzzzFastArray.h"
 
 #include "Algo/ForEach.h"
-#include "Container/BuzzzContainer.h"
 #include "Item/BuzzzItemInstance.h"
 
 void FBuzzzContainerHive::PreReplicatedRemove(const TArrayView<int32>& RemovedIndices, int32 FinalSize)
 {
-    if (IsValid(Container) && RemovedIndices.Num() > 0)
+    if (RemovedIndices.Num() > 0)
     {
-        Container->Client_ReceiveHiveMutation.Broadcast(
-            Container, TArray(RemovedIndices.GetData(), RemovedIndices.Num()),
+        InternalHiveMutationDelegate.Broadcast(
+            TArray(RemovedIndices.GetData(), RemovedIndices.Num()),
             EBuzzzHiveMutationType::Remove);
     }
 }
@@ -27,7 +26,7 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
      *
      * This also ensures consistency with the behavior in standalone mode.
      */
-    if (IsValid(Container) && AddedIndices.Num() > 0)
+    if (AddedIndices.Num() > 0)
     {
         TArray<int32> ChangedIndices{};
 
@@ -39,8 +38,8 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
             }
         });
 
-        Container->Client_ReceiveHiveMutation.Broadcast(Container, TArray(AddedIndices.GetData(), AddedIndices.Num()),
-                                                        EBuzzzHiveMutationType::Add);
+        InternalHiveMutationDelegate.Broadcast(TArray(AddedIndices.GetData(), AddedIndices.Num()),
+                                               EBuzzzHiveMutationType::Add);
 
         if (ChangedIndices.Num() > 0)
         {
@@ -51,10 +50,10 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
 
 void FBuzzzContainerHive::PostReplicatedChange(const TArrayView<int32>& ChangedIndices, int32 FinalSize)
 {
-    if (IsValid(Container) && ChangedIndices.Num() > 0)
+    if (ChangedIndices.Num() > 0)
     {
-        Container->Client_ReceiveHiveMutation.Broadcast(
-            Container, TArray(ChangedIndices.GetData(), ChangedIndices.Num()),
+        InternalHiveMutationDelegate.Broadcast(
+            TArray(ChangedIndices.GetData(), ChangedIndices.Num()),
             EBuzzzHiveMutationType::Change);
     }
 }

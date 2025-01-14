@@ -6,6 +6,10 @@
 #include "Item/BuzzzItemDefinition.h"
 #include "Net/UnrealNetwork.h"
 
+#if UE_WITH_IRIS
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
+#endif 
+
 UBuzzzItemInstance::UBuzzzItemInstance()
 {
     ItemGuid = FGuid::NewGuid();
@@ -44,6 +48,13 @@ bool UBuzzzItemInstance::CallRemoteFunction(UFunction* Function, void* Params, s
     return false;
 }
 
+#if UE_WITH_IRIS
+void UBuzzzItemInstance::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                                      UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+    UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+#endif
 
 FGuid UBuzzzItemInstance::GetItemGuid() const
 {
@@ -56,8 +67,9 @@ const UBuzzzItemDefinition* UBuzzzItemInstance::GetDefinition_Implementation() c
 }
 
 
+// ReSharper disable once CppPassValueParameterByConstReference
 const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzzFragment> FragmentClass,
-                                                              bool Exact) const
+                                                              const bool Exact) const
 {
     check(IsValid(Definition));
 
@@ -66,15 +78,30 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzz
         return nullptr;
     }
 
-    return *Fragments.FindByPredicate(
-        [Exact,FragmentClass](const TObjectPtr<UBuzzzFragment>& Fragment)
+    for (auto&& Fragment : Fragments)
+    {
+        if (!IsValid(Fragment))
         {
-            if (Exact)
+            continue;
+        }
+
+        if (Exact)
+        {
+            if (Fragment->GetClass() == FragmentClass)
             {
-                return Fragment->GetClass() == FragmentClass;
+                return Fragment;
             }
-            return Fragment.IsA(FragmentClass);
-        });
+        }
+        else
+        {
+            if (Fragment.IsA(FragmentClass))
+            {
+                return Fragment;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 AActor* UBuzzzItemInstance::GetOwnerActor_Implementation() const

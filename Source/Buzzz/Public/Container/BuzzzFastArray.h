@@ -8,8 +8,17 @@
 #include "BuzzzFastArray.generated.h"
 
 
-class UBuzzzContainer;
 class UBuzzzItemInstance;
+
+UENUM(BlueprintType)
+enum class EBuzzzHiveMutationType : uint8
+{
+    None UMETA(Hidden),
+    Remove,
+    Add,
+    Change,
+};
+
 
 USTRUCT(BlueprintType)
 struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
@@ -25,7 +34,6 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
 
     UPROPERTY(BlueprintReadOnly)
     int32 StackCount = 0;
-   
 };
 
 USTRUCT(BlueprintType)
@@ -33,11 +41,14 @@ struct BUZZZ_API FBuzzzContainerHive : public FFastArraySerializer
 {
     GENERATED_BODY()
 
+    DECLARE_MULTICAST_DELEGATE_TwoParams(FInternalHiveMutationDelegate,
+                                         const TArray<int32>&,
+                                         const EBuzzzHiveMutationType);
+
+    FInternalHiveMutationDelegate InternalHiveMutationDelegate;
+
     UPROPERTY(BlueprintReadOnly)
     TArray<FBuzzzContainerCell> Cells;
-
-    UPROPERTY()
-    TObjectPtr<UBuzzzContainer> Container;
 
     bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
     {

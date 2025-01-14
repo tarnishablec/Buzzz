@@ -11,15 +11,6 @@ class UBuzzzItemDefinition;
 class UBuzzzItemInstance;
 class UBuzzzContainer;
 
-UENUM(BlueprintType)
-enum class EBuzzzHiveMutationType : uint8
-{
-    None UMETA(Hidden),
-    Remove,
-    Add,
-    Change,
-};
-
 USTRUCT(BlueprintType)
 struct BUZZZ_API FBuzzzCellOperationContext
 {
@@ -200,7 +191,7 @@ private:
 
     UFUNCTION()
     virtual void Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
-                                             EBuzzzHiveMutationType ResizeType);
+                                               EBuzzzHiveMutationType ResizeType);
 #pragma endregion
 
 public:

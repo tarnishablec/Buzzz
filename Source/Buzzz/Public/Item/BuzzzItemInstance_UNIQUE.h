@@ -29,6 +29,8 @@ public:
 
     virtual void BeginDestroy() override;
 
+    virtual void InitializeInstance_Implementation() override;
+
 protected:
     UFUNCTION()
     void OnAssignAction(const FBuzzzCellOperationContext& Context);
@@ -44,5 +46,5 @@ protected:
 
     virtual void ChangeOwnerContainer(UBuzzzContainer* NewContainer);
 
-    virtual void InitializeInstance() override;
+    
 };

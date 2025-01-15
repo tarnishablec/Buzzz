@@ -108,6 +108,13 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzz
     return nullptr;
 }
 
+void UBuzzzItemInstance::InitializeInstance_Implementation()
+{
+    InitializeFragments();
+    OnInitialization();
+    bInitialized = true;
+}
+
 AActor* UBuzzzItemInstance::GetOwnerActor_Implementation() const
 {
     return GetTypedOuter<AActor>();
@@ -125,7 +132,8 @@ UBuzzzItemInstance* UBuzzzItemInstance::MakeInstance_Implementation(const UBuzzz
     return nullptr;
 }
 
-void UBuzzzItemInstance::InitializeFragments()
+
+void UBuzzzItemInstance::InitializeFragments_Implementation()
 {
     check(IsValid(Definition));
 
@@ -135,19 +143,11 @@ void UBuzzzItemInstance::InitializeFragments()
     {
         if (FragmentTemplate != nullptr)
         {
-            const auto Fragment = NewObject<UBuzzzFragment>(this, FragmentTemplate.GetClass(), NAME_None, RF_NoFlags,
-                                                            FragmentTemplate);
+            const auto Fragment = DuplicateObject(FragmentTemplate, this);
             Fragments.AddUnique(Fragment);
             Fragment->InitializeFragment();
         }
     }
-}
-
-void UBuzzzItemInstance::InitializeInstance()
-{
-    InitializeFragments();
-    OnInitialization();
-    bInitialized = true;
 }
 
 void UBuzzzItemInstance::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)

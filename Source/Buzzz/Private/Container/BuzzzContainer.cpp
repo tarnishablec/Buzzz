@@ -201,16 +201,23 @@ void UBuzzzContainer::Standalone_TrySubmitMutations()
 
 void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
 {
-    if (GetNetMode() == NM_Standalone)
+    // if (GetNetMode() == NM_Standalone)
     {
         Internal_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
+    }
+
+    {
+        if (IsValid(Context.PreviousInstance))
+        {
+            Internal_MayBeRemoved_Instances.AddUnique(Context.PreviousInstance);
+        }
     }
 }
 
 void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                                     const EBuzzzHiveMutationType ResizeType)
 {
-    if (GetNetMode() == NM_Standalone)
+    // if (GetNetMode() == NM_Standalone)
     {
         if (ResizeType == EBuzzzHiveMutationType::Add)
         {
@@ -465,12 +472,6 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
-    // (Somehow Ugly)
-    if (IsValid(Context.PreviousInstance))
-    {
-        Internal_MayBeRemoved_Instances.AddUnique(Context.PreviousInstance);
-    }
-
     // Set Upcoming Replication
     if (IsValid(Context.UpcomingInstance))
     {
@@ -577,6 +578,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         Internal_Batched_RemovedIndices.Reset();
         Internal_Batched_AddedIndices.Reset();
         Internal_Batched_ChangedIndices.Reset();
+        Internal_MayBeRemoved_Instances.Reset();
     }
 }
 
@@ -603,7 +605,7 @@ void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     FDoRepLifetimeParams Params;
     Params.Condition = COND_OwnerOnly;
-    Params.bIsPushBased = false;
+    Params.bIsPushBased = true;
     DOREPLIFETIME_WITH_PARAMS(ThisClass, Hive, Params);
 }
 

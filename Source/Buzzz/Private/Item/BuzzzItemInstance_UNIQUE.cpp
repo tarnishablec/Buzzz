@@ -1,6 +1,5 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
-
 #include "Item/BuzzzItemInstance_UNIQUE.h"
 
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
@@ -14,6 +13,8 @@ UBuzzzItemInstance* UBuzzzItemInstance_UNIQUE::MakeInstance_Implementation(
 
     const auto Instance = NewObject<UBuzzzItemInstance_UNIQUE>(Instigator, InDefinition->InstanceClass);
     Instance->Definition = InDefinition;
+
+    Instance->InitializeInstance();
     return Instance;
 }
 
@@ -60,19 +61,6 @@ void UBuzzzItemInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContain
     }
 }
 
-void UBuzzzItemInstance_UNIQUE::InitializeInstance()
-{
-    RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForRemoveFromCell(this);
-    RemoveAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnRemoveAction);
-    RemoveAction->Activate();
-
-    AssignAction = UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(this);
-    AssignAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnAssignAction);
-    AssignAction->Activate();
-
-    Super::InitializeInstance();
-}
-
 void UBuzzzItemInstance_UNIQUE::BeginDestroy()
 {
     Super::BeginDestroy();
@@ -85,4 +73,17 @@ void UBuzzzItemInstance_UNIQUE::BeginDestroy()
     {
         RemoveAction->Cancel();
     }
+}
+
+void UBuzzzItemInstance_UNIQUE::InitializeInstance_Implementation()
+{
+    RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForRemoveFromCell(this);
+    RemoveAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnRemoveAction);
+    RemoveAction->Activate();
+
+    AssignAction = UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(this);
+    AssignAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnAssignAction);
+    AssignAction->Activate();
+
+    Super::InitializeInstance_Implementation();
 }

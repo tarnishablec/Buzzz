@@ -74,8 +74,12 @@ public:
     UFUNCTION(BlueprintNativeEvent)
     UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const;
 
+    UFUNCTION(BlueprintNativeEvent)
+    void InitializeFragments();
+
+    UFUNCTION(BlueprintNativeEvent)
+    void InitializeInstance();
+
 protected:
     bool bInitialized = false;
-    virtual void InitializeFragments();
-    virtual void InitializeInstance();
 };

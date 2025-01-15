@@ -25,5 +25,8 @@ UBuzzzItemInstance* UBuzzzItemInstance_SHARED::MakeInstance_Implementation(
     const auto FreshInstance = NewObject<UBuzzzItemInstance_SHARED>(GetTransientPackage(), InDefinition->InstanceClass);
     FreshInstance->Definition = InDefinition;
     InstanceMap.Add(InDefinition, FreshInstance);
+
+    FreshInstance->InitializeInstance();
+    
     return FreshInstance;
 }

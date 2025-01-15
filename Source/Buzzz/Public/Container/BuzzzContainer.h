@@ -178,7 +178,7 @@ private:
     virtual void Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                                EBuzzzHiveMutationType ResizeType);
 
-    // Internal Use Properties
+    // Internal Used Properties
     // Reset In Each Tick
     UPROPERTY()
     TArray<int32> Internal_Batched_ChangedIndices;

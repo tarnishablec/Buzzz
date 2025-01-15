@@ -9,12 +9,6 @@ const UBuzzzItemInstance* UBuzzzItemDefinition::Instantiate_Implementation(AActo
 {
     check(IsValid(InstanceClass))
     const auto Instance = InstanceClass.GetDefaultObject()->MakeInstance(this, Instigator);
-
-    if (Instance->bInitialized == false)
-    {
-        Instance->InitializeInstance();
-    }
-
     return Instance;
 }
 

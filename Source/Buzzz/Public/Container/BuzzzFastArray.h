@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Net/Serialization/FastArraySerializer.h"
 #include "UObject/Object.h"
+#include "Net/Serialization/FastArraySerializer.h"
+
 #include "BuzzzFastArray.generated.h"
 
 
@@ -35,6 +36,7 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
     UPROPERTY(BlueprintReadOnly)
     int32 StackCount = 0;
 };
+
 
 USTRUCT(BlueprintType)
 struct BUZZZ_API FBuzzzContainerHive : public FFastArraySerializer

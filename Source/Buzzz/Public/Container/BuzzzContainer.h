@@ -99,6 +99,7 @@ public:
     virtual void BeginPlay() override;
     virtual void BeginDestroy() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
     /**
      * We Should Bind Delegates Inside This
@@ -169,29 +170,34 @@ public:
 #pragma endregion
 
 private:
+#pragma region Internal
+    UFUNCTION()
+    virtual void Internal_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
+
+    UFUNCTION()
+    virtual void Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+                                               EBuzzzHiveMutationType ResizeType);
+
+    // Internal Use Properties
+    // Reset In Each Tick
+    UPROPERTY()
+    TArray<int32> Internal_Batched_ChangedIndices;
+
+    UPROPERTY()
+    TArray<int32> Internal_Batched_AddedIndices;
+
+    UPROPERTY()
+    TArray<int32> Internal_Batched_RemovedIndices;
+#pragma endregion
+
+
 #pragma region Standalone
     /**
-     * Only used in Standalone Mode For Batching Indices
-     *
+     * Only used in Standalone Mode For Submit Batching Indices
      * Ensures consistency with the behavior in C/S Mode
      */
-    UPROPERTY()
-    TArray<int32> Standalone_Batched_ChangedIndices;
-
-    UPROPERTY()
-    TArray<int32> Standalone_Batched_AddedIndices;
-
-    UPROPERTY()
-    TArray<int32> Standalone_Batched_RemovedIndices;
-
     virtual void Standalone_TrySubmitMutations();
 
-    UFUNCTION()
-    virtual void Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
-
-    UFUNCTION()
-    virtual void Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
-                                               EBuzzzHiveMutationType ResizeType);
 #pragma endregion
 
 public:
@@ -204,7 +210,7 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzCellMutationDelegate OnCellChange;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzHiveMutationDelegate OnHiveResize;
+    FBuzzzHiveMutationDelegate PostHiveResize;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzCellMutationDelegate OnAssignFailed;
 

@@ -7,6 +7,9 @@ public class Buzzz : ModuleRules
 	public Buzzz(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		OptimizeCode = CodeOptimization.InNonDebugBuilds;
+
+		SetupIrisSupport(Target);
 
 		PublicIncludePaths.AddRange(
 			new string[]

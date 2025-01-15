@@ -4,8 +4,10 @@
 #include "Container/BuzzzContainer.h"
 
 #include "Container/BuzzzSubsystem.h"
+#include "Fragment/BuzzzFragment.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
+#include "Runtime/Engine/Private/Net/NetSubObjectRegistryGetter.h"
 
 // void UBuzzzContainer::OnRep_Hive_Implementation()
 // {
@@ -17,6 +19,9 @@ UBuzzzContainer::UBuzzzContainer()
     SetIsReplicatedByDefault(true);
     bReplicateUsingRegisteredSubObjectList = true;
     bWantsInitializeComponent = true;
+
+#if UE_WITH_IRIS
+#endif
 }
 
 int32 UBuzzzContainer::GetCapacity() const
@@ -180,52 +185,49 @@ void UBuzzzContainer::Standalone_TrySubmitMutations()
 {
     check(GetNetMode()==NM_Standalone);
 
-    if (Standalone_Batched_RemovedIndices.Num())
+    if (Internal_Batched_RemovedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
+        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
     }
 
-    if (Standalone_Batched_AddedIndices.Num())
+    if (Internal_Batched_AddedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
+        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
     }
 
-    if (Standalone_Batched_ChangedIndices.Num())
+    if (Internal_Batched_ChangedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Standalone_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
+        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
     }
-
-
-    Standalone_Batched_RemovedIndices.Reset();
-    Standalone_Batched_AddedIndices.Reset();
-    Standalone_Batched_ChangedIndices.Reset();
 }
 
-void UBuzzzContainer::Standalone_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
+void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
 {
-    check(GetNetMode()==NM_Standalone);
-
-    Standalone_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
+    if (GetNetMode() == NM_Standalone)
+    {
+        Internal_Batched_ChangedIndices.AddUnique(Context.TargetIndex);
+    }
 }
 
-void UBuzzzContainer::Standalone_HandleOnHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
+void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                                     const EBuzzzHiveMutationType ResizeType)
 {
-    check(GetNetMode()==NM_Standalone);
-
-    if (ResizeType == EBuzzzHiveMutationType::Add)
+    if (GetNetMode() == NM_Standalone)
     {
-        for (auto Index : Indices)
+        if (ResizeType == EBuzzzHiveMutationType::Add)
         {
-            Standalone_Batched_AddedIndices.AddUnique(Index);
+            for (auto Index : Indices)
+            {
+                Internal_Batched_AddedIndices.AddUnique(Index);
+            }
         }
-    }
 
-    if (ResizeType == EBuzzzHiveMutationType::Remove)
-    {
-        for (auto Index : Indices)
+        if (ResizeType == EBuzzzHiveMutationType::Remove)
         {
-            Standalone_Batched_ChangedIndices.AddUnique(Index);
+            for (auto Index : Indices)
+            {
+                Internal_Batched_ChangedIndices.AddUnique(Index);
+            }
         }
     }
 }
@@ -266,12 +268,12 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 
     if (RemovedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(this, RemovedIndices, EBuzzzHiveMutationType::Remove);
+        PostHiveResize.Broadcast(this, RemovedIndices, EBuzzzHiveMutationType::Remove);
     }
 
     if (AddedIndices.Num() > 0)
     {
-        OnHiveResize.Broadcast(this, AddedIndices, EBuzzzHiveMutationType::Add);
+        PostHiveResize.Broadcast(this, AddedIndices, EBuzzzHiveMutationType::Add);
     }
 
     return true;
@@ -465,25 +467,9 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
-    // Remove Previous Replication First
-    if (IsValid(Context.PreviousInstance))
-    {
-        if (Context.PreviousInstance->ShouldReplicate)
-        {
-            RemoveReplicatedSubObject(Context.PreviousInstance);
-            TArray<UObject*> NetObjList{};
-            Context.PreviousInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
-            for (auto&& NetSubObject : NetObjList)
-            {
-                RemoveReplicatedSubObject(NetSubObject);
-            }
-        }
-    }
-
     // Set Upcoming Replication
     if (IsValid(Context.UpcomingInstance))
     {
-        if (Context.UpcomingInstance->ShouldReplicate)
         {
             AddReplicatedSubObject(Context.UpcomingInstance);
             TArray<UObject*> NetObjList{};
@@ -545,19 +531,12 @@ void UBuzzzContainer::InitializeComponent()
         Client_ReceiveHiveMutation.Broadcast(this, Indices, Type);
     });
 
-    // Standalone 
-    if (GetNetMode() == NM_Standalone)
     {
-        PostCellChange.AddDynamic(this, &UBuzzzContainer::Standalone_HandlePostCellChanged);
-        OnHiveResize.AddDynamic(this, &UBuzzzContainer::Standalone_HandleOnHiveResize);
+        PostCellChange.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostCellChanged);
+        PostHiveResize.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostHiveResize);
     }
 
     OnInitialization();
-
-    if (GetOwner()->HasAuthority())
-    {
-        Resize(InitialCapacity);
-    }
 }
 
 void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick TickType,
@@ -568,6 +547,51 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
     if (GetNetMode() == NM_Standalone)
     {
         Standalone_TrySubmitMutations();
+    }
+
+    if (GetOwner()->HasAuthority())
+    {
+        if (Internal_Batched_ChangedIndices.Num())
+        {
+            const auto CurrentSubObjectRegistryList = UE::Net::FSubObjectRegistryGetter::GetSubObjectsOfActorComponent(
+                GetOwner(), this)->GetRegistryList();
+
+            TArray<UObject*> ObjectsShouldBeRemovedFromReplicationSubObjectList{};
+
+            for (auto&& Entry : CurrentSubObjectRegistryList)
+            {
+                const auto EntryObject = Entry.GetSubObject();
+                if (const auto Instance = Cast<UBuzzzItemInstance>(EntryObject))
+                {
+                    if (!CheckItemInstanceOwned(Instance))
+                    {
+                        ObjectsShouldBeRemovedFromReplicationSubObjectList.AddUnique(Instance);
+                    }
+                }
+
+                if (const auto Fragment = Cast<UBuzzzFragment>(EntryObject))
+                {
+                    if (const auto HostInstance = Fragment->GetHostItemInstance())
+                    {
+                        if (!CheckItemInstanceOwned(HostInstance))
+                        {
+                            ObjectsShouldBeRemovedFromReplicationSubObjectList.AddUnique(Fragment);
+                        }
+                    }
+                }
+            }
+
+            for (auto&& ObjectShouldBeRemoved : ObjectsShouldBeRemovedFromReplicationSubObjectList)
+            {
+                RemoveReplicatedSubObject(ObjectShouldBeRemoved);
+            }
+        }
+    }
+
+    {
+        Internal_Batched_RemovedIndices.Reset();
+        Internal_Batched_AddedIndices.Reset();
+        Internal_Batched_ChangedIndices.Reset();
     }
 }
 
@@ -591,7 +615,15 @@ void UBuzzzContainer::BeginDestroy()
 void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME_CONDITION(ThisClass, Hive, COND_OwnerOnly);
+    FDoRepLifetimeParams Params;
+    Params.Condition = COND_OwnerOnly;
+    Params.bIsPushBased = false;
+    DOREPLIFETIME_WITH_PARAMS(ThisClass, Hive, Params);
+}
+
+void UBuzzzContainer::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
+{
+    Super::PreReplication(ChangedPropertyTracker);
 }
 
 void UBuzzzContainer::OnInitialization_Implementation()

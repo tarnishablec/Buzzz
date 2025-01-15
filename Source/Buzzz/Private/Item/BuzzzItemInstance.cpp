@@ -8,7 +8,7 @@
 
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
-#endif 
+#endif
 
 UBuzzzItemInstance::UBuzzzItemInstance()
 {
@@ -18,9 +18,13 @@ UBuzzzItemInstance::UBuzzzItemInstance()
 void UBuzzzItemInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ThisClass, Definition);
-    DOREPLIFETIME(ThisClass, ItemGuid);
-    DOREPLIFETIME(ThisClass, Fragments);
+    FDoRepLifetimeParams Params;
+
+    Params.bIsPushBased = true;
+
+    DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Definition, Params)
+    DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ItemGuid, Params)
+    DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Fragments, Params)
 
     if (const auto BPClass = Cast<UBlueprintGeneratedClass>(GetClass()))
     {

@@ -45,9 +45,6 @@ protected:
     TArray<TObjectPtr<UBuzzzFragment>> Fragments;
 
 public:
-    UPROPERTY(EditDefaultsOnly, Category = "Buzzz")
-    bool ShouldReplicate = true;
-
 #pragma region Helpers
     UFUNCTION(BlueprintPure, Category = "Buzzz")
     FGuid GetItemGuid() const;
@@ -62,7 +59,7 @@ public:
 
     template <class T, typename = typename TEnableIf<TPointerIsConvertibleFromTo<
                   T, UBuzzzFragment>::Value>::Type>
-    T* FindFragmentByClass(bool Exact) const
+    T* FindFragmentByClass(bool Exact = true) const
     {
         return Cast<T>(FindFragmentByClass(T::StaticClass(), Exact));
     }

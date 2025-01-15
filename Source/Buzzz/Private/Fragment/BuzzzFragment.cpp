@@ -4,6 +4,10 @@
 #include "Fragment/BuzzzFragment.h"
 #include "Item/BuzzzItemInstance.h"
 
+#if UE_WITH_IRIS
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
+#endif
+
 void UBuzzzFragment::OnInitialized_Implementation(UBuzzzItemInstance* ItemInstance)
 {
 }
@@ -31,6 +35,14 @@ bool UBuzzzFragment::CallRemoteFunction(UFunction* Function, void* Params, struc
 {
     return GetHostItemInstance()->CallRemoteFunction(Function, Params, OutParams, Stack);
 }
+
+#if UE_WITH_IRIS
+void UBuzzzFragment::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                                  UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+    UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+#endif
 
 void UBuzzzFragment::InitializeFragment()
 {

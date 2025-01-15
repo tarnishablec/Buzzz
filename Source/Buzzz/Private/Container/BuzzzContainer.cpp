@@ -6,7 +6,6 @@
 #include "Container/BuzzzSubsystem.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/Misc/NetSubObjectRegistry.h"
 
 // void UBuzzzContainer::OnRep_Hive_Implementation()
 // {
@@ -466,6 +465,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
+    // (Somehow Ugly)
     if (IsValid(Context.PreviousInstance))
     {
         Internal_MayBeRemoved_Instances.AddUnique(Context.PreviousInstance);
@@ -540,6 +540,7 @@ void UBuzzzContainer::InitializeComponent()
         PostHiveResize.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostHiveResize);
     }
 
+
     OnInitialization();
 }
 
@@ -553,7 +554,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         Standalone_TrySubmitMutations();
     }
 
-    if (GetOwner()->HasAuthority())
+    if (GetNetMode() != NM_Standalone && GetOwner()->HasAuthority())
     {
         for (auto&& InstanceMayBeRemoved : Internal_MayBeRemoved_Instances)
         {
@@ -589,6 +590,7 @@ bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstanc
 void UBuzzzContainer::BeginPlay()
 {
     Super::BeginPlay();
+    Resize(InitialCapacity);
 }
 
 void UBuzzzContainer::BeginDestroy()

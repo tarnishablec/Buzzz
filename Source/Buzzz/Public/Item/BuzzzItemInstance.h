@@ -35,7 +35,7 @@ public:
     virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList) override;
 
 protected:
-    UPROPERTY(Replicated)
+    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
     TObjectPtr<const UBuzzzItemDefinition> Definition;
 
     UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true))

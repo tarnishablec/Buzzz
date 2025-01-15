@@ -1,6 +1,7 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+// ReSharper disable RedundantNameQualifier
 
 public class Buzzz : ModuleRules
 {

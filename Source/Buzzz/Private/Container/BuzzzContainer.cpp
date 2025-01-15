@@ -4,10 +4,9 @@
 #include "Container/BuzzzContainer.h"
 
 #include "Container/BuzzzSubsystem.h"
-#include "Fragment/BuzzzFragment.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
-#include "Runtime/Engine/Private/Net/NetSubObjectRegistryGetter.h"
+#include "Net/Core/Misc/NetSubObjectRegistry.h"
 
 // void UBuzzzContainer::OnRep_Hive_Implementation()
 // {
@@ -467,6 +466,11 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
+    if (IsValid(Context.PreviousInstance))
+    {
+        Internal_MayBeRemoved_Instances.AddUnique(Context.PreviousInstance);
+    }
+
     // Set Upcoming Replication
     if (IsValid(Context.UpcomingInstance))
     {
@@ -551,39 +555,19 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
 
     if (GetOwner()->HasAuthority())
     {
-        if (Internal_Batched_ChangedIndices.Num())
+        for (auto&& InstanceMayBeRemoved : Internal_MayBeRemoved_Instances)
         {
-            const auto CurrentSubObjectRegistryList = UE::Net::FSubObjectRegistryGetter::GetSubObjectsOfActorComponent(
-                GetOwner(), this)->GetRegistryList();
-
-            TArray<UObject*> ObjectsShouldBeRemovedFromReplicationSubObjectList{};
-
-            for (auto&& Entry : CurrentSubObjectRegistryList)
+            if (!CheckItemInstanceOwned(InstanceMayBeRemoved))
             {
-                const auto EntryObject = Entry.GetSubObject();
-                if (const auto Instance = Cast<UBuzzzItemInstance>(EntryObject))
+                TArray<UObject*> OutSubObjects{};
+                InstanceMayBeRemoved->GetSubobjectsWithStableNamesForNetworking(OutSubObjects);
+
+                for (auto&& OutSubObject : OutSubObjects)
                 {
-                    if (!CheckItemInstanceOwned(Instance))
-                    {
-                        ObjectsShouldBeRemovedFromReplicationSubObjectList.AddUnique(Instance);
-                    }
+                    RemoveReplicatedSubObject(OutSubObject);
                 }
 
-                if (const auto Fragment = Cast<UBuzzzFragment>(EntryObject))
-                {
-                    if (const auto HostInstance = Fragment->GetHostItemInstance())
-                    {
-                        if (!CheckItemInstanceOwned(HostInstance))
-                        {
-                            ObjectsShouldBeRemovedFromReplicationSubObjectList.AddUnique(Fragment);
-                        }
-                    }
-                }
-            }
-
-            for (auto&& ObjectShouldBeRemoved : ObjectsShouldBeRemovedFromReplicationSubObjectList)
-            {
-                RemoveReplicatedSubObject(ObjectShouldBeRemoved);
+                RemoveReplicatedSubObject(InstanceMayBeRemoved);
             }
         }
     }

@@ -188,6 +188,9 @@ private:
 
     UPROPERTY()
     TArray<int32> Internal_Batched_RemovedIndices;
+
+    UPROPERTY()
+    TArray<TObjectPtr<UBuzzzItemInstance>> Internal_MayBeRemoved_Instances;
 #pragma endregion
 
 

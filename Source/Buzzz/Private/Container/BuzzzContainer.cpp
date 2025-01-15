@@ -511,7 +511,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
         if (IsValid(BuzzzSubsystem))
         {
-            BuzzzSubsystem->ReceivedContainerMutation.Broadcast(Context);
+            BuzzzSubsystem->ReceivedContainerCellMutation.Broadcast(Context);
         }
     }
 

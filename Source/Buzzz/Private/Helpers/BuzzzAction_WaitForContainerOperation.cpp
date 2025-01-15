@@ -75,7 +75,7 @@ void UBuzzzAction_WaitForContainerOperation::Activate()
     if (OperationMode == EOperationMode::Assign || OperationMode == EOperationMode::PutIn || OperationMode ==
         EOperationMode::Remove)
     {
-        BuzzzSubsystem->ReceivedContainerMutation.AddDynamic(
+        BuzzzSubsystem->ReceivedContainerCellMutation.AddDynamic(
             this, &UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation);
     }
 }
@@ -93,7 +93,7 @@ void UBuzzzAction_WaitForContainerOperation::Cancel()
             const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
             if (IsValid(BuzzzSubsystem))
             {
-                BuzzzSubsystem->ReceivedContainerMutation.RemoveAll(this);
+                BuzzzSubsystem->ReceivedContainerCellMutation.RemoveAll(this);
             }
         }
     }

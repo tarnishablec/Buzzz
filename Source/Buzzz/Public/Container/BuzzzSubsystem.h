@@ -3,15 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuzzzContainer.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "BuzzzSubsystem.generated.h"
 
 class UBuzzzItemInstance;
 struct FBuzzzCellOperationContext;
 class UBuzzzContainer;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzSubsystemReceivedContainerMutationDelegate, const FBuzzzCellOperationContext&,
-                                            Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzSubsystemReceivedInstanceDisconnectDelegate, UBuzzzItemInstance*,
                                              ItemInstance, UBuzzzContainer*, Container);
@@ -26,7 +24,7 @@ class BUZZZ_API UBuzzzSubsystem : public UGameInstanceSubsystem
 
 public:
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
-    FBuzzzSubsystemReceivedContainerMutationDelegate ReceivedContainerMutation;
+    FBuzzzCellMutationDelegate ReceivedContainerCellMutation;
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzSubsystemReceivedInstanceDisconnectDelegate ReceivedInstanceDisconnect;

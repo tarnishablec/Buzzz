@@ -209,7 +209,7 @@ void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellOperationCo
     {
         if (IsValid(Context.PreviousInstance))
         {
-            Internal_MayBeRemoved_Instances.AddUnique(Context.PreviousInstance);
+            Internal_MayBeDisconnected_Instances.AddUnique(Context.PreviousInstance);
         }
     }
 }
@@ -555,21 +555,29 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         Standalone_TrySubmitMutations();
     }
 
-    if (GetNetMode() != NM_Standalone && GetOwner()->HasAuthority())
+    if (GetOwner()->HasAuthority())
     {
-        for (auto&& InstanceMayBeRemoved : Internal_MayBeRemoved_Instances)
+        for (auto&& InstanceMayBeDisconnected : Internal_MayBeDisconnected_Instances)
         {
-            if (!CheckItemInstanceOwned(InstanceMayBeRemoved))
+            if (!CheckItemInstanceOwned(InstanceMayBeDisconnected))
             {
-                TArray<UObject*> OutSubObjects{};
-                InstanceMayBeRemoved->GetSubobjectsWithStableNamesForNetworking(OutSubObjects);
-
-                for (auto&& OutSubObject : OutSubObjects)
+                if (GetNetMode() != NM_Standalone)
                 {
-                    RemoveReplicatedSubObject(OutSubObject);
+                    TArray<UObject*> OutSubObjects{};
+                    InstanceMayBeDisconnected->GetSubobjectsWithStableNamesForNetworking(OutSubObjects);
+                
+                    for (auto&& OutSubObject : OutSubObjects)
+                    {
+                        RemoveReplicatedSubObject(OutSubObject);
+                    }
+                
+                    RemoveReplicatedSubObject(InstanceMayBeDisconnected);
                 }
-
-                RemoveReplicatedSubObject(InstanceMayBeRemoved);
+                const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+                if (IsValid(Subsystem))
+                {
+                    Subsystem->ReceivedInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+                }
             }
         }
     }
@@ -578,7 +586,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         Internal_Batched_RemovedIndices.Reset();
         Internal_Batched_AddedIndices.Reset();
         Internal_Batched_ChangedIndices.Reset();
-        Internal_MayBeRemoved_Instances.Reset();
+        Internal_MayBeDisconnected_Instances.Reset();
     }
 }
 
@@ -605,7 +613,7 @@ void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     FDoRepLifetimeParams Params;
     Params.Condition = COND_OwnerOnly;
-    Params.bIsPushBased = true;
+    Params.bIsPushBased = false;
     DOREPLIFETIME_WITH_PARAMS(ThisClass, Hive, Params);
 }
 

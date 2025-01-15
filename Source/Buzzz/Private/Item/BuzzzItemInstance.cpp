@@ -143,7 +143,9 @@ void UBuzzzItemInstance::InitializeFragments_Implementation()
     {
         if (FragmentTemplate != nullptr)
         {
-            const auto Fragment = DuplicateObject(FragmentTemplate, this);
+            // const auto Fragment = DuplicateObject(FragmentTemplate, this);
+            const auto Fragment = NewObject<UBuzzzFragment>(this, FragmentTemplate.GetClass(), NAME_None, RF_NoFlags,
+                                                            FragmentTemplate);
             Fragments.AddUnique(Fragment);
             Fragment->InitializeFragment();
         }

@@ -20,7 +20,6 @@ class BUZZZ_API UBuzzzAction_WaitForContainerOperation : public UCancellableAsyn
     GENERATED_BODY()
 
 public:
-   
     virtual void Activate() override;
     virtual void Cancel() override;
 
@@ -29,7 +28,6 @@ public:
         Assign,
         Remove,
         PutIn,
-        Disconnect
     };
 
     UPROPERTY(BlueprintAssignable)
@@ -47,18 +45,14 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Put In Container")
     static UBuzzzAction_WaitForContainerOperation* WaitForPutInContainer(
-        UBuzzzItemInstance* ItemInstance, UBuzzzContainer* Container);
+        UBuzzzItemInstance* ItemInstance);
 
 protected:
     UPROPERTY()
     TObjectPtr<UBuzzzItemInstance> TargetItemInstance;
 
-    UPROPERTY()
-    TObjectPtr<UBuzzzContainer> TargetContainer;
-
     EOperationMode OperationMode;
 
     UFUNCTION()
     void HandleReceivedContainerMutation(const FBuzzzCellOperationContext& Context);
-
 };

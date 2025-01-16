@@ -63,10 +63,10 @@ struct BUZZZ_API FBuzzzCellOperationContext
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellOperationContext&,
-                                            Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellOperationContext&, Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate, const UBuzzzContainer*, Container,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate,
+                                               const UBuzzzContainer*, Container,
                                                const TArray<int32>&, Indices,
                                                const EBuzzzHiveMutationType, Type);
 
@@ -139,7 +139,10 @@ public:
                                            bool bStrict) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="Amount"))
-    int32 CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDefinition) const;
+    int32 CalcTotalAmountByDefinition(const UBuzzzItemDefinition* ItemDefinition) const;
+
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="Amount"))
+    int32 CalcTotalAmountByInstance(const UBuzzzItemInstance* ItemInstance) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="EmptyIndex"))
     int32 FindEmptyCell(bool& Found) const;
@@ -199,7 +202,7 @@ private:
      * Only used in Standalone Mode For Submit Batching Indices
      * Ensures consistency with the behavior in C/S Mode
      */
-    virtual void Standalone_TrySubmitMutations();
+    virtual void Standalone_TrySubmitMutationInfoToClient();
 
 #pragma endregion
 

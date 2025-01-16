@@ -21,6 +21,7 @@ void UBuzzzItemInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
     FDoRepLifetimeParams Params;
 
     Params.bIsPushBased = true;
+    Params.Condition = COND_OwnerOnly;
 
     DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Definition, Params)
     DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ItemGuid, Params)
@@ -65,15 +66,8 @@ FGuid UBuzzzItemInstance::GetItemGuid() const
     return ItemGuid;
 }
 
-const UBuzzzItemDefinition* UBuzzzItemInstance::GetDefinition_Implementation() const
-{
-    return Definition;
-}
-
-
-// ReSharper disable once CppPassValueParameterByConstReference
-const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzzFragment> FragmentClass,
-                                                              const bool Exact) const
+const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass_Implementation(const TSubclassOf<UBuzzzFragment> FragmentClass,
+                                                                             const bool Exact) const
 {
     check(IsValid(Definition));
 
@@ -106,6 +100,11 @@ const UBuzzzFragment* UBuzzzItemInstance::FindFragmentByClass(TSubclassOf<UBuzzz
     }
 
     return nullptr;
+}
+
+const UBuzzzItemDefinition* UBuzzzItemInstance::GetDefinition_Implementation() const
+{
+    return Definition;
 }
 
 void UBuzzzItemInstance::InitializeInstance_Implementation()

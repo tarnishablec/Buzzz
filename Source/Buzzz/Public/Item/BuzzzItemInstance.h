@@ -52,7 +52,7 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
     const UBuzzzItemDefinition* GetDefinition() const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz",
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz",
         meta = (DeterminesOutputType = "FragmentClass"))
     const UBuzzzFragment* FindFragmentByClass(
         UPARAM(meta=(AllowAbstract=true)) TSubclassOf<UBuzzzFragment> FragmentClass, bool Exact = true) const;

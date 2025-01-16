@@ -26,13 +26,11 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 }
 
 UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForPutInContainer(
-    UBuzzzItemInstance* ItemInstance, UBuzzzContainer* Container)
+    UBuzzzItemInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForContainerOperation>();
     Action->TargetItemInstance = ItemInstance;
     Action->OperationMode = EOperationMode::PutIn;
-    Action->TargetContainer = Container;
-
     return Action;
 }
 
@@ -58,7 +56,7 @@ void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
 
     if (OperationMode == EOperationMode::PutIn)
     {
-        if (Context.FromContainer != TargetContainer && Context.TargetContainer == TargetContainer)
+        if (IsValid(Context.TargetContainer) && Context.FromContainer != Context.TargetContainer)
         {
             Triggered.Broadcast(Context);
         }
@@ -75,7 +73,7 @@ void UBuzzzAction_WaitForContainerOperation::Activate()
     if (OperationMode == EOperationMode::Assign || OperationMode == EOperationMode::PutIn || OperationMode ==
         EOperationMode::Remove)
     {
-        BuzzzSubsystem->ReceivedContainerCellMutation.AddDynamic(
+        BuzzzSubsystem->ReceiveContainerCellMutation.AddDynamic(
             this, &UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation);
     }
 }
@@ -93,7 +91,7 @@ void UBuzzzAction_WaitForContainerOperation::Cancel()
             const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
             if (IsValid(BuzzzSubsystem))
             {
-                BuzzzSubsystem->ReceivedContainerCellMutation.RemoveAll(this);
+                BuzzzSubsystem->ReceiveContainerCellMutation.RemoveAll(this);
             }
         }
     }

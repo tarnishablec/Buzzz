@@ -96,12 +96,26 @@ bool UBuzzzContainer::CheckCellHasItemByDefinitionClass(const int32& Index,
     return Instance->GetDefinition()->IsA(DefinitionClass);
 }
 
-int32 UBuzzzContainer::CalcTotalAmountOfItem(const UBuzzzItemDefinition* ItemDefinition) const
+int32 UBuzzzContainer::CalcTotalAmountByDefinition(const UBuzzzItemDefinition* ItemDefinition) const
 {
     int32 Result = 0;
     for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
     {
         if (CheckCellHasItemByDefinition(Index, ItemDefinition))
+        {
+            Result += Hive.Cells[Index].StackCount;
+        }
+    }
+
+    return Result;
+}
+
+int32 UBuzzzContainer::CalcTotalAmountByInstance(const UBuzzzItemInstance* ItemInstance) const
+{
+    int32 Result = 0;
+    for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
+    {
+        if (ItemInstance == Hive.Cells[Index].ItemInstance)
         {
             Result += Hive.Cells[Index].StackCount;
         }
@@ -179,7 +193,7 @@ void UBuzzzContainer::FindIndexByDefinition(const UBuzzzItemDefinition* Definiti
     }
 }
 
-void UBuzzzContainer::Standalone_TrySubmitMutations()
+void UBuzzzContainer::Standalone_TrySubmitMutationInfoToClient()
 {
     check(GetNetMode()==NM_Standalone);
 
@@ -511,7 +525,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         const auto BuzzzSubsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
         if (IsValid(BuzzzSubsystem))
         {
-            BuzzzSubsystem->ReceivedContainerCellMutation.Broadcast(Context);
+            BuzzzSubsystem->ReceiveContainerCellMutation.Broadcast(Context);
         }
     }
 
@@ -552,7 +566,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
 
     if (GetNetMode() == NM_Standalone)
     {
-        Standalone_TrySubmitMutations();
+        Standalone_TrySubmitMutationInfoToClient();
     }
 
     if (GetOwner()->HasAuthority())
@@ -576,7 +590,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
                 const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
                 if (IsValid(Subsystem))
                 {
-                    Subsystem->ReceivedInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+                    Subsystem->ReceiveInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
                 }
             }
         }

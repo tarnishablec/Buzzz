@@ -27,7 +27,7 @@ public:
     virtual void Cancel() override;
 
     UPROPERTY(BlueprintAssignable)
-    FBuzzzSubsystemReceivedInstanceDisconnectDelegate Triggered;
+    FBuzzzReceiveInstanceDisconnectDelegate Triggered;
 
 protected:
     UPROPERTY()

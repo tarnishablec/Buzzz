@@ -26,7 +26,10 @@ UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
 void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellOperationContext& Context)
 {
     // Might Be Moved among One Same Container
-    if (IsValid(Context.TargetContainer) && Context.TargetContainer != Context.FromContainer)
+    if (IsValid(Context.TargetContainer)
+        && Context.TargetContainer != Context.FromContainer
+        && GetOwnerContainer() != Context.TargetContainer
+    )
     {
         this->ChangeOwnerContainer(Context.TargetContainer);
     }
@@ -35,7 +38,10 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellOperationContext&
 void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellOperationContext& Context)
 {
     // Might Be Moved among One Same Container
-    if (IsValid(Context.FromContainer) && Context.TargetContainer != Context.FromContainer)
+    if (IsValid(Context.FromContainer)
+        && Context.TargetContainer != Context.FromContainer
+        && IsValid(GetOwnerContainer())
+    )
     {
         this->ChangeOwnerContainer(nullptr);
     }

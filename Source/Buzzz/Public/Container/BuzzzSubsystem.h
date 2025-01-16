@@ -11,7 +11,7 @@ class UBuzzzItemInstance;
 struct FBuzzzCellOperationContext;
 class UBuzzzContainer;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzSubsystemReceivedInstanceDisconnectDelegate, UBuzzzItemInstance*,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzReceiveInstanceDisconnectDelegate, UBuzzzItemInstance*,
                                              ItemInstance, UBuzzzContainer*, Container);
 
 /**
@@ -24,8 +24,8 @@ class BUZZZ_API UBuzzzSubsystem : public UGameInstanceSubsystem
 
 public:
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
-    FBuzzzCellMutationDelegate ReceivedContainerCellMutation;
+    FBuzzzCellMutationDelegate ReceiveContainerCellMutation;
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
-    FBuzzzSubsystemReceivedInstanceDisconnectDelegate ReceivedInstanceDisconnect;
+    FBuzzzReceiveInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 };

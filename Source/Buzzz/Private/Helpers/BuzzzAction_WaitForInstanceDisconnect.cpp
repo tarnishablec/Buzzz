@@ -20,7 +20,7 @@ void UBuzzzAction_WaitForInstanceDisconnect::Activate()
     const auto BuzzzSubsystem = TargetItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
     check(IsValid(BuzzzSubsystem))
 
-    BuzzzSubsystem->ReceivedInstanceDisconnect.AddDynamic(
+    BuzzzSubsystem->ReceiveInstanceDisconnect.AddDynamic(
         this, &UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect);
 }
 
@@ -37,7 +37,7 @@ void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
             const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
             if (IsValid(BuzzzSubsystem))
             {
-                BuzzzSubsystem->ReceivedInstanceDisconnect.RemoveAll(this);
+                BuzzzSubsystem->ReceiveInstanceDisconnect.RemoveAll(this);
             }
         }
     }

@@ -231,13 +231,17 @@ void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellOperationCo
 void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
                                                     const EBuzzzHiveMutationType ResizeType)
 {
-    // if (GetNetMode() == NM_Standalone)
+    // TODO : Should be Optimized
     {
         if (ResizeType == EBuzzzHiveMutationType::Add)
         {
             for (auto Index : Indices)
             {
-                Internal_Batched_AddedIndices.AddUnique(Index);
+                const auto Count = Internal_Batched_RemovedIndices.Remove(Index);
+                if (Count == 0)
+                {
+                    Internal_Batched_AddedIndices.AddUnique(Index);
+                }
             }
         }
 
@@ -245,7 +249,11 @@ void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Conta
         {
             for (auto Index : Indices)
             {
-                Internal_Batched_ChangedIndices.AddUnique(Index);
+                const auto Count = Internal_Batched_AddedIndices.Remove(Index);
+                if (Count == 0)
+                {
+                    Internal_Batched_RemovedIndices.AddUnique(Index);
+                }
             }
         }
     }
@@ -276,12 +284,17 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
         RemovedIndices.Add(i);
     }
 
-    for (int i = GetCapacity(); i < NewCapacity; ++i)
-    {
-        AddedIndices.Add(i);
-    }
+    const auto OldCapacity = GetCapacity();
 
     Hive.Cells.SetNum(NewCapacity);
+
+    for (int i = OldCapacity; i < NewCapacity; ++i)
+    {
+        AddedIndices.Add(i);
+        Hive.Cells[i].Container = this;
+        Hive.Cells[i].Index = i;
+    }
+
     Hive.MarkArrayDirty();
 
 
@@ -579,12 +592,12 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
                 {
                     TArray<UObject*> OutSubObjects{};
                     InstanceMayBeDisconnected->GetSubobjectsWithStableNamesForNetworking(OutSubObjects);
-                
+
                     for (auto&& OutSubObject : OutSubObjects)
                     {
                         RemoveReplicatedSubObject(OutSubObject);
                     }
-                
+
                     RemoveReplicatedSubObject(InstanceMayBeDisconnected);
                 }
                 const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
@@ -614,7 +627,11 @@ bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItemInstanc
 void UBuzzzContainer::BeginPlay()
 {
     Super::BeginPlay();
-    Resize(InitialCapacity);
+
+    if (GetOwner()->HasAuthority())
+    {
+        Resize(InitialCapacity);
+    }
 }
 
 void UBuzzzContainer::BeginDestroy()

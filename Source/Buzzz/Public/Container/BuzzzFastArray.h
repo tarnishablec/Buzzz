@@ -9,6 +9,7 @@
 #include "BuzzzFastArray.generated.h"
 
 
+class UBuzzzContainer;
 class UBuzzzItemInstance;
 
 UENUM(BlueprintType)
@@ -35,6 +36,12 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
 
     UPROPERTY(BlueprintReadOnly)
     int32 StackCount = 0;
+
+    UPROPERTY()
+    TObjectPtr<UBuzzzContainer> Container;
+
+    UPROPERTY()
+    int32 Index = INDEX_NONE;
 };
 
 

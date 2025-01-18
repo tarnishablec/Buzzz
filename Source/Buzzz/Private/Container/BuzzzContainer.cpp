@@ -558,7 +558,7 @@ void UBuzzzContainer::InitializeComponent()
 {
     Super::InitializeComponent();
 
-    Hive.InternalHiveMutationDelegate.AddLambda([this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
+    Hive.ReceiveRemoteHiveMutation.AddLambda([this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
     {
         Client_ReceiveHiveMutation.Broadcast(this, Indices, Type);
     });

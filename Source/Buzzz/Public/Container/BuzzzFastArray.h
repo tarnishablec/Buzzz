@@ -54,7 +54,7 @@ struct BUZZZ_API FBuzzzContainerHive : public FFastArraySerializer
                                          const TArray<int32>&,
                                          const EBuzzzHiveMutationType);
 
-    FInternalHiveMutationDelegate InternalHiveMutationDelegate;
+    FInternalHiveMutationDelegate ReceiveRemoteHiveMutation;
 
     UPROPERTY(BlueprintReadOnly)
     TArray<FBuzzzContainerCell> Cells;

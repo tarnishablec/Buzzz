@@ -28,7 +28,7 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
                        });
 }
 
-void UBuzzzSubsystem::ExecuteTransaction(APlayerController* Instigator,
+void UBuzzzSubsystem::TryExecuteTransaction(APlayerController*& Instigator,
                                          const TSubclassOf<UBuzzzTransaction>& TransactionClass,
                                          const FInstancedStruct& Payload)
 {

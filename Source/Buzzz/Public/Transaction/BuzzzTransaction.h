@@ -28,7 +28,5 @@ public:
     FInstancedStruct Payload;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category="Buzzz")
-    void OnExecute();
-
-    virtual void Rollback();
+    void Execute();
 };

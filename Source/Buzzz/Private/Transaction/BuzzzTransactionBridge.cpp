@@ -61,5 +61,5 @@ void ABuzzzTransactionBridge::Server_ProcessTransaction_Implementation(
 {
     const auto TransactionInstance = NewObject<UBuzzzTransaction>(this, TransactionClass);
     TransactionInstance->Payload = Payload;
-    TransactionInstance->OnExecute();
+    TransactionInstance->Execute();
 }

@@ -3,10 +3,6 @@
 
 #include "Transaction/BuzzzTransaction.h"
 
-void UBuzzzTransaction::OnExecute_Implementation()
-{
-}
-
-void UBuzzzTransaction::Rollback()
+void UBuzzzTransaction::Execute_Implementation()
 {
 }

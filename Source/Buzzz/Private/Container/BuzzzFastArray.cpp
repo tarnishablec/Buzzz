@@ -12,7 +12,7 @@ void FBuzzzContainerHive::PreReplicatedRemove(const TArrayView<int32>& RemovedIn
 {
     if (RemovedIndices.Num() > 0)
     {
-        InternalHiveMutationDelegate.Broadcast(
+        ReceiveRemoteHiveMutation.Broadcast(
             TArray(RemovedIndices.GetData(), RemovedIndices.Num()),
             EBuzzzHiveMutationType::Remove);
     }
@@ -38,7 +38,7 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
             }
         });
 
-        InternalHiveMutationDelegate.Broadcast(TArray(AddedIndices.GetData(), AddedIndices.Num()),
+        ReceiveRemoteHiveMutation.Broadcast(TArray(AddedIndices.GetData(), AddedIndices.Num()),
                                                EBuzzzHiveMutationType::Add);
 
         if (ChangedIndices.Num() > 0)
@@ -52,7 +52,7 @@ void FBuzzzContainerHive::PostReplicatedChange(const TArrayView<int32>& ChangedI
 {
     if (ChangedIndices.Num() > 0)
     {
-        InternalHiveMutationDelegate.Broadcast(
+        ReceiveRemoteHiveMutation.Broadcast(
             TArray(ChangedIndices.GetData(), ChangedIndices.Num()),
             EBuzzzHiveMutationType::Change);
     }

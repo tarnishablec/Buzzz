@@ -39,8 +39,9 @@ public:
     FBuzzzReceiveInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 
     UFUNCTION(BlueprintCallable, Category="Buzzz", meta = (AutoCreateRefTerm="TransactionClass"))
-    void ExecuteTransaction(APlayerController* Instigator, const TSubclassOf<UBuzzzTransaction>& TransactionClass,
-                            const FInstancedStruct& Payload);
+    void TryExecuteTransaction(UPARAM(ref) APlayerController*& Instigator,
+                               const TSubclassOf<UBuzzzTransaction>& TransactionClass,
+                               const FInstancedStruct& Payload);
 
     // This Will Run Both in Server And Client
     UFUNCTION()

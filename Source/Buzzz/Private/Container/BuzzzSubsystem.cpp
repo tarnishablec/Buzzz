@@ -10,6 +10,12 @@
 void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+
+    if (GetWorld()->GetNetMode() == NM_Client)
+    {
+        return;
+    }
+
     FGameModeEvents::GameModePostLoginEvent
         .AddWeakLambda(this, [this]
                    (AGameModeBase* GameMode, APlayerController* PlayerController)

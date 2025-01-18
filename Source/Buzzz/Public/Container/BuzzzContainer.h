@@ -199,10 +199,10 @@ private:
 
 #pragma region Standalone
     /**
-     * Only used in Standalone Mode For Submit Batching Indices
+     * Only used in Standalone / ListenServer Mode For Submit Batching Indices
      * Ensures consistency with the behavior in C/S Mode
      */
-    virtual void Standalone_TrySubmitMutationInfoToClient();
+    virtual void Internal_Locally_TrySubmitMutationInfoToClient();
 
 #pragma endregion
 

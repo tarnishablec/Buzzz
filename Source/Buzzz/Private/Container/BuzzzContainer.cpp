@@ -193,9 +193,9 @@ void UBuzzzContainer::FindIndexByDefinition(const UBuzzzItemDefinition* Definiti
     }
 }
 
-void UBuzzzContainer::Standalone_TrySubmitMutationInfoToClient()
+void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
 {
-    check(GetNetMode()==NM_Standalone);
+    check(GetNetMode()==NM_Standalone || GetNetMode() == NM_ListenServer);
 
     if (Internal_Batched_RemovedIndices.Num())
     {
@@ -577,9 +577,11 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (GetNetMode() == NM_Standalone)
+    if ((GetNetMode() == NM_Standalone)
+        || GetNetMode() == NM_ListenServer
+    )
     {
-        Standalone_TrySubmitMutationInfoToClient();
+        Internal_Locally_TrySubmitMutationInfoToClient();
     }
 
     if (GetOwner()->HasAuthority())

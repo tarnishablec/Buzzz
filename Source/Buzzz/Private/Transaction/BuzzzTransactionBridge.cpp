@@ -4,7 +4,7 @@
 #include "Transaction/BuzzzTransactionBridge.h"
 
 #include "Container/BuzzzSubsystem.h"
-#include "Net/UnrealNetwork.h"
+// #include "Net/UnrealNetwork.h"
 #include "Transaction/BuzzzTransaction.h"
 
 // Sets default values
@@ -30,11 +30,6 @@ void ABuzzzTransactionBridge::BeginPlay()
 void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    FDoRepLifetimeParams Params;
-    Params.Condition = COND_OwnerOnly;
-    Params.bIsPushBased = true;
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, OwnerPlayerController, Params);
 }
 
 void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
@@ -42,6 +37,23 @@ void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
     // Client SetOwner
     SetOwner(OwnerPlayerController);
 }
+
+UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransactionByClass_Implementation(
+    const TSubclassOf<UBuzzzTransaction> TransactionClass, const FInstancedStruct& Payload)
+{
+    const auto TransactionInstance = MakeTransaction(TransactionClass, Payload);
+    TransactionInstance->Execute();
+    return TransactionInstance;
+}
+
+UBuzzzTransaction* ABuzzzTransactionBridge::MakeTransaction_Implementation(
+    const TSubclassOf<UBuzzzTransaction> TransactionClass, const FInstancedStruct& Payload)
+{
+    const auto Result = NewObject<UBuzzzTransaction>(this, TransactionClass);
+    Result->Payload = Payload;
+    return Result;
+}
+
 
 void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
 {
@@ -59,7 +71,5 @@ void ABuzzzTransactionBridge::Server_ProcessTransaction_Implementation(
     const FInstancedStruct& Payload
 )
 {
-    const auto TransactionInstance = NewObject<UBuzzzTransaction>(this, TransactionClass);
-    TransactionInstance->Payload = Payload;
-    TransactionInstance->Execute();
+    ProcessTransactionByClass(TransactionClass, Payload);
 }

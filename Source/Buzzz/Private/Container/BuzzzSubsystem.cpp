@@ -28,15 +28,30 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
                        });
 }
 
-void UBuzzzSubsystem::TryExecuteTransaction(APlayerController*& Instigator,
-                                         const TSubclassOf<UBuzzzTransaction>& TransactionClass,
-                                         const FInstancedStruct& Payload)
+void UBuzzzSubsystem::TryProcessTransaction(APlayerController*& Instigator,
+                                            const TSubclassOf<UBuzzzTransaction>& TransactionClass,
+                                            const FInstancedStruct& Payload)
 {
     check(Instigator);
-    const auto* Bridge = BridgeRegistry.Find(Instigator);
-    if (Bridge && IsValid(*Bridge))
+    check(TransactionClass->IsChildOf(UBuzzzTransaction::StaticClass()));
+    
+    const auto* const BridgePtr = BridgeRegistry.Find(Instigator);
+    if (BridgePtr)
     {
-        (*Bridge)->Server_ProcessTransaction(TransactionClass, Payload);
+        const auto Bridge = *BridgePtr;
+        if (IsValid(Bridge))
+        {
+            if (Bridge->IsNetMode(NM_Client))
+            {
+                // Client To Server RPC
+                Bridge->Server_ProcessTransaction(TransactionClass, Payload);
+            }
+            else
+            {
+                // Server Internal Call
+                Bridge->ProcessTransactionByClass(TransactionClass, Payload);
+            }
+        }
     }
 }
 

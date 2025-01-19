@@ -38,8 +38,9 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzReceiveInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 
-    UFUNCTION(BlueprintCallable, Category="Buzzz", meta = (AutoCreateRefTerm="TransactionClass"))
-    void TryExecuteTransaction(UPARAM(ref) APlayerController*& Instigator,
+
+    UFUNCTION(BlueprintCallable, Category="Buzzz", meta = (AutoCreateRefTerm="TransactionClass,Payload"))
+    void TryProcessTransaction(UPARAM(ref) APlayerController*& Instigator,
                                const TSubclassOf<UBuzzzTransaction>& TransactionClass,
                                const FInstancedStruct& Payload);
 

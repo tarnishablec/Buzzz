@@ -238,12 +238,5 @@ public:
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
     bool ClearCell(const int32& Index, FBuzzzCellOperationContext& OutContext);
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
-        meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
-    bool MergeCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
-
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
-        meta = (AutoCreateRefTerm = "Index,FromIndex", ReturnDisplayName="Success"))
-    bool SwapCells(const int32& Index, UBuzzzContainer* FromContainer, const int32& FromIndex);
 #pragma endregion
 };

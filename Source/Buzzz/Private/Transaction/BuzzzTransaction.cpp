@@ -44,6 +44,8 @@ const UBuzzzTransaction* UBuzzzTransaction::Execute()
         State = EBuzzzTransactionState::Success;
     }
 
+    GetBridge()->ReceiveTransactionFinished.Broadcast(this);
+
     return this;
 }
 
@@ -54,8 +56,6 @@ void UBuzzzTransaction::K2_OnFailed_Implementation()
 void UBuzzzTransaction::MarkTransactionFailed()
 {
     State = EBuzzzTransactionState::Failed;
-
-    GetBridge()->ReceiveTransactionFinished.Broadcast(this);
 
     K2_OnFailed();
 }

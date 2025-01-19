@@ -42,7 +42,7 @@ public:
     UPROPERTY(BlueprintReadOnly, Category="Buzzz")
     FInstancedStruct Payload;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
     EBuzzzTransactionState State = EBuzzzTransactionState::None;
 
     UFUNCTION(BlueprintPure, Category="Buzzz")

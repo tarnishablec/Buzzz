@@ -4,7 +4,7 @@
 #include "Transaction/BuzzzTransactionBridge.h"
 
 #include "Container/BuzzzSubsystem.h"
-// #include "Net/UnrealNetwork.h"
+#include "Net/UnrealNetwork.h"
 #include "Transaction/BuzzzTransaction.h"
 
 // Sets default values
@@ -30,6 +30,11 @@ void ABuzzzTransactionBridge::BeginPlay()
 void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    FDoRepLifetimeParams Params;
+    Params.Condition = COND_OwnerOnly;
+    Params.bIsPushBased = true;
+    DOREPLIFETIME_WITH_PARAMS(ThisClass, OwnerPlayerController, Params);
 }
 
 void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()

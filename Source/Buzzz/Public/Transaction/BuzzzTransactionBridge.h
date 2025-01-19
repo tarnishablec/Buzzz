@@ -57,7 +57,7 @@ public:
     );
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category="Buzzz",
-        meta=(AutoCreateRefTerm="Payload"))
+        meta=(AutoCreateRefTerm="Payload", DeterminesOutputType="TransactionClass"))
     UBuzzzTransaction* ProcessTransactionByClass(TSubclassOf<UBuzzzTransaction> TransactionClass,
                                                  const FInstancedStruct& Payload = FInstancedStruct());
 

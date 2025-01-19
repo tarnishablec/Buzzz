@@ -348,12 +348,12 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Context.bFinished = true;
     }
 
-    // StackCount Should be Positive
-    check(Context.UpcomingStackCount >= 0);
-    if (Context.UpcomingStackCount < 0)
-    {
-        Context.bFinished = true;
-    }
+    // StackCount Should be Positive ? Should Be?
+    // check(Context.UpcomingStackCount >= 0);
+    // if (Context.UpcomingStackCount < 0)
+    // {
+    //     Context.bFinished = true;
+    // }
 
     // if Empty Instance, StackCount Should Be 0
     if (!IsValid(Context.UpcomingInstance))

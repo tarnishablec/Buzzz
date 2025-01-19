@@ -65,8 +65,9 @@ public:
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category="Buzzz",
         meta=(AutoCreateRefTerm="Payload", DeterminesOutputType="TransactionClass"))
-    UBuzzzTransaction* ProcessTransactionByClass(TSubclassOf<UBuzzzTransaction> TransactionClass,
-                                                 const FInstancedStruct& Payload = FInstancedStruct());
+    UBuzzzTransaction* ProcessTransactionByClass(
+        UPARAM(meta=(AllowAbstract=false)) TSubclassOf<UBuzzzTransaction> TransactionClass,
+        const FInstancedStruct& Payload = FInstancedStruct());
 
 
     template <pointer_convertible_to_buzzz_transaction T>

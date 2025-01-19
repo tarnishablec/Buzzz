@@ -39,10 +39,13 @@ public:
     FBuzzzReceiveInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 
 
-    UFUNCTION(BlueprintCallable, Category="Buzzz", meta = (AutoCreateRefTerm="TransactionClass,Payload"))
-    void TryProcessTransaction(UPARAM(ref) APlayerController*& Instigator,
-                               const TSubclassOf<UBuzzzTransaction>& TransactionClass,
-                               const FInstancedStruct& Payload);
+    UFUNCTION(BlueprintCallable, Category="Buzzz", BlueprintCosmetic,
+        meta = (AutoCreateRefTerm="TransactionClass,Payload"))
+    void Try_Process_RPC_Transaction(
+        UPARAM(ref) APlayerController*& Instigator,
+        UPARAM(meta=(AllowAbstract=false)) const TSubclassOf<UBuzzzTransaction>& TransactionClass,
+        const FInstancedStruct& Payload
+    );
 
     // This Will Run Both in Server And Client
     void RegisterBridgeLink(APlayerController* PlayerController, ABuzzzTransactionBridge* Bridge);

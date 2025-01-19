@@ -9,7 +9,7 @@
 class UBuzzzContainer;
 
 USTRUCT(BlueprintType)
-struct FBuzzzTransaction_Common_Payload
+struct FBuzzzTransactionPayload_Common
 {
     GENERATED_BODY()
 

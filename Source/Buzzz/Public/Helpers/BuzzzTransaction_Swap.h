@@ -6,7 +6,7 @@
 #include "Transaction/BuzzzTransaction.h"
 #include "BuzzzTransaction_Swap.generated.h"
 
-struct FBuzzzTransaction_Common_Payload;
+struct FBuzzzTransactionPayload_Common;
 class UBuzzzContainer;
 /**
  * 
@@ -16,7 +16,7 @@ class BUZZZ_API UBuzzzTransaction_Swap : public UBuzzzTransaction
 {
     GENERATED_BODY()
 
-    using FPayloadType = FBuzzzTransaction_Common_Payload;
+    using FPayloadType = FBuzzzTransactionPayload_Common;
 
     virtual void K2_OnExecute_Implementation() override;
 };

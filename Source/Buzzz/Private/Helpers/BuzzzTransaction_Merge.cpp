@@ -64,7 +64,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
         return;
     }
     
-    FBuzzzTransaction_Common_Payload ClearPayload{};
+    FBuzzzTransactionPayload_Common ClearPayload{};
     ClearPayload.TargetContainer = FromContainer;
     ClearPayload.TargetIndex = FromIndex;
     const auto InstancedPayload = FInstancedStruct::Make(ClearPayload);

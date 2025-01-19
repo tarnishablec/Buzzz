@@ -2,10 +2,13 @@
 
 
 #include "Transaction/BuzzzTransactionBridge.h"
-
 #include "Container/BuzzzSubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "Transaction/BuzzzTransaction.h"
+
+#if UE_WITH_IRIS
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
+#endif
 
 // Sets default values
 ABuzzzTransactionBridge::ABuzzzTransactionBridge()
@@ -27,6 +30,24 @@ void ABuzzzTransactionBridge::BeginPlay()
     Super::BeginPlay();
 }
 
+void ABuzzzTransactionBridge::BeginDestroy()
+{
+    Super::BeginDestroy();
+}
+
+void ABuzzzTransactionBridge::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    Super::EndPlay(EndPlayReason);
+    if (IsValid(GetGameInstance()))
+    {
+        const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+        if (IsValid(Subsystem))
+        {
+            Subsystem->UnregisterBridgeLink(this);
+        }
+    }
+}
+
 void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -39,8 +60,15 @@ void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeP
 
 void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
 {
-    // Client SetOwner
-    SetOwner(OwnerPlayerController);
+    const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+    if (OwnerPlayerController)
+    {
+        Subsystem->RegisterBridgeLink(OwnerPlayerController, this);
+    }
+    else
+    {
+        checkNoEntry();
+    }
 }
 
 UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransactionByClass_Implementation(
@@ -63,13 +91,32 @@ UBuzzzTransaction* ABuzzzTransactionBridge::MakeTransaction_Implementation(
 void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
 {
     Super::SetOwner(NewOwner);
-    OwnerPlayerController = Cast<APlayerController>(NewOwner);
-    if (OwnerPlayerController)
+
+
+    if (HasAuthority())
     {
+        COMPARE_ASSIGN_AND_MARK_PROPERTY_DIRTY(ThisClass, OwnerPlayerController, Cast<APlayerController>(NewOwner),
+                                               this);
         const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-        Subsystem->RegisterBridgeLink(OwnerPlayerController, this);
+
+        if (OwnerPlayerController)
+        {
+            Subsystem->RegisterBridgeLink(OwnerPlayerController, this);
+        }
+        else
+        {
+            Subsystem->UnregisterBridgeLink(this);
+        }
     }
 }
+
+#if UE_WITH_IRIS
+void ABuzzzTransactionBridge::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                                           UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+    UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+#endif
 
 void ABuzzzTransactionBridge::Server_ProcessTransaction_Implementation(
     const TSubclassOf<UBuzzzTransaction> TransactionClass,

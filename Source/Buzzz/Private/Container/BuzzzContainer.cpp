@@ -543,7 +543,7 @@ void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     FDoRepLifetimeParams Params;
     Params.Condition = COND_OwnerOnly;
     Params.bIsPushBased = false;
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, Hive, Params);
+    DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Hive, Params);
 }
 
 void UBuzzzContainer::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)

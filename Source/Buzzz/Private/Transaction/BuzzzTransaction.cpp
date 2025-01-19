@@ -3,7 +3,6 @@
 
 #include "Transaction/BuzzzTransaction.h"
 
-#include "Net/UnrealNetwork.h"
 #include "Transaction/BuzzzTransactionBridge.h"
 
 void UBuzzzTransaction::K2_OnExecute_Implementation()
@@ -14,10 +13,10 @@ void UBuzzzTransaction::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 {
     UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    FDoRepLifetimeParams Params;
-    Params.Condition = COND_OwnerOnly;
-    Params.bIsPushBased = true;
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, TransactionID, Params);
+    // FDoRepLifetimeParams Params;
+    // Params.Condition = COND_OwnerOnly;
+    // Params.bIsPushBased = true;
+    // DOREPLIFETIME_WITH_PARAMS(ThisClass, TransactionID, Params);
 }
 
 ABuzzzTransactionBridge* UBuzzzTransaction::GetBridge() const

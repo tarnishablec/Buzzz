@@ -28,8 +28,15 @@ class BUZZZ_API ABuzzzTransactionBridge : public AActor
 public:
     ABuzzzTransactionBridge();
     virtual void BeginPlay() override;
+    virtual void BeginDestroy() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void SetOwner(AActor* NewOwner) override;
+
+#if UE_WITH_IRIS
+    virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                              UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
+#endif
 
     //
 

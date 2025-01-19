@@ -24,7 +24,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzReceiveInstanceDisconnectDele
  * 
  */
 UCLASS()
-class BUZZZ_API UBuzzzSubsystem : public UGameInstanceSubsystem
+class BUZZZ_API UBuzzzSubsystem final : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 
@@ -45,8 +45,9 @@ public:
                                const FInstancedStruct& Payload);
 
     // This Will Run Both in Server And Client
-    UFUNCTION()
     void RegisterBridgeLink(APlayerController* PlayerController, ABuzzzTransactionBridge* Bridge);
+
+    void UnregisterBridgeLink(AActor* PlayerControllerOrBridge);
 
 protected:
     friend class UBuzzzTransactionBridge;

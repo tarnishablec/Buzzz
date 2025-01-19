@@ -26,6 +26,20 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
                                NewBridget->SetOwner(PlayerController);
                            }
                        });
+
+    FGameModeEvents::GameModeLogoutEvent.AddWeakLambda(this, [this](AGameModeBase* GameMode, AController* Controller)
+    {
+        const auto PC = CastChecked<APlayerController>(Controller);
+        if (PC->HasAuthority())
+        {
+            const auto MatchedBridgePtr = BridgeRegistry.Find(PC);
+            if (MatchedBridgePtr && IsValid(*MatchedBridgePtr))
+            {
+                (*MatchedBridgePtr)->SetOwner(nullptr);
+                (*MatchedBridgePtr)->Destroy();
+            }
+        }
+    });
 }
 
 void UBuzzzSubsystem::TryProcessTransaction(APlayerController*& Instigator,
@@ -34,7 +48,7 @@ void UBuzzzSubsystem::TryProcessTransaction(APlayerController*& Instigator,
 {
     check(Instigator);
     check(TransactionClass->IsChildOf(UBuzzzTransaction::StaticClass()));
-    
+
     const auto* const BridgePtr = BridgeRegistry.Find(Instigator);
     if (BridgePtr)
     {
@@ -60,8 +74,25 @@ void UBuzzzSubsystem::RegisterBridgeLink(APlayerController* PlayerController, AB
     BridgeRegistry.Add(PlayerController, Bridge);
 }
 
+void UBuzzzSubsystem::UnregisterBridgeLink(AActor* PlayerControllerOrBridge)
+{
+    if (const auto PC = Cast<APlayerController>(PlayerControllerOrBridge))
+    {
+        BridgeRegistry.Remove(PC);
+    }
+    else if (const auto Bridge = Cast<ABuzzzTransactionBridge>(PlayerControllerOrBridge))
+    {
+        const auto PCPtr = BridgeRegistry.FindKey(Bridge);
+        if (PCPtr)
+        {
+            BridgeRegistry.Remove(*PCPtr);
+        }
+    }
+}
+
 void UBuzzzSubsystem::Deinitialize()
 {
     Super::Deinitialize();
     FGameModeEvents::GameModePostLoginEvent.RemoveAll(this);
+    FGameModeEvents::GameModeLogoutEvent.RemoveAll(this);
 }

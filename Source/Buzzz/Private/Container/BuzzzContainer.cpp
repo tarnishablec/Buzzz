@@ -342,8 +342,8 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
         Context.bFinished = true;
     }
     // Nothing Changed
-    else if (Hive.Cells[Context.TargetIndex].ItemInstance == Context.UpcomingInstance && Hive.Cells[Context.TargetIndex]
-        .StackCount == Context.UpcomingStackCount)
+    else if (Hive.Cells[Context.TargetIndex].ItemInstance == Context.UpcomingInstance
+        && Hive.Cells[Context.TargetIndex].StackCount == Context.UpcomingStackCount)
     {
         Context.bFinished = true;
     }
@@ -359,10 +359,6 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
     if (!IsValid(Context.UpcomingInstance))
     {
         check(Context.UpcomingStackCount == 0);
-        if (Context.UpcomingStackCount != 0)
-        {
-            Context.bFinished = true;
-        }
     }
 
     // CheckCompatible

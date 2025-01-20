@@ -68,7 +68,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     ClearPayload.TargetContainer = FromContainer;
     ClearPayload.TargetIndex = FromIndex;
     const auto InstancedPayload = FInstancedStruct::Make(ClearPayload);
-    const auto ClearTransactionInstance = GetBridge()->ProcessTransactionByClass<UBuzzzTransaction_Clear>(
+    const auto ClearTransactionInstance = GetBridge()->ProcessTransaction<UBuzzzTransaction_Clear>(
         InstancedPayload);
 
     if (ClearTransactionInstance->State == EBuzzzExecutionState::Success)

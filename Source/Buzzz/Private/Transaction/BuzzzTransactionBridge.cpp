@@ -71,7 +71,7 @@ void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
     }
 }
 
-UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransactionByClass_Implementation(
+UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransaction_Implementation(
     const TSubclassOf<UBuzzzTransaction> TransactionClass, const FInstancedStruct& Payload)
 {
     const auto TransactionInstance = MakeTransaction(TransactionClass, Payload);
@@ -123,5 +123,5 @@ void ABuzzzTransactionBridge::Server_ProcessTransaction_Implementation(
     const FInstancedStruct& Payload
 )
 {
-    ProcessTransactionByClass(TransactionClass, Payload);
+    ProcessTransaction(TransactionClass, Payload);
 }

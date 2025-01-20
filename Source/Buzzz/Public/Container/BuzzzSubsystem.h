@@ -41,7 +41,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Buzzz", BlueprintCosmetic,
         meta = (AutoCreateRefTerm="TransactionClass,Payload"))
-    void Try_Process_RPC_Transaction(
+    void Try_Process_Server_Transaction(
         UPARAM(ref) APlayerController*& Instigator,
         UPARAM(meta=(AllowAbstract=false)) const TSubclassOf<UBuzzzTransaction>& TransactionClass,
         const FInstancedStruct& Payload

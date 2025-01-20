@@ -7,7 +7,6 @@
 #include "Transaction/BuzzzTransactionBridge.h"
 #include "BuzzzSettings.generated.h"
 
-class ABuzzzTransactionBridge;
 /**
  * 
  */

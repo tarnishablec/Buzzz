@@ -44,9 +44,9 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     });
 }
 
-void UBuzzzSubsystem::Try_Process_RPC_Transaction(APlayerController*& Instigator,
-                                                  const TSubclassOf<UBuzzzTransaction>& TransactionClass,
-                                                  const FInstancedStruct& Payload)
+void UBuzzzSubsystem::Try_Process_Server_Transaction(APlayerController*& Instigator,
+                                                     const TSubclassOf<UBuzzzTransaction>& TransactionClass,
+                                                     const FInstancedStruct& Payload)
 {
     check(Instigator);
     check(TransactionClass->IsChildOf(UBuzzzTransaction::StaticClass()));

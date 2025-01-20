@@ -10,60 +10,11 @@
 class UBuzzzItemDefinition;
 class UBuzzzItemInstance;
 class UBuzzzContainer;
-
-USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzCellOperationContext
-{
-    GENERATED_BODY()
-
-    // Input
-
-    UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzContainer> TargetContainer;
-
-    UPROPERTY(BlueprintReadWrite)
-    int32 TargetIndex = INDEX_NONE;
-
-    UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzItemInstance> UpcomingInstance;
-
-    UPROPERTY(BlueprintReadWrite)
-    int32 UpcomingStackCount = -1;
-
-    UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzContainer> FromContainer;
-
-    UPROPERTY(BlueprintReadWrite)
-    int32 FromIndex = INDEX_NONE;
-
-    // Output
-
-    UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzItemInstance> PreviousInstance;
-
-    UPROPERTY(BlueprintReadOnly)
-    int32 PreviousStackCount = -1;
-
-    UPROPERTY(BlueprintReadOnly)
-    bool bSuccess = false;
-
-    UPROPERTY(BlueprintReadOnly)
-    bool bFinished = false;
-
-    static FBuzzzCellOperationContext& GetEmptyContext()
-    {
-        thread_local FBuzzzCellOperationContext EmptyContext{};
-        return EmptyContext;
-    }
-
-    void Reset()
-    {
-        *this = GetEmptyContext();
-    }
-};
+struct FBuzzzCellAssignmentContext;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellOperationContext&, Context);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellAssignmentContext&, Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate,
                                                const UBuzzzContainer*, Container,
@@ -175,7 +126,7 @@ public:
 private:
 #pragma region Internal
     UFUNCTION()
-    virtual void Internal_HandlePostCellChanged(const FBuzzzCellOperationContext& Context);
+    virtual void Internal_HandlePostCellChanged(const FBuzzzCellAssignmentContext& Context);
 
     UFUNCTION()
     virtual void Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
@@ -229,14 +180,14 @@ public:
 
 #pragma region Assign Operation
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
-    FBuzzzCellOperationContext AssignCell(UPARAM(ref) FBuzzzCellOperationContext& Context);
+    FBuzzzCellAssignmentContext AssignCell(UPARAM(ref) FBuzzzCellAssignmentContext& Context);
 #pragma endregion
 
 
 #pragma region Wrapper Operations
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
-    bool ClearCell(const int32& Index, FBuzzzCellOperationContext& OutContext);
+    FBuzzzCellAssignmentContext ClearCell(const int32& Index, FBuzzzCellAssignmentContext& OutContext);
 
 #pragma endregion
 };

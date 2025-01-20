@@ -19,12 +19,11 @@ void UBuzzzTransaction_Clear::K2_OnExecute_Implementation()
     const auto TargetIndex = PayloadPtr->TargetIndex;
 
 
-    FBuzzzCellOperationContext OutContext{};
-    const auto Result = TargetContainer->ClearCell(TargetIndex, OutContext);
+    FBuzzzCellAssignmentContext OutContext{};
+    TargetContainer->ClearCell(TargetIndex, OutContext);
 
-    if (!Result)
+    if (OutContext.State != EBuzzzExecutionState::Success)
     {
         MarkTransactionFailed();
     }
-
 }

@@ -32,15 +32,15 @@ APlayerController* UBuzzzTransaction::GetBridgeController() const
 
 const UBuzzzTransaction* UBuzzzTransaction::Execute()
 {
-    State = EBuzzzTransactionState::Executing;
+    State = EBuzzzExecutionState::Executing;
 
     GetBridge()->ReceiveTransactionStarted.Broadcast(this);
 
     K2_OnExecute();
 
-    if (State == EBuzzzTransactionState::Executing)
+    if (State == EBuzzzExecutionState::Executing)
     {
-        State = EBuzzzTransactionState::Success;
+        State = EBuzzzExecutionState::Success;
     }
 
     GetBridge()->ReceiveTransactionFinished.Broadcast(this);
@@ -54,7 +54,9 @@ void UBuzzzTransaction::K2_OnFailed_Implementation()
 
 void UBuzzzTransaction::MarkTransactionFailed()
 {
-    State = EBuzzzTransactionState::Failed;
+    State = EBuzzzExecutionState::Failed;
+
+    GetBridge()->ReceiveTransactionFailed.Broadcast(this);
 
     K2_OnFailed();
 }

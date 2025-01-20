@@ -32,6 +32,7 @@ public class Buzzz : ModuleRules
 			new string[]
 			{
 				"Core",
+				"DeveloperSettings",
 				"NetCore",
 				"NetCommon",
 				"StructUtils"

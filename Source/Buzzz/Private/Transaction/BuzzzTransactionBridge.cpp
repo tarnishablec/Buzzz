@@ -93,7 +93,7 @@ void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
     Super::SetOwner(NewOwner);
 
 
-    if (HasAuthority())
+    if (HasAuthority() && GetWorld()->IsGameWorld())
     {
         COMPARE_ASSIGN_AND_MARK_PROPERTY_DIRTY(ThisClass, OwnerPlayerController, Cast<APlayerController>(NewOwner),
                                                this);

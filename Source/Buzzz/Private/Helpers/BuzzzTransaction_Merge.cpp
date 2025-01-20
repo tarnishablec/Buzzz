@@ -47,7 +47,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     }
 #pragma endregion
 
-    FBuzzzCellOperationContext InContext{};
+    FBuzzzCellAssignmentContext InContext{};
     InContext.TargetContainer = TargetContainer;
     InContext.TargetIndex = TargetIndex;
 
@@ -58,12 +58,12 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     InContext.FromIndex = FromIndex;
     TargetContainer->AssignCell(InContext);
 
-    if (!(InContext.bFinished && InContext.bSuccess))
+    if (InContext.State != EBuzzzExecutionState::Success)
     {
         MarkTransactionFailed();
         return;
     }
-    
+
     FBuzzzTransactionPayload_Common ClearPayload{};
     ClearPayload.TargetContainer = FromContainer;
     ClearPayload.TargetIndex = FromIndex;
@@ -71,7 +71,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     const auto ClearTransactionInstance = GetBridge()->ProcessTransactionByClass<UBuzzzTransaction_Clear>(
         InstancedPayload);
 
-    if (ClearTransactionInstance->State == EBuzzzTransactionState::Success)
+    if (ClearTransactionInstance->State == EBuzzzExecutionState::Success)
     {
         return;
     }

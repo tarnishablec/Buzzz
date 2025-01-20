@@ -20,7 +20,7 @@ concept pointer_convertible_to_buzzz_transaction =
     std::is_convertible_v<T*, UBuzzzTransaction*>;
 
 
-UCLASS(BlueprintType, NotPlaceable)
+UCLASS(Blueprintable, NotPlaceable)
 class BUZZZ_API ABuzzzTransactionBridge : public AActor
 {
     GENERATED_BODY()
@@ -45,6 +45,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzReceiveTransactionDelegate ReceiveTransactionFinished;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
+    FBuzzzReceiveTransactionDelegate ReceiveTransactionFailed;
 
 private:
     HIDE_ACTOR_TRANSFORM_FUNCTIONS();

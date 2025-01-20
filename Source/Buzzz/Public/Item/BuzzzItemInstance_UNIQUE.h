@@ -10,7 +10,7 @@
 class UBuzzzAction_WaitForContainerOperation;
 class UBuzzzContainer;
 class UBuzzzItemDefinition;
-struct FBuzzzCellOperationContext;
+struct FBuzzzCellAssignmentContext;
 
 /**
  * 
@@ -33,10 +33,10 @@ public:
 
 protected:
     UFUNCTION()
-    void OnAssignAction(const FBuzzzCellOperationContext& Context);
+    void OnAssignAction(const FBuzzzCellAssignmentContext& Context);
 
     UFUNCTION()
-    void OnRemoveAction(const FBuzzzCellOperationContext& Context);
+    void OnRemoveAction(const FBuzzzCellAssignmentContext& Context);
 
     UPROPERTY()
     TObjectPtr<UBuzzzAction_WaitForContainerOperation> AssignAction;

@@ -8,7 +8,7 @@
 #include "BuzzzAction_WaitForContainerOperation.generated.h"
 
 class UBuzzzSubsystem;
-struct FBuzzzCellOperationContext;
+struct FBuzzzCellAssignmentContext;
 class UBuzzzItemInstance;
 /**
  * 
@@ -54,5 +54,5 @@ protected:
     EOperationMode OperationMode;
 
     UFUNCTION()
-    void HandleReceivedContainerMutation(const FBuzzzCellOperationContext& Context);
+    void HandleReceivedContainerMutation(const FBuzzzCellAssignmentContext& Context);
 };

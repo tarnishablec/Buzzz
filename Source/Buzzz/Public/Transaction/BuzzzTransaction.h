@@ -3,22 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Helpers/BuzzzSharedTypes.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"
 #include "BuzzzTransaction.generated.h"
 
 class UBuzzzSubsystem;
 class ABuzzzTransactionBridge;
-
-UENUM(BlueprintType)
-enum class EBuzzzTransactionState : uint8
-{
-    None = 0 UMETA(Hidden),
-    Executing,
-    Success,
-    Failed,
-};
-
 
 /**
  * 
@@ -43,7 +34,7 @@ public:
     FInstancedStruct Payload;
 
     UPROPERTY(BlueprintReadOnly, Category="Buzzz")
-    EBuzzzTransactionState State = EBuzzzTransactionState::None;
+    EBuzzzExecutionState State = EBuzzzExecutionState::None;
 
     UFUNCTION(BlueprintPure, Category="Buzzz")
     ABuzzzTransactionBridge* GetBridge() const;

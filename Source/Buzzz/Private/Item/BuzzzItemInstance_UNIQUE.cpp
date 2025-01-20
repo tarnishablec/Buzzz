@@ -3,6 +3,7 @@
 #include "Item/BuzzzItemInstance_UNIQUE.h"
 
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
+#include "Helpers/BuzzzSharedTypes.h"
 #include "Item/BuzzzItemDefinition.h"
 #include "Misc/EngineVersionComparison.h"
 
@@ -23,7 +24,7 @@ UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
     return Cast<UBuzzzContainer>(GetOuter());
 }
 
-void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellOperationContext& Context)
+void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellAssignmentContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.TargetContainer)
@@ -35,7 +36,7 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellOperationContext&
     }
 }
 
-void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellOperationContext& Context)
+void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellAssignmentContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.FromContainer)

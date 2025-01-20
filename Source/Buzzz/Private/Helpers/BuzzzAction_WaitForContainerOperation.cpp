@@ -4,6 +4,7 @@
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
 
 #include "Container/BuzzzSubsystem.h"
+#include "Helpers/BuzzzSharedTypes.h"
 #include "Item/BuzzzItemInstance.h"
 
 
@@ -36,7 +37,7 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
-    const FBuzzzCellOperationContext& Context)
+    const FBuzzzCellAssignmentContext& Context)
 {
     if (OperationMode == EOperationMode::Assign)
     {

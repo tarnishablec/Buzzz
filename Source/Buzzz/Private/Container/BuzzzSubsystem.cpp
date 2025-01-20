@@ -4,6 +4,7 @@
 #include "Container/BuzzzSubsystem.h"
 
 #include "GameFramework/GameModeBase.h"
+#include "Helpers/BuzzzSettings.h"
 #include "Transaction/BuzzzTransaction.h"
 #include "Transaction/BuzzzTransactionBridge.h"
 
@@ -22,7 +23,8 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
                        {
                            if (PlayerController->HasAuthority() && !BridgeRegistry.Find(PlayerController))
                            {
-                               const auto NewBridget = GetWorld()->SpawnActor<ABuzzzTransactionBridge>();
+                               const auto NewBridget = GetWorld()->SpawnActor<ABuzzzTransactionBridge>(
+                                   UBuzzzSettings::Get()->TransactionBridgeClass);
                                NewBridget->SetOwner(PlayerController);
                            }
                        });

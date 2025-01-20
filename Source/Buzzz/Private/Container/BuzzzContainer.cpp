@@ -4,6 +4,7 @@
 #include "Container/BuzzzContainer.h"
 
 #include "Container/BuzzzSubsystem.h"
+#include "Helpers/BuzzzSharedTypes.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
@@ -213,7 +214,7 @@ void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
     }
 }
 
-void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellOperationContext& Context)
+void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellAssignmentContext& Context)
 {
     // if (GetNetMode() == NM_Standalone)
     {
@@ -274,10 +275,10 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
     // Clear Cell While NewCapacity is smaller
     for (int i = NewCapacity; i < GetCapacity(); ++i)
     {
-        FBuzzzCellOperationContext Context{};
+        FBuzzzCellAssignmentContext Context{};
         ClearCell(i, Context);
 
-        if (!(Context.bFinished && Context.bSuccess))
+        if (Context.State != EBuzzzExecutionState::Success)
         {
             return false;
         }
@@ -312,26 +313,33 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 }
 
 
-bool UBuzzzContainer::ClearCell_Implementation(const int32& Index, FBuzzzCellOperationContext& OutContext)
+FBuzzzCellAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int32& Index,
+                                                                      FBuzzzCellAssignmentContext& OutContext)
 {
-    if (!CheckIndexIsValid(Index))
-    {
-        return false;
-    }
-
     OutContext.Reset();
     OutContext.TargetIndex = Index;
     OutContext.UpcomingStackCount = 0;
     OutContext.TargetContainer = this;
-    AssignCell(OutContext);
 
-    return OutContext.bFinished && OutContext.bSuccess;
+    if (!CheckIndexIsValid(Index))
+    {
+        OutContext.State = EBuzzzExecutionState::Failed;
+        return OutContext;
+    }
+
+    AssignCell(OutContext);
+    return OutContext;
 }
 
 
-FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCellOperationContext& Context)
+FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCellAssignmentContext& Context)
 {
     FScopeLock ScopeLock(&ContainerCS);
+
+    if (Context.State == EBuzzzExecutionState::None)
+    {
+        Context.State = EBuzzzExecutionState::Executing;
+    }
 
     // Make Sure TargetContainer is Set
     Context.TargetContainer = this;
@@ -339,20 +347,20 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
     // Check Index Valid
     if (!CheckIndexIsValid(Context.TargetIndex))
     {
-        Context.bFinished = true;
+        Context.State = EBuzzzExecutionState::Failed;
     }
     // Nothing Changed
     else if (Hive.Cells[Context.TargetIndex].ItemInstance == Context.UpcomingInstance
         && Hive.Cells[Context.TargetIndex].StackCount == Context.UpcomingStackCount)
     {
-        Context.bFinished = true;
+        Context.State = EBuzzzExecutionState::Failed;
     }
 
     // StackCount Should be Positive ? Should Be?
     // check(Context.UpcomingStackCount >= 0);
     // if (Context.UpcomingStackCount < 0)
     // {
-    //     Context.bFinished = true;
+    //    Context.State = EBuzzzExecutionState::Failed;
     // }
 
     // if Empty Instance, StackCount Should Be 0
@@ -364,7 +372,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
     // CheckCompatible
     if (IsValid(Context.UpcomingInstance) && !CheckItemCompatible(Context.UpcomingInstance))
     {
-        Context.bFinished = true;
+        Context.State = EBuzzzExecutionState::Failed;
     }
 
     // Fill up OutContext, Cache Previous Info
@@ -374,7 +382,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
     }
 
     // Handle Failed
-    if (Context.bFinished && !Context.bSuccess)
+    if (Context.State == EBuzzzExecutionState::Failed)
     {
         OnAssignFailed.Broadcast(Context);
         return Context;
@@ -417,12 +425,7 @@ FBuzzzCellOperationContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCell
 
     // Mark as Success
     {
-        Context.bSuccess = true;
-    }
-
-    // Mark as Finished
-    {
-        Context.bFinished = true;
+        Context.State = EBuzzzExecutionState::Success;
     }
 
     // Forward To Subsystem

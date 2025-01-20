@@ -14,7 +14,7 @@ struct FInstancedStruct;
 class ABuzzzTransactionBridge;
 class UBuzzzTransaction;
 class UBuzzzItemInstance;
-struct FBuzzzCellOperationContext;
+struct FBuzzzCellAssignmentContext;
 class UBuzzzContainer;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzReceiveInstanceDisconnectDelegate, UBuzzzItemInstance*,

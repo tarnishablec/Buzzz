@@ -39,8 +39,7 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellAssignmentContext
 void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellAssignmentContext& Context)
 {
     // Might Be Moved among One Same Container
-    if (IsValid(Context.FromContainer)
-        && Context.TargetContainer != Context.FromContainer
+    if (IsValid(Context.TargetContainer)
         && IsValid(GetOwnerContainer())
     )
     {
@@ -84,7 +83,7 @@ void UBuzzzItemInstance_UNIQUE::BeginDestroy()
 
 void UBuzzzItemInstance_UNIQUE::InitializeInstance_Implementation()
 {
-    RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForRemoveFromCell(this);
+    RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForClearedFromCell(this);
     RemoveAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnRemoveAction);
     RemoveAction->Activate();
 

@@ -17,12 +17,12 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
     return Action;
 }
 
-UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForRemoveFromCell(
+UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForClearedFromCell(
     UBuzzzItemInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForContainerOperation>();
     Action->TargetItemInstance = ItemInstance;
-    Action->OperationMode = EOperationMode::Remove;
+    Action->OperationMode = EOperationMode::Clear;
     return Action;
 }
 
@@ -39,6 +39,14 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
     const FBuzzzCellAssignmentContext& Context)
 {
+    if (OperationMode == EOperationMode::Clear)
+    {
+        if (Context.PreviousInstance == TargetItemInstance && Context.UpcomingInstance == nullptr)
+        {
+            Triggered.Broadcast(Context);
+        }
+    }
+
     if (OperationMode == EOperationMode::Assign)
     {
         if (Context.UpcomingInstance == TargetItemInstance)
@@ -47,17 +55,11 @@ void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
         }
     }
 
-    if (OperationMode == EOperationMode::Remove)
-    {
-        if (Context.PreviousInstance == TargetItemInstance)
-        {
-            Triggered.Broadcast(Context);
-        }
-    }
-
     if (OperationMode == EOperationMode::PutIn)
     {
-        if (IsValid(Context.TargetContainer) && Context.FromContainer != Context.TargetContainer)
+        if (Context.UpcomingInstance == TargetItemInstance
+            && IsValid(Context.TargetContainer)
+            && Context.FromContainer != Context.TargetContainer)
         {
             Triggered.Broadcast(Context);
         }
@@ -72,7 +74,7 @@ void UBuzzzAction_WaitForContainerOperation::Activate()
     check(IsValid(BuzzzSubsystem))
 
     if (OperationMode == EOperationMode::Assign || OperationMode == EOperationMode::PutIn || OperationMode ==
-        EOperationMode::Remove)
+        EOperationMode::Clear)
     {
         BuzzzSubsystem->ReceiveContainerCellMutation.AddDynamic(
             this, &UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation);

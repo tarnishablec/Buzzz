@@ -26,7 +26,7 @@ public:
     enum class EOperationMode:uint8
     {
         Assign,
-        Remove,
+        Clear,
         PutIn,
     };
 
@@ -38,8 +38,8 @@ public:
     static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzItemInstance* ItemInstance);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
-        DisplayName="Wait For Removed From Cell")
-    static UBuzzzAction_WaitForContainerOperation* WaitForRemoveFromCell(
+        DisplayName="Wait For Cleared From Cell")
+    static UBuzzzAction_WaitForContainerOperation* WaitForClearedFromCell(
         UBuzzzItemInstance* ItemInstance);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,

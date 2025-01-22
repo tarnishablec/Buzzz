@@ -45,7 +45,7 @@ void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzItemInstance* ItemInstance,
-                                                                              UBuzzzContainer* Container)
+                                                                              const UBuzzzContainer* Container)
 {
     if (ItemInstance == TargetItemInstance)
     {

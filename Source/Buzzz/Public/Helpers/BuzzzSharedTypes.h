@@ -9,6 +9,8 @@
 class UBuzzzItemInstance;
 class UBuzzzContainer;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzItemInstance*,
+                                             ItemInstance, const UBuzzzContainer*, Container);
 
 UENUM(BlueprintType)
 enum class EBuzzzExecutionState : uint8

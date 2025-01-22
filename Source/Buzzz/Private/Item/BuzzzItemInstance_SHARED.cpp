@@ -2,6 +2,8 @@
 
 
 #include "Item/BuzzzItemInstance_SHARED.h"
+
+#include "Container/BuzzzSubsystem.h"
 #include "Item/BuzzzItemDefinition.h"
 
 TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance*> UBuzzzItemInstance_SHARED::InstanceMap = {};
@@ -11,10 +13,9 @@ UBuzzzItemInstance_SHARED::UBuzzzItemInstance_SHARED()
 }
 
 UBuzzzItemInstance* UBuzzzItemInstance_SHARED::MakeInstance_Implementation(
-    const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const
+    const UBuzzzItemDefinition* InDefinition,
+    AActor* Instigator) const
 {
-    check(IsValid(InDefinition));
-
     const auto ExistInstancePtr = InstanceMap.Find(InDefinition);
 
     if (ExistInstancePtr)
@@ -22,11 +23,9 @@ UBuzzzItemInstance* UBuzzzItemInstance_SHARED::MakeInstance_Implementation(
         return *ExistInstancePtr;
     }
 
-    const auto FreshInstance = NewObject<UBuzzzItemInstance_SHARED>(GetTransientPackage(), InDefinition->InstanceClass);
-    FreshInstance->Definition = InDefinition;
-    InstanceMap.Add(InDefinition, FreshInstance);
+    const auto Subsystem = Instigator->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
 
-    FreshInstance->InitializeInstance();
-    
+    const auto FreshInstance = NewObject<UBuzzzItemInstance_SHARED>(Subsystem, InDefinition->InstanceClass);
+    InstanceMap.Add(InDefinition, FreshInstance);
     return FreshInstance;
 }

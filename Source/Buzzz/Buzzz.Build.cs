@@ -1,6 +1,7 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+
 // ReSharper disable RedundantNameQualifier
 
 public class Buzzz : ModuleRules
@@ -35,7 +36,8 @@ public class Buzzz : ModuleRules
 				"DeveloperSettings",
 				"NetCore",
 				"NetCommon",
-				"StructUtils"
+				"StructUtils",
+				"Messaging"
 				// ... add other public dependencies that you statically link with here ...
 			}
 		);

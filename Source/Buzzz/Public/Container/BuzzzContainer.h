@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BuzzzFastArray.h"
+#include "Helpers/BuzzzSharedTypes.h"
 #include "BuzzzContainer.generated.h"
 
 class UBuzzzItemDefinition;
 class UBuzzzItemInstance;
 class UBuzzzContainer;
 struct FBuzzzCellAssignmentContext;
-
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellAssignmentContext&, Context);
@@ -27,6 +27,9 @@ class BUZZZ_API UBuzzzContainer : public UActorComponent
     GENERATED_BODY()
 
 protected:
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Buzzz", meta=(AllowPrivateAccess=true))
+    TEnumAsByte<ELifetimeCondition> HiveReplicateCondition = COND_OwnerOnly;
+
     UPROPERTY(
         // Instead of using RepNotify, Use FastArray Callback Functions
         // ReplicatedUsing="OnRep_Hive",
@@ -55,7 +58,7 @@ public:
     /**
      * We Should Bind Delegates Inside This
      */
-    UFUNCTION(BlueprintNativeEvent, Category="Buzzz")
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category="Buzzz")
     void OnInitialization();
 
 private:
@@ -158,7 +161,7 @@ private:
 #pragma endregion
 
 public:
-#pragma region Internal Authority Callbacks (Should Not Bind In Other Classes)
+#pragma region Internal Authority Delegates
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzCellMutationDelegate PreCellChange;
@@ -170,6 +173,12 @@ public:
     FBuzzzHiveMutationDelegate PostHiveResize;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzCellMutationDelegate OnAssignFailed;
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
+    FBuzzzInstanceDisconnectDelegate OnInstanceDisconnect;
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
+    FBuzzzInstanceDisconnectDelegate PostInstanceDisconnect;
+    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
+    FBuzzzInstanceDisconnectDelegate PreInstanceDisconnect;
 
 #pragma endregion
 
@@ -188,6 +197,5 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
     FBuzzzCellAssignmentContext ClearCell(const int32& Index, FBuzzzCellAssignmentContext& OutContext);
-
 #pragma endregion
 };

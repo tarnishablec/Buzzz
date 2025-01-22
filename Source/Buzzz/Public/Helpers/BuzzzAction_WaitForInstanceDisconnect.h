@@ -27,12 +27,12 @@ public:
     virtual void Cancel() override;
 
     UPROPERTY(BlueprintAssignable)
-    FBuzzzReceiveInstanceDisconnectDelegate Triggered;
+    FBuzzzInstanceDisconnectDelegate Triggered;
 
 protected:
     UPROPERTY()
     TObjectPtr<UBuzzzItemInstance> TargetItemInstance;
 
     UFUNCTION()
-    void HandleReceivedInstanceDisconnect(UBuzzzItemInstance* ItemInstance, UBuzzzContainer* Container);
+    void HandleReceivedInstanceDisconnect(UBuzzzItemInstance* ItemInstance, const UBuzzzContainer* Container);
 };

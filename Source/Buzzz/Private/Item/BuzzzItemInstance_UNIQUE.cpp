@@ -3,20 +3,26 @@
 #include "Item/BuzzzItemInstance_UNIQUE.h"
 
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
+#include "Helpers/BuzzzAction_WaitForInstanceDisconnect.h"
 #include "Helpers/BuzzzSharedTypes.h"
 #include "Item/BuzzzItemDefinition.h"
 #include "Misc/EngineVersionComparison.h"
 
 UBuzzzItemInstance* UBuzzzItemInstance_UNIQUE::MakeInstance_Implementation(
-    const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const
+    const UBuzzzItemDefinition* InDefinition,
+    AActor* Instigator) const
 {
-    check(IsValid(InDefinition) && IsValid(Instigator));
-
-    const auto Instance = NewObject<UBuzzzItemInstance_UNIQUE>(Instigator, InDefinition->InstanceClass);
+    UObject* FinalInstigator = IsValid(Instigator) ? Cast<UObject>(Instigator) : GetTransientPackage();
+    const auto Instance = NewObject<UBuzzzItemInstance_UNIQUE>(
+        FinalInstigator,
+        InDefinition->InstanceClass);
     Instance->Definition = InDefinition;
-
-    Instance->InitializeInstance();
     return Instance;
+}
+
+AActor* UBuzzzItemInstance_UNIQUE::GetOwnerActor_Implementation() const
+{
+    return GetTypedOuter<AActor>();
 }
 
 UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
@@ -24,7 +30,7 @@ UBuzzzContainer* UBuzzzItemInstance_UNIQUE::GetOwnerContainer() const
     return Cast<UBuzzzContainer>(GetOuter());
 }
 
-void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellAssignmentContext& Context)
+void UBuzzzItemInstance_UNIQUE::HandlePutInAction(const FBuzzzCellAssignmentContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.TargetContainer)
@@ -36,12 +42,11 @@ void UBuzzzItemInstance_UNIQUE::OnAssignAction(const FBuzzzCellAssignmentContext
     }
 }
 
-void UBuzzzItemInstance_UNIQUE::OnRemoveAction(const FBuzzzCellAssignmentContext& Context)
+void UBuzzzItemInstance_UNIQUE::HandleDisconnectAction(UBuzzzItemInstance* ItemInstance,
+                                                       const UBuzzzContainer* Container)
 {
     // Might Be Moved among One Same Container
-    if (IsValid(Context.TargetContainer)
-        && IsValid(GetOwnerContainer())
-    )
+    if (IsValid(Container))
     {
         this->ChangeOwnerContainer(nullptr);
     }
@@ -51,19 +56,21 @@ void UBuzzzItemInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContain
 {
     if (IsValid(NewContainer))
     {
-        this->Rename(nullptr, NewContainer
+        this->LowLevelRename(GetFName(), NewContainer);
+        // this->Rename(nullptr, NewContainer
 #if UE_VERSION_OLDER_THAN(5, 5, 0)
-                     ,REN_ForceNoResetLoaders
+        // ,REN_ForceNoResetLoaders
 #endif
-        );
+        // );
     }
     else
     {
-        this->Rename(nullptr, GetTransientPackage()
+        this->LowLevelRename(GetFName(), GetTransientPackage());
+        // this->Rename(nullptr, GetTransientPackage()
 #if UE_VERSION_OLDER_THAN(5, 5, 0)
-                     ,REN_ForceNoResetLoaders
+        // ,REN_ForceNoResetLoaders
 #endif
-        );
+        // );
     }
 }
 
@@ -71,25 +78,25 @@ void UBuzzzItemInstance_UNIQUE::BeginDestroy()
 {
     Super::BeginDestroy();
 
-    if (IsValid(AssignAction))
+    if (IsValid(WaitPuInAction))
     {
-        AssignAction->Cancel();
+        WaitPuInAction->Cancel();
     }
-    if (IsValid(RemoveAction))
+    if (IsValid(WaitDisconnectAction))
     {
-        RemoveAction->Cancel();
+        WaitDisconnectAction->Cancel();
     }
 }
 
-void UBuzzzItemInstance_UNIQUE::InitializeInstance_Implementation()
+void UBuzzzItemInstance_UNIQUE::Initialize_Implementation()
 {
-    RemoveAction = UBuzzzAction_WaitForContainerOperation::WaitForClearedFromCell(this);
-    RemoveAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnRemoveAction);
-    RemoveAction->Activate();
+    WaitDisconnectAction = UBuzzzAction_WaitForInstanceDisconnect::WaitForInstanceDisconnect(this);
+    WaitDisconnectAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::HandleDisconnectAction);
+    WaitDisconnectAction->Activate();
 
-    AssignAction = UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(this);
-    AssignAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::OnAssignAction);
-    AssignAction->Activate();
+    WaitPuInAction = UBuzzzAction_WaitForContainerOperation::WaitForPutInContainer(this);
+    WaitPuInAction->Triggered.AddDynamic(this, &UBuzzzItemInstance_UNIQUE::HandlePutInAction);
+    WaitPuInAction->Activate();
 
-    Super::InitializeInstance_Implementation();
+    Super::Initialize_Implementation();
 }

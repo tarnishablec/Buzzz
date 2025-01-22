@@ -3,6 +3,7 @@
 
 #include "Helpers/BuzzzLibrary.h"
 #include "Container/BuzzzFastArray.h"
+#include "Item/BuzzzItemInstance.h"
 
 
 void UBuzzzLibrary::CellGetContainerInfo(const FBuzzzContainerCell& Cell, UBuzzzContainer*& Container, int32& Index)

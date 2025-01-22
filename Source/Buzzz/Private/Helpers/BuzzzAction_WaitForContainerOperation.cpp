@@ -41,7 +41,9 @@ void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
 {
     if (OperationMode == EOperationMode::Clear)
     {
-        if (Context.PreviousInstance == TargetItemInstance && Context.UpcomingInstance == nullptr)
+        if (Context.PreviousInstance == TargetItemInstance
+            && Context.UpcomingInstance == nullptr
+            && Context.FromContainer == nullptr)
         {
             Triggered.Broadcast(Context);
         }
@@ -70,6 +72,7 @@ void UBuzzzAction_WaitForContainerOperation::HandleReceivedContainerMutation(
 void UBuzzzAction_WaitForContainerOperation::Activate()
 {
     Super::Activate();
+
     const auto BuzzzSubsystem = TargetItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
     check(IsValid(BuzzzSubsystem))
 

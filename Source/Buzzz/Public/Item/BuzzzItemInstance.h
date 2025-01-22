@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuzzzItemDefinition.h"
 #include "UObject/Object.h"
 #include "BuzzzItemInstance.generated.h"
 
@@ -26,6 +25,8 @@ public:
     virtual int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
     virtual bool CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
                                     FFrame* Stack) override;
+    virtual void BeginDestroy() override;
+    virtual class UWorld* GetWorld() const override;
 
 #if UE_WITH_IRIS
     virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
@@ -64,21 +65,29 @@ public:
         return Cast<T>(FindFragmentByClass(T::StaticClass(), Exact));
     }
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
-    AActor* GetOwnerActor() const;
 #pragma endregion Helpers
 
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
     void OnInitialization();
 
     UFUNCTION(BlueprintNativeEvent)
-    UBuzzzItemInstance* MakeInstance(const UBuzzzItemDefinition* InDefinition, AActor* Instigator) const;
+    UBuzzzItemInstance* MakeInstance(
+        const UBuzzzItemDefinition* InDefinition,
+        AActor* Instigator
+    ) const;
+
+    UFUNCTION(BlueprintCallable, Category = "Buzzz", DisplayName="MakeInstance (From Definition)")
+    static UBuzzzItemInstance* MakeInstanceFromDefinition(const UBuzzzItemDefinition* InDefinition, AActor* Instigator);
+
+    UFUNCTION(BlueprintCallable, Category = "Buzzz", DisplayName="MakeInstance (From Instance Class)",
+        meta=(DeterminesOutputType="InstanceClass"))
+    static UBuzzzItemInstance* MakeInstanceFromClass(TSubclassOf<UBuzzzItemInstance> InstanceClass, AActor* Instigator);
 
     UFUNCTION(BlueprintNativeEvent)
     void InitializeFragments();
 
-    UFUNCTION(BlueprintNativeEvent)
-    void InitializeInstance();
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly)
+    void Initialize();
 
 protected:
     bool bInitialized = false;

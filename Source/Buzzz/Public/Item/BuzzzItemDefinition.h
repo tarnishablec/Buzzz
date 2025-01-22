@@ -29,6 +29,6 @@ public:
         meta = (NoElementDuplicate))
     TArray<TObjectPtr<UBuzzzFragment>> FragmentsTemplate;
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintPure, BlueprintAuthorityOnly)
-    const UBuzzzItemInstance* Instantiate(AActor* Instigator) const;
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
+    UBuzzzItemInstance* Instantiate(AActor* Instigator) const;
 };

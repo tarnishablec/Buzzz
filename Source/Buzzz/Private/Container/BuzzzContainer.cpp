@@ -5,6 +5,7 @@
 
 #include "Container/BuzzzSubsystem.h"
 #include "Helpers/BuzzzSharedTypes.h"
+#include "Item/BuzzzItemDefinition.h"
 #include "Item/BuzzzItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
@@ -402,8 +403,9 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
     // Set Upcoming Replication
     if (IsValid(Context.UpcomingInstance))
     {
+        check(IsUsingRegisteredSubObjectList())
         {
-            AddReplicatedSubObject(Context.UpcomingInstance);
+            AddReplicatedSubObject(Context.UpcomingInstance, HiveReplicateCondition);
             TArray<UObject*> NetObjList{};
             Context.UpcomingInstance->GetSubobjectsWithStableNamesForNetworking(NetObjList);
             for (auto&& NetSubObject : NetObjList)
@@ -458,13 +460,15 @@ void UBuzzzContainer::InitializeComponent()
         Client_ReceiveHiveMutation.Broadcast(this, Indices, Type);
     });
 
+    if (GetOwner()->HasAuthority())
     {
-        PostCellChange.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostCellChanged);
-        PostHiveResize.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostHiveResize);
+        {
+            PostCellChange.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostCellChanged);
+            PostHiveResize.AddDynamic(this, &UBuzzzContainer::Internal_HandlePostHiveResize);
+        }
+
+        OnInitialization();
     }
-
-
-    OnInitialization();
 }
 
 void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick TickType,
@@ -485,23 +489,15 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         {
             if (!CheckItemInstanceOwned(InstanceMayBeDisconnected))
             {
-                if (GetNetMode() != NM_Standalone)
-                {
-                    TArray<UObject*> OutSubObjects{};
-                    InstanceMayBeDisconnected->GetSubobjectsWithStableNamesForNetworking(OutSubObjects);
-
-                    for (auto&& OutSubObject : OutSubObjects)
-                    {
-                        RemoveReplicatedSubObject(OutSubObject);
-                    }
-
-                    RemoveReplicatedSubObject(InstanceMayBeDisconnected);
-                }
+                PreInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+                OnInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
                 const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
                 if (IsValid(Subsystem))
                 {
                     Subsystem->ReceiveInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
                 }
+
+                PostInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
             }
         }
     }
@@ -540,7 +536,7 @@ void UBuzzzContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     FDoRepLifetimeParams Params;
-    Params.Condition = COND_OwnerOnly;
+    Params.Condition = HiveReplicateCondition;
     Params.bIsPushBased = false;
     DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Hive, Params);
 }

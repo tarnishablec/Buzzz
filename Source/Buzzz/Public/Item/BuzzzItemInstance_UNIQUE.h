@@ -7,6 +7,7 @@
 #include "BuzzzItemInstance.h"
 #include "BuzzzItemInstance_UNIQUE.generated.h"
 
+class UBuzzzAction_WaitForInstanceDisconnect;
 class UBuzzzAction_WaitForContainerOperation;
 class UBuzzzContainer;
 class UBuzzzItemDefinition;
@@ -21,30 +22,33 @@ class BUZZZ_API UBuzzzItemInstance_UNIQUE : public UBuzzzItemInstance
     GENERATED_BODY()
 
 public:
-    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition,
-                                                            AActor* Instigator) const override;
+    virtual UBuzzzItemInstance* MakeInstance_Implementation(
+        const UBuzzzItemDefinition* InDefinition,
+        AActor* Instigator
+    ) const override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
+    AActor* GetOwnerActor() const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz")
     UBuzzzContainer* GetOwnerContainer() const;
 
     virtual void BeginDestroy() override;
 
-    virtual void InitializeInstance_Implementation() override;
+    virtual void Initialize_Implementation() override;
 
 protected:
     UFUNCTION()
-    void OnAssignAction(const FBuzzzCellAssignmentContext& Context);
+    virtual void HandlePutInAction(const FBuzzzCellAssignmentContext& Context);
 
     UFUNCTION()
-    void OnRemoveAction(const FBuzzzCellAssignmentContext& Context);
+    virtual void HandleDisconnectAction(UBuzzzItemInstance* ItemInstance, const UBuzzzContainer* Container);
 
     UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForContainerOperation> AssignAction;
+    TObjectPtr<UBuzzzAction_WaitForContainerOperation> WaitPuInAction;
 
     UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForContainerOperation> RemoveAction;
+    TObjectPtr<UBuzzzAction_WaitForInstanceDisconnect> WaitDisconnectAction;
 
     virtual void ChangeOwnerContainer(UBuzzzContainer* NewContainer);
-
-    
 };

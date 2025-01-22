@@ -18,8 +18,9 @@ class BUZZZ_API UBuzzzItemInstance_SHARED final : public UBuzzzItemInstance
     UBuzzzItemInstance_SHARED();
 
 public:
-    virtual UBuzzzItemInstance* MakeInstance_Implementation(const UBuzzzItemDefinition* InDefinition,
-                                                            AActor* Instigator) const override;
+    virtual UBuzzzItemInstance* MakeInstance_Implementation(
+        const UBuzzzItemDefinition* InDefinition,
+        AActor* Instigator) const override;
 
 protected:
     static TMap<const UBuzzzItemDefinition*, UBuzzzItemInstance*> InstanceMap;

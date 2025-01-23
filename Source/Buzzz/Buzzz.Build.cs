@@ -30,21 +30,20 @@ public class Buzzz : ModuleRules
 
 
 		PublicDependencyModuleNames.AddRange(
-			new string[]
+			new []
 			{
 				"Core",
 				"DeveloperSettings",
 				"NetCore",
 				"NetCommon",
-				"StructUtils",
-				"Messaging"
+				"StructUtils"
 				// ... add other public dependencies that you statically link with here ...
 			}
 		);
 
 
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
+			new []
 			{
 				"CoreUObject",
 				"Engine",

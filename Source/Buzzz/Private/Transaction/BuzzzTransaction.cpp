@@ -2,7 +2,6 @@
 
 
 #include "Transaction/BuzzzTransaction.h"
-
 #include "Transaction/BuzzzTransactionBridge.h"
 
 void UBuzzzTransaction::K2_OnExecute_Implementation()

@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Container/BuzzzSubsystem.h"
+#include "Subsystem/BuzzzSubsystem.h"
 #include "Engine/CancellableAsyncAction.h"
 #include "BuzzzAction_WaitForInstanceDisconnect.generated.h"
 
-class UBuzzzItemInstance;
+class UBuzzzInstance;
 class UBuzzzContainer;
 /**
  * 
@@ -21,7 +21,7 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintInternalUseOnly, Category = "Buzzz",
         DisplayName="Wait For Disconnect From Container")
     static UBuzzzAction_WaitForInstanceDisconnect* WaitForInstanceDisconnect(
-        UBuzzzItemInstance* ItemInstance);
+        UBuzzzInstance* ItemInstance);
 
     virtual void Activate() override;
     virtual void Cancel() override;
@@ -31,8 +31,8 @@ public:
 
 protected:
     UPROPERTY()
-    TObjectPtr<UBuzzzItemInstance> TargetItemInstance;
+    TObjectPtr<UBuzzzInstance> TargetItemInstance;
 
     UFUNCTION()
-    void HandleReceivedInstanceDisconnect(UBuzzzItemInstance* ItemInstance, const UBuzzzContainer* Container);
+    void HandleReceivedInstanceDisconnect(UBuzzzInstance* ItemInstance, const UBuzzzContainer* Container);
 };

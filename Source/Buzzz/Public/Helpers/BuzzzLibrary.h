@@ -3,13 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/BuzzzItemDefinition.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BuzzzLibrary.generated.h"
 
-class UBuzzzItemDefinition;
+class UBuzzzDefinition;
 struct FBuzzzContainerCell;
-class UBuzzzItemInstance;
+class UBuzzzInstance;
 class UBuzzzContainer;
 /**
  * 

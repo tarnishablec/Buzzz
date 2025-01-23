@@ -6,11 +6,9 @@
 #include "UObject/Object.h"
 #include "BuzzzSharedTypes.generated.h"
 
-class UBuzzzItemInstance;
+class UBuzzzInstance;
 class UBuzzzContainer;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzItemInstance*,
-                                             ItemInstance, const UBuzzzContainer*, Container);
 
 UENUM(BlueprintType)
 enum class EBuzzzExecutionState : uint8
@@ -35,7 +33,7 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     int32 TargetIndex = INDEX_NONE;
 
     UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzItemInstance> UpcomingInstance;
+    TObjectPtr<UBuzzzInstance> UpcomingInstance;
 
     UPROPERTY(BlueprintReadWrite)
     int32 UpcomingStackCount = -1;
@@ -49,7 +47,7 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     // Output
 
     UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzItemInstance> PreviousInstance;
+    TObjectPtr<UBuzzzInstance> PreviousInstance;
 
     UPROPERTY(BlueprintReadOnly)
     int32 PreviousStackCount = -1;
@@ -86,3 +84,14 @@ struct FBuzzzTransactionPayload_Common
     UPROPERTY(BlueprintReadWrite, Category="Buzzz")
     int32 FromIndex = INDEX_NONE;
 };
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellAssignmentContext&, Context);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate,
+                                               const UBuzzzContainer*, Container,
+                                               const TArray<int32>&, Indices,
+                                               const EBuzzzHiveMutationType, Type);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzInstance*,
+                                             ItemInstance, const UBuzzzContainer*, Container);

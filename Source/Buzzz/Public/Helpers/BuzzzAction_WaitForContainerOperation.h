@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Container/BuzzzContainer.h"
+#include "Core/Container/BuzzzContainer.h"
 #include "Engine/CancellableAsyncAction.h"
 #include "BuzzzAction_WaitForContainerOperation.generated.h"
 
 class UBuzzzSubsystem;
 struct FBuzzzCellAssignmentContext;
-class UBuzzzItemInstance;
+class UBuzzzInstance;
 /**
  * 
  */
@@ -35,21 +35,21 @@ public:
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Assigned To Cell")
-    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzItemInstance* ItemInstance);
+    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzInstance* ItemInstance);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Cleared From Cell")
     static UBuzzzAction_WaitForContainerOperation* WaitForClearedFromCell(
-        UBuzzzItemInstance* ItemInstance);
+        UBuzzzInstance* ItemInstance);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Put In Container")
     static UBuzzzAction_WaitForContainerOperation* WaitForPutInContainer(
-        UBuzzzItemInstance* ItemInstance);
+        UBuzzzInstance* ItemInstance);
 
 protected:
     UPROPERTY()
-    TObjectPtr<UBuzzzItemInstance> TargetItemInstance;
+    TObjectPtr<UBuzzzInstance> TargetItemInstance;
 
     EOperationMode OperationMode;
 

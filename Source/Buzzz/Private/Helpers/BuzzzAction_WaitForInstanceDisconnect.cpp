@@ -3,10 +3,11 @@
 
 #include "Helpers/BuzzzAction_WaitForInstanceDisconnect.h"
 
-#include "Item/BuzzzItemInstance.h"
+#include "Core/Item/BuzzzInstance.h"
+#include "Subsystem/BuzzzSubsystem.h"
 
 UBuzzzAction_WaitForInstanceDisconnect* UBuzzzAction_WaitForInstanceDisconnect::WaitForInstanceDisconnect(
-    UBuzzzItemInstance* ItemInstance)
+    UBuzzzInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForInstanceDisconnect>();
     Action->TargetItemInstance = ItemInstance;
@@ -44,7 +45,7 @@ void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzItemInstance* ItemInstance,
+void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzInstance* ItemInstance,
                                                                               const UBuzzzContainer* Container)
 {
     if (ItemInstance == TargetItemInstance)

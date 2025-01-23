@@ -1,15 +1,14 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
-
 #include "Helpers/BuzzzAction_WaitForContainerOperation.h"
-
-#include "Container/BuzzzSubsystem.h"
+#include "Core/Container/BuzzzContainer.h"
+#include "Subsystem/BuzzzSubsystem.h"
 #include "Helpers/BuzzzSharedTypes.h"
-#include "Item/BuzzzItemInstance.h"
+#include "Core/Item/BuzzzInstance.h"
 
 
 UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForAssignToCell(
-    UBuzzzItemInstance* ItemInstance)
+    UBuzzzInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForContainerOperation>();
     Action->TargetItemInstance = ItemInstance;
@@ -18,7 +17,7 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 }
 
 UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForClearedFromCell(
-    UBuzzzItemInstance* ItemInstance)
+    UBuzzzInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForContainerOperation>();
     Action->TargetItemInstance = ItemInstance;
@@ -27,7 +26,7 @@ UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::
 }
 
 UBuzzzAction_WaitForContainerOperation* UBuzzzAction_WaitForContainerOperation::WaitForPutInContainer(
-    UBuzzzItemInstance* ItemInstance)
+    UBuzzzInstance* ItemInstance)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForContainerOperation>();
     Action->TargetItemInstance = ItemInstance;

@@ -1,6 +1,6 @@
 ﻿#include "BuzzzEditor.h"
 
-#include "Fragment/BuzzzFragment.h"
+#include "Core/Fragment/BuzzzFragment.h"
 #include "Fragment/BuzzzFragmentCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FBuzzzEditorModule"

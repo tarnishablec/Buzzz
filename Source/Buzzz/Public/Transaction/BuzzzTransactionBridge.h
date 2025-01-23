@@ -45,7 +45,7 @@ public:
 
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzReceiveTransactionDelegate ReceiveTransactionFinished;
-    
+
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
     FBuzzzReceiveTransactionDelegate ReceiveTransactionFailed;
 
@@ -76,7 +76,8 @@ public:
     template <pointer_convertible_to_buzzz_transaction T>
     T* ProcessTransaction(const FInstancedStruct& Payload = FInstancedStruct())
     {
-        return CastChecked<T>(ProcessTransaction(T::StaticClass(), Payload));
+        // ReSharper disable once CppCStyleCast
+        return (T*)ProcessTransaction(T::StaticClass(), Payload);
     }
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category="Buzzz")

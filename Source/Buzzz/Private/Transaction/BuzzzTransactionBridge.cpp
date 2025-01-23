@@ -2,8 +2,9 @@
 
 
 #include "Transaction/BuzzzTransactionBridge.h"
-#include "Container/BuzzzSubsystem.h"
+#include "Subsystem/BuzzzSubsystem.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 #include "Transaction/BuzzzTransaction.h"
 
 #if UE_WITH_IRIS
@@ -38,14 +39,7 @@ void ABuzzzTransactionBridge::BeginDestroy()
 void ABuzzzTransactionBridge::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     Super::EndPlay(EndPlayReason);
-    if (IsValid(GetGameInstance()))
-    {
-        const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-        if (IsValid(Subsystem))
-        {
-            Subsystem->UnregisterBridgeLink(this);
-        }
-    }
+    UBuzzzSubsystem::Get(this)->UnregisterBridgeLink(this);
 }
 
 void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -60,10 +54,9 @@ void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeP
 
 void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
 {
-    const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
     if (OwnerPlayerController)
     {
-        Subsystem->RegisterBridgeLink(OwnerPlayerController, this);
+        UBuzzzSubsystem::Get(this)->RegisterBridgeLink(OwnerPlayerController, this);
     }
     else
     {
@@ -97,15 +90,14 @@ void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
     {
         COMPARE_ASSIGN_AND_MARK_PROPERTY_DIRTY(ThisClass, OwnerPlayerController, Cast<APlayerController>(NewOwner),
                                                this);
-        const auto Subsystem = GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
 
         if (OwnerPlayerController)
         {
-            Subsystem->RegisterBridgeLink(OwnerPlayerController, this);
+            UBuzzzSubsystem::Get(this)->RegisterBridgeLink(OwnerPlayerController, this);
         }
         else
         {
-            Subsystem->UnregisterBridgeLink(this);
+            UBuzzzSubsystem::Get(this)->UnregisterBridgeLink(this);
         }
     }
 }

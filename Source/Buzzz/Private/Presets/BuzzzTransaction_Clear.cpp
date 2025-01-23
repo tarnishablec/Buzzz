@@ -1,0 +1,29 @@
+﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
+
+
+#include "Presets/BuzzzTransaction_Clear.h"
+
+#include "Core/Container/BuzzzContainer.h"
+#include "Helpers/BuzzzSharedTypes.h"
+
+void UBuzzzTransaction_Clear::K2_OnExecute_Implementation()
+{
+    const auto PayloadPtr = Payload.GetPtr<FPayloadType>();
+    if (PayloadPtr == nullptr)
+    {
+        MarkTransactionFailed();
+        return;
+    }
+
+    const auto TargetContainer = PayloadPtr->TargetContainer;
+    const auto TargetIndex = PayloadPtr->TargetIndex;
+
+
+    FBuzzzCellAssignmentContext OutContext{};
+    TargetContainer->ClearCell(TargetIndex, OutContext);
+
+    if (OutContext.State != EBuzzzExecutionState::Success)
+    {
+        MarkTransactionFailed();
+    }
+}

@@ -12,7 +12,6 @@
 
 UBuzzzInstance::UBuzzzInstance()
 {
-    ItemGuid = FGuid::NewGuid();
 }
 
 void UBuzzzInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

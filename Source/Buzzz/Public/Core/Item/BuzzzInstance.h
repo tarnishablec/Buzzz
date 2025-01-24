@@ -39,7 +39,7 @@ public:
 #pragma endregion
 
     UPROPERTY(Replicated, BlueprintReadOnly, SaveGame)
-    FGuid ItemGuid;
+    FGuid ItemGuid = FGuid::NewGuid();
 
     UPROPERTY(Replicated, BlueprintReadOnly, EditDefaultsOnly, SaveGame, meta=(AllowAbstract=false))
     TSubclassOf<UBuzzzInstancingMode> InstancingMode = UBuzzzInstancingMode::StaticClass();

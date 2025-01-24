@@ -88,7 +88,6 @@ TSet<UBuzzzInstance*> UBuzzzSubsystem::GetInstancesByDefinition(
     return ItemRegistry.Find(FGuid())->InstanceSet;
 }
 
-// ReSharper disable once CppUE4BlueprintCallableFunctionMayBeStatic
 UBuzzzInstance* UBuzzzSubsystem::Instantiate(const UBuzzzDefinition* Definition,
                                              const TSubclassOf<UBuzzzInstance> InstanceClass, AActor* Creator)
 {

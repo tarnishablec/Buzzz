@@ -4,28 +4,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
-#include "BuzzzInstance_UNIQUE.h"
-#include "BuzzzInstance_LINK.generated.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
+#include "BuzzzItem_UNIQUE.h"
+#include "BuzzzItem_LINK.generated.h"
 
 class UBuzzzAction_WaitForInstanceDisconnect;
 /**
  * 
  */
 UCLASS(Blueprintable)
-class BUZZZ_API UBuzzzInstance_LINK : public UBuzzzInstance_UNIQUE
+class BUZZZ_API UBuzzzItem_LINK : public UBuzzzItem_UNIQUE
 {
     GENERATED_BODY()
 
 public:
-    UBuzzzInstance_LINK()
-    {
-    }
+    UPROPERTY(Category="Buzzz", Replicated, Setter, BlueprintReadWrite, SaveGame, meta=(ExposeOnSpawn))
+    TObjectPtr<UBuzzzItem> SourceInstance;
 
-    UPROPERTY(Category="Buzzz", Replicated, Setter, BlueprintReadWrite, SaveGame)
-    TObjectPtr<UBuzzzInstance> SourceInstance;
-
-    void SetSourceInstance(UBuzzzInstance* InSourceInstance)
+    void SetSourceInstance(UBuzzzItem* InSourceInstance)
     {
         IsSourceValid = CheckSourceValid();
         SourceInstance = InSourceInstance;
@@ -43,10 +39,10 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION()
-    void HandleSourceDisconnect(UBuzzzInstance* ItemInstance, const UBuzzzContainer* Container);
+    void HandleSourceDisconnect(UBuzzzItem* Item, const UBuzzzContainer* Container);
 
     UFUNCTION(Client, Reliable)
-    void Client_ReceiveSourceDisconnect(UBuzzzInstance* InSourceInstance, const UBuzzzContainer* Container);
+    void Client_ReceiveSourceDisconnect(UBuzzzItem* InSourceInstance, const UBuzzzContainer* Container);
 
     virtual void OnInitialization_Implementation() override;
 

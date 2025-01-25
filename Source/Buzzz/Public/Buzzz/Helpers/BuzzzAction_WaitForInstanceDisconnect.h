@@ -7,7 +7,7 @@
 #include "Engine/CancellableAsyncAction.h"
 #include "BuzzzAction_WaitForInstanceDisconnect.generated.h"
 
-class UBuzzzInstance;
+class UBuzzzItem;
 class UBuzzzContainer;
 /**
  * 
@@ -21,7 +21,7 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintInternalUseOnly, Category = "Buzzz",
         DisplayName="Wait For Disconnect From Container")
     static UBuzzzAction_WaitForInstanceDisconnect* WaitForInstanceDisconnect(
-        UBuzzzInstance* ItemInstance);
+        UBuzzzItem* Item);
 
     virtual void Activate() override;
     virtual void Cancel() override;
@@ -31,8 +31,8 @@ public:
 
 protected:
     UPROPERTY()
-    TObjectPtr<UBuzzzInstance> TargetItemInstance;
+    TObjectPtr<UBuzzzItem> TargetItem;
 
     UFUNCTION()
-    void HandleReceivedInstanceDisconnect(UBuzzzInstance* ItemInstance, const UBuzzzContainer* Container);
+    void HandleReceivedInstanceDisconnect(UBuzzzItem* Item, const UBuzzzContainer* Container);
 };

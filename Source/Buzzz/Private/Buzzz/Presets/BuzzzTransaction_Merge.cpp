@@ -40,7 +40,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     }
 
     // Check Is Same Instance So We Can Merge
-    if (UpcomingCellInfo.ItemInstance != TargetContainer->GetCells()[TargetIndex].ItemInstance)
+    if (UpcomingCellInfo.Item != TargetContainer->GetCells()[TargetIndex].Item)
     {
         MarkTransactionFailed();
         return;
@@ -52,7 +52,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     InContext.TargetIndex = TargetIndex;
 
     InContext.UpcomingStackCount = UpcomingCellInfo.StackCount + TargetContainer->GetCells()[TargetIndex].StackCount;
-    InContext.UpcomingInstance = UpcomingCellInfo.ItemInstance;
+    InContext.UpcomingInstance = UpcomingCellInfo.Item;
 
     InContext.FromContainer = FromContainer;
     InContext.FromIndex = FromIndex;

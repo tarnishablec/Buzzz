@@ -10,7 +10,7 @@
 
 
 class UBuzzzContainer;
-class UBuzzzInstance;
+class UBuzzzItem;
 
 UENUM(BlueprintType)
 enum class EBuzzzHiveMutationType : uint8
@@ -32,7 +32,7 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
     };
 
     UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzInstance> ItemInstance;
+    TObjectPtr<UBuzzzItem> Item;
 
     UPROPERTY(BlueprintReadOnly)
     int32 StackCount = 0;

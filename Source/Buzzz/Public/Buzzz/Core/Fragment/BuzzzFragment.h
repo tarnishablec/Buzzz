@@ -7,7 +7,7 @@
 #include "UObject/Object.h"
 #include "BuzzzFragment.generated.h"
 
-class UBuzzzInstance;
+class UBuzzzItem;
 /**
  * 
  */
@@ -36,11 +36,11 @@ public:
     virtual void InitializeFragment();
 
     UFUNCTION(BlueprintNativeEvent)
-    void OnInitialized(UBuzzzInstance* ItemInstance);
+    void OnInitialized(UBuzzzItem* Item);
 
     UFUNCTION(BlueprintNativeEvent)
     void OnDestroy();
 
     UFUNCTION(BlueprintPure)
-    UBuzzzInstance* GetHostItemInstance() const;
+    UBuzzzItem* GetHostItem() const;
 };

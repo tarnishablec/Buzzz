@@ -6,7 +6,7 @@
 #include "Buzzz/Core/Container/BuzzzFastArray.h"
 
 #include "Algo/ForEach.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 
 void FBuzzzContainerHive::PreReplicatedRemove(const TArrayView<int32>& RemovedIndices, int32 FinalSize)
 {
@@ -32,7 +32,7 @@ void FBuzzzContainerHive::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
 
         Algo::ForEach(AddedIndices, [this, &ChangedIndices](const int32& Index)
         {
-            if (IsValid(Cells[Index].ItemInstance))
+            if (IsValid(Cells[Index].Item))
             {
                 ChangedIndices.Add(Index);
             }

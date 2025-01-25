@@ -10,19 +10,26 @@
 #include "Buzzz/Transaction/BuzzzTransactionBridge.h"
 #include "BuzzzSubsystem.generated.h"
 
-class UBuzzzInstancingMode;
-class UBuzzzDefinition;
 struct FInstancedStruct;
 class ABuzzzTransactionBridge;
 class UBuzzzTransaction;
-class UBuzzzInstance;
+class UBuzzzItem;
 struct FBuzzzCellAssignmentContext;
 class UBuzzzContainer;
 
 
 template <typename T>
 concept pointer_convertible_to_buzzz_item_instance =
-    std::is_convertible_v<T*, UBuzzzInstance*>;
+    std::is_convertible_v<T*, UBuzzzItem*>;
+
+USTRUCT()
+struct FItemRegistryEntry
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TSet<TObjectPtr<UBuzzzItem>> InstanceSet;
+};
 
 /**
  * 
@@ -43,22 +50,19 @@ public:
     FBuzzzInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 
     UFUNCTION(BlueprintCallable, Category="Buzzz")
-    void RegisterInstance(UBuzzzInstance* Instance);
-    bool CheckInstanceRegistered(const UBuzzzInstance* Instance) const;
-
-    UFUNCTION(BlueprintPure, Category="Buzzz")
-    TSet<UBuzzzInstance*> GetInstancesByDefinition(const UBuzzzDefinition* Definition) const;
+    void RegisterInstance(UBuzzzItem* Instance);
+    bool CheckInstanceRegistered(const UBuzzzItem* Instance) const;
 
     UFUNCTION(BlueprintCallable, Category="Buzzz", meta=(DeterminesOutputType="InstanceClass"))
-    UBuzzzInstance* Instantiate(const UBuzzzDefinition* Definition,
-                                TSubclassOf<UBuzzzInstance> InstanceClass,
-                                AActor* Creator);
+    UBuzzzItem* Instantiate(
+        UPARAM(meta=(AllowAbstract=false)) TSubclassOf<UBuzzzItem> InstanceClass,
+        AActor* Creator);
 
     template <pointer_convertible_to_buzzz_item_instance T>
-    T* Instantiate(const UBuzzzDefinition* Definition,
-                   AActor* Creator)
+    T* Instantiate(
+        AActor* Creator)
     {
-        return Instantiate(Definition, T::StaticClass(), Creator);
+        return Instantiate(T::StaticClass(), Creator);
     };
 
     static UBuzzzSubsystem* Get(const UObject* ContextObject)
@@ -93,15 +97,11 @@ public:
     UFUNCTION(BlueprintPure, Category="Buzzz")
     bool HasAuthority() const;
 
-protected:
+private:
     bool bInitialized = false;
 
-    struct FItemRegistryEntry
-    {
-        TSet<UBuzzzInstance*> InstanceSet;
-    };
-
-    // Key : DefinitionGuid
-    TMap<FGuid, FItemRegistryEntry> ItemRegistry;
     TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<ABuzzzTransactionBridge>> BridgeRegistry;
+
+    UPROPERTY()
+    TMap<TSubclassOf<UBuzzzItem>, FItemRegistryEntry> ItemRegistry;
 };

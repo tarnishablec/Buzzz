@@ -3,14 +3,14 @@
 
 #include "Buzzz/Helpers/BuzzzAction_WaitForInstanceDisconnect.h"
 
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
 
 UBuzzzAction_WaitForInstanceDisconnect* UBuzzzAction_WaitForInstanceDisconnect::WaitForInstanceDisconnect(
-    UBuzzzInstance* ItemInstance)
+    UBuzzzItem* Item)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForInstanceDisconnect>();
-    Action->TargetItemInstance = ItemInstance;
+    Action->TargetItem = Item;
     return Action;
 }
 
@@ -18,7 +18,7 @@ void UBuzzzAction_WaitForInstanceDisconnect::Activate()
 {
     Super::Activate();
     
-    const auto BuzzzSubsystem = TargetItemInstance->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+    const auto BuzzzSubsystem = TargetItem->GetWorld()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
     check(IsValid(BuzzzSubsystem))
 
     BuzzzSubsystem->ReceiveInstanceDisconnect.AddDynamic(
@@ -29,11 +29,11 @@ void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
 {
     Super::Cancel();
 
-    if (TargetItemInstance)
+    if (TargetItem)
     {
-        Triggered.RemoveAll(TargetItemInstance);
+        Triggered.RemoveAll(TargetItem);
 
-        if (const auto World = TargetItemInstance->GetWorld())
+        if (const auto World = TargetItem->GetWorld())
         {
             const auto BuzzzSubsystem = World->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
             if (IsValid(BuzzzSubsystem))
@@ -45,11 +45,11 @@ void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzInstance* ItemInstance,
+void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzItem* Item,
                                                                               const UBuzzzContainer* Container)
 {
-    if (ItemInstance == TargetItemInstance)
+    if (Item == TargetItem)
     {
-        Triggered.Broadcast(ItemInstance, Container);
+        Triggered.Broadcast(Item, Container);
     }
 }

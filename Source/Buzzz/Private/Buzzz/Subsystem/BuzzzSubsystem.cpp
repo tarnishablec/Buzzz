@@ -4,8 +4,7 @@
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
 #include "GameFramework/GameModeBase.h"
 #include "Buzzz/Helpers/BuzzzSettings.h"
-#include "Buzzz/Core/Item/BuzzzDefinition.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
 #include "Buzzz/Transaction/BuzzzTransactionBridge.h"
 
@@ -46,52 +45,26 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     bInitialized = true;
 }
 
-void UBuzzzSubsystem::RegisterInstance(UBuzzzInstance* Instance)
+void UBuzzzSubsystem::RegisterInstance(UBuzzzItem* Instance)
 {
-    if (const auto Definition = Instance->GetDefinition())
-    {
-        check(IsValid(Definition))
-        auto [InstanceSet] = ItemRegistry.FindOrAdd(Definition->DefinitionGuid);
-        InstanceSet.Add(Instance);
-    }
-    else
-    {
-        auto [InstanceSet] = ItemRegistry.FindOrAdd(FGuid());
-        InstanceSet.Add(Instance);
-    }
+    auto [InstanceSet] = ItemRegistry.FindOrAdd(Instance->GetClass());
+    InstanceSet.Add(Instance);
 }
 
-bool UBuzzzSubsystem::CheckInstanceRegistered(const UBuzzzInstance* Instance) const
+bool UBuzzzSubsystem::CheckInstanceRegistered(const UBuzzzItem* Instance) const
 {
-    if (const auto Definition = Instance->GetDefinition())
-    {
-        if (const auto* Entry = ItemRegistry.Find(Definition->DefinitionGuid))
-        {
-            return Entry->InstanceSet.Contains(Instance);
-        }
-        return false;
-    }
-    if (const auto* Entry = ItemRegistry.Find(FGuid()))
+    const auto Entry = ItemRegistry.Find(Instance->GetClass());
+    if (Entry)
     {
         return Entry->InstanceSet.Contains(Instance);
     }
     return false;
 }
 
-TSet<UBuzzzInstance*> UBuzzzSubsystem::GetInstancesByDefinition(
-    const UBuzzzDefinition* Definition) const
+UBuzzzItem* UBuzzzSubsystem::Instantiate(
+    const TSubclassOf<UBuzzzItem> InstanceClass, AActor* Creator)
 {
-    if (IsValid(Definition))
-    {
-        return ItemRegistry.Find(Definition->DefinitionGuid)->InstanceSet;
-    }
-    return ItemRegistry.Find(FGuid())->InstanceSet;
-}
-
-UBuzzzInstance* UBuzzzSubsystem::Instantiate(const UBuzzzDefinition* Definition,
-                                             const TSubclassOf<UBuzzzInstance> InstanceClass, AActor* Creator)
-{
-    const auto FinalInstance = UBuzzzInstancingMode::MakeInstance_Static(Definition, InstanceClass, Creator);
+    const auto FinalInstance = UBuzzzItem::MakeInstance_Static(InstanceClass, Creator);
     if (IsValid(FinalInstance))
     {
         this->RegisterInstance(FinalInstance);

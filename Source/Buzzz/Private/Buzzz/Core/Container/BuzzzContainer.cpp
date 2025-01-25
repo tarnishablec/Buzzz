@@ -3,8 +3,7 @@
 
 #include "Buzzz/Core/Container/BuzzzContainer.h"
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
-#include "Buzzz/Core/Item/BuzzzDefinition.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Net/UnrealNetwork.h"
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
 
@@ -35,11 +34,11 @@ const TArray<FBuzzzContainerCell>& UBuzzzContainer::GetCells() const
     return Hive.Cells;
 }
 
-bool UBuzzzContainer::CheckItemInstanceOwned(const UBuzzzInstance* ItemInstance) const
+bool UBuzzzContainer::CheckItemOwned(const UBuzzzItem* Item) const
 {
     for (auto&& Cell : Hive.Cells)
     {
-        if (Cell.ItemInstance == ItemInstance)
+        if (Cell.Item == Item)
         {
             return true;
         }
@@ -55,7 +54,7 @@ bool UBuzzzContainer::CheckCellEmpty(const int32& Index) const
         return true;
     }
 
-    return Hive.Cells[Index].ItemInstance != nullptr;
+    return Hive.Cells[Index].Item != nullptr;
 }
 
 const FBuzzzContainerCell& UBuzzzContainer::GetCell(const int32& Index, bool& IsValidIndex) const
@@ -70,55 +69,12 @@ const FBuzzzContainerCell& UBuzzzContainer::GetCell(const int32& Index, bool& Is
     return Hive.Cells[Index];
 }
 
-bool UBuzzzContainer::CheckCellHasItemByDefinition(const int32& Index, const UBuzzzDefinition* ItemDefinition) const
-{
-    const auto Instance = Hive.Cells[Index].ItemInstance;
-    if (Instance == nullptr)
-    {
-        return false;
-    }
-
-    return Instance->GetDefinition() == ItemDefinition;
-}
-
-bool UBuzzzContainer::CheckCellHasItemByDefinitionClass(const int32& Index,
-                                                        const TSubclassOf<UBuzzzDefinition>& DefinitionClass,
-                                                        const bool bStrict) const
-{
-    const auto Instance = Hive.Cells[Index].ItemInstance;
-    if (Instance == nullptr)
-    {
-        return false;
-    }
-
-    if (bStrict)
-    {
-        return Instance->GetDefinition()->GetClass() == DefinitionClass;
-    }
-
-    return Instance->GetDefinition()->IsA(DefinitionClass);
-}
-
-int32 UBuzzzContainer::CalcTotalAmountByDefinition(const UBuzzzDefinition* ItemDefinition) const
+int32 UBuzzzContainer::CalcTotalAmountByInstance(const UBuzzzItem* Item) const
 {
     int32 Result = 0;
     for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
     {
-        if (CheckCellHasItemByDefinition(Index, ItemDefinition))
-        {
-            Result += Hive.Cells[Index].StackCount;
-        }
-    }
-
-    return Result;
-}
-
-int32 UBuzzzContainer::CalcTotalAmountByInstance(const UBuzzzInstance* ItemInstance) const
-{
-    int32 Result = 0;
-    for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
-    {
-        if (ItemInstance == Hive.Cells[Index].ItemInstance)
+        if (Item == Hive.Cells[Index].Item)
         {
             Result += Hive.Cells[Index].StackCount;
         }
@@ -148,7 +104,7 @@ bool UBuzzzContainer::CheckIndexIsValid(const int32& Index) const
     return Hive.Cells.IsValidIndex(Index);
 }
 
-void UBuzzzContainer::FindIndexByInstance(const UBuzzzInstance* ItemInstance, TArray<int32>& OutIndexArray,
+void UBuzzzContainer::FindIndexByInstance(const UBuzzzItem* Item, TArray<int32>& OutIndexArray,
                                           int32& First,
                                           int32& Last, bool& Found) const
 {
@@ -158,7 +114,7 @@ void UBuzzzContainer::FindIndexByInstance(const UBuzzzInstance* ItemInstance, TA
 
     for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
     {
-        if (Hive.Cells[Index].ItemInstance == ItemInstance)
+        if (Hive.Cells[Index].Item == Item)
         {
             OutIndexArray.Add(Index);
         }
@@ -172,17 +128,22 @@ void UBuzzzContainer::FindIndexByInstance(const UBuzzzInstance* ItemInstance, TA
     }
 }
 
-void UBuzzzContainer::FindIndexByDefinition(const UBuzzzDefinition* Definition, bool bStrict,
-                                            TArray<int32>& OutIndexArray,
-                                            int32& First, int32& Last, bool& Found) const
+void UBuzzzContainer::FindIndexByInstanceClass(const TSubclassOf<UBuzzzItem>& InstanceClass,
+                                               const bool Explicit,
+                                               TArray<int32>& OutIndexArray,
+                                               int32& First, int32& Last, bool& Found) const
 {
+    check(IsValid(InstanceClass))
+
     First = INDEX_NONE;
     Last = INDEX_NONE;
     OutIndexArray = {};
 
     for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
     {
-        if (CheckCellHasItemByDefinition(Index, Definition))
+        if (Explicit
+                ? (Hive.Cells[Index].Item.GetClass() == InstanceClass)
+                : (Hive.Cells[Index].Item.IsA(InstanceClass)))
         {
             OutIndexArray.Add(Index);
         }
@@ -194,6 +155,20 @@ void UBuzzzContainer::FindIndexByDefinition(const UBuzzzDefinition* Definition, 
         First = OutIndexArray[0];
         Last = OutIndexArray.Last();
     }
+}
+
+int32 UBuzzzContainer::CalcTotalAmount(UBuzzzItem* Instance)
+{
+    int32 Result = 0;
+    for (int Index = 0; Index < Hive.Cells.Num(); ++Index)
+    {
+        if (Instance == Hive.Cells[Index].Item)
+        {
+            Result += Hive.Cells[Index].StackCount;
+        }
+    }
+    
+    return Result;
 }
 
 void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
@@ -352,7 +327,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
         Context.State = EBuzzzExecutionState::Failed;
     }
     // Nothing Changed
-    else if (Hive.Cells[Context.TargetIndex].ItemInstance == Context.UpcomingInstance
+    else if (Hive.Cells[Context.TargetIndex].Item == Context.UpcomingInstance
         && Hive.Cells[Context.TargetIndex].StackCount == Context.UpcomingStackCount)
     {
         Context.State = EBuzzzExecutionState::Failed;
@@ -379,7 +354,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
 
     // Fill up OutContext, Cache Previous Info
     {
-        Context.PreviousInstance = Hive.Cells[Context.TargetIndex].ItemInstance;
+        Context.PreviousInstance = Hive.Cells[Context.TargetIndex].Item;
         Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
     }
 
@@ -397,7 +372,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
 
     // Operate Assign
     {
-        Hive.Cells[Context.TargetIndex].ItemInstance = Context.UpcomingInstance;
+        Hive.Cells[Context.TargetIndex].Item = Context.UpcomingInstance;
         Hive.Cells[Context.TargetIndex].StackCount = Context.UpcomingStackCount;
     }
 
@@ -488,7 +463,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
     {
         for (auto&& InstanceMayBeDisconnected : Internal_MayBeDisconnected_Instances)
         {
-            if (!CheckItemInstanceOwned(InstanceMayBeDisconnected))
+            if (!CheckItemOwned(InstanceMayBeDisconnected))
             {
                 PreInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
                 OnInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
@@ -512,7 +487,7 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
 }
 
 
-bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzInstance* ItemInstance) const
+bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItem* Item) const
 {
     return true;
 }

@@ -1,27 +1,25 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
 
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Buzzz/Core/Fragment/BuzzzFragment.h"
-#include "Buzzz/Core/Item/BuzzzDefinition.h"
 #include "Net/UnrealNetwork.h"
 
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif
 
-UBuzzzInstance::UBuzzzInstance()
+UBuzzzItem::UBuzzzItem()
 {
 }
 
-void UBuzzzInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UBuzzzItem::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     FDoRepLifetimeParams Params;
     Params.bIsPushBased = true;
     Params.Condition = COND_InitialOnly;
-    DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Definition, Params)
     DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ItemGuid, Params)
     DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, InstancingMode, Params)
 
@@ -36,7 +34,7 @@ void UBuzzzInstance::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     }
 }
 
-int32 UBuzzzInstance::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
+int32 UBuzzzItem::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 {
     const auto OuterActor = GetTypedOuter<AActor>();
     if (IsValid(OuterActor))
@@ -47,8 +45,8 @@ int32 UBuzzzInstance::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
     return FunctionCallspace::Local;
 }
 
-bool UBuzzzInstance::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
-                                        FFrame* Stack)
+bool UBuzzzItem::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
+                                    FFrame* Stack)
 {
     if (const auto OwningActor = GetTypedOuter<AActor>())
     {
@@ -60,19 +58,19 @@ bool UBuzzzInstance::CallRemoteFunction(UFunction* Function, void* Params, struc
     return false;
 }
 
-void UBuzzzInstance::BeginDestroy()
+void UBuzzzItem::BeginDestroy()
 {
     UObject::BeginDestroy();
 }
 
-class UWorld* UBuzzzInstance::GetWorld() const
+class UWorld* UBuzzzItem::GetWorld() const
 {
     return GEngine->GetCurrentPlayWorld();
 }
 
 #if UE_WITH_IRIS
-void UBuzzzInstance::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
-                                                  const UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+void UBuzzzItem::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+                                              const UE::Net::EFragmentRegistrationFlags RegistrationFlags)
 {
     using namespace UE::Net;
 
@@ -80,16 +78,17 @@ void UBuzzzInstance::RegisterReplicationFragments(UE::Net::FFragmentRegistration
 }
 #endif
 
-FGuid UBuzzzInstance::GetItemGuid() const
+FGuid UBuzzzItem::GetItemGuid() const
 {
     return ItemGuid;
 }
 
-const UBuzzzFragment* UBuzzzInstance::FindFragmentByClass_Implementation(
+
+const UBuzzzFragment* UBuzzzItem::FindFragmentByClass_Implementation(
     const TSubclassOf<UBuzzzFragment> FragmentClass,
     const bool Exact) const
 {
-    if (IsValid(Definition) && IsValid(FragmentClass))
+    if (IsValid(FragmentClass))
     {
         for (auto&& Fragment : Fragments)
         {
@@ -117,45 +116,37 @@ const UBuzzzFragment* UBuzzzInstance::FindFragmentByClass_Implementation(
     return nullptr;
 }
 
-const UBuzzzDefinition* UBuzzzInstance::GetDefinition_Implementation() const
+void UBuzzzItem::Initialize_Implementation()
 {
-    return Definition;
-}
-
-void UBuzzzInstance::Initialize_Implementation()
-{
-    check(!bInitialized);
+    if (bInitialized)
+    {
+        return;
+    }
+    
     InitializeFragments();
     OnInitialization();
     bInitialized = true;
+    PostInitialized();
 }
 
-void UBuzzzInstance::OnInitialization_Implementation()
+void UBuzzzItem::OnInitialization_Implementation()
 {
 }
 
-void UBuzzzInstance::InitializeFragments_Implementation()
+
+void UBuzzzItem::PostInitialized_Implementation()
 {
-    if (IsValid(Definition))
+}
+
+void UBuzzzItem::InitializeFragments_Implementation()
+{
+    for (auto&& Fragment : Fragments)
     {
-        Fragments.Empty();
-
-        for (auto&& FragmentTemplate : Definition->FragmentsTemplate)
-        {
-            if (FragmentTemplate != nullptr)
-            {
-                // const auto Fragment = DuplicateObject(FragmentTemplate, this);
-                const auto Fragment = NewObject<UBuzzzFragment>(this, FragmentTemplate.GetClass(), NAME_None,
-                                                                RF_NoFlags,
-                                                                FragmentTemplate);
-                Fragments.AddUnique(Fragment);
-                Fragment->InitializeFragment();
-            }
-        }
+        Fragment->InitializeFragment();
     }
 }
 
-void UBuzzzInstance::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)
+void UBuzzzItem::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)
 {
     for (auto&& BuzzzFragment : Fragments)
     {
@@ -164,4 +155,23 @@ void UBuzzzInstance::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>&
             ObjList.AddUnique(BuzzzFragment);
         }
     }
+}
+
+
+UBuzzzItem* UBuzzzItem::MakeInstance_Static(
+    // ReSharper disable once CppPassValueParameterByConstReference
+    const TSubclassOf<UBuzzzItem> ItemClass,
+    AActor* Creator)
+{
+    check(ItemClass);
+
+    if (!IsValid(ItemClass))
+    {
+        return nullptr;
+    }
+
+    const auto FinalInstance = ItemClass.GetDefaultObject()->InstancingMode.GetDefaultObject()->MakeInstance(
+        ItemClass, Creator);
+
+    return FinalInstance;
 }

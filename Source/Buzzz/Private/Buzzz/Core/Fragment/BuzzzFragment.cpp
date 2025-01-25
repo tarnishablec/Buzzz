@@ -2,13 +2,13 @@
 
 
 #include "Buzzz/Core/Fragment/BuzzzFragment.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif
 
-void UBuzzzFragment::OnInitialized_Implementation(UBuzzzInstance* ItemInstance)
+void UBuzzzFragment::OnInitialized_Implementation(UBuzzzItem* Item)
 {
 }
 
@@ -28,12 +28,12 @@ UWorld* UBuzzzFragment::GetWorld() const
 
 int32 UBuzzzFragment::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 {
-    return GetHostItemInstance()->GetFunctionCallspace(Function, Stack);
+    return GetHostItem()->GetFunctionCallspace(Function, Stack);
 }
 
 bool UBuzzzFragment::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams, FFrame* Stack)
 {
-    return GetHostItemInstance()->CallRemoteFunction(Function, Params, OutParams, Stack);
+    return GetHostItem()->CallRemoteFunction(Function, Params, OutParams, Stack);
 }
 
 #if UE_WITH_IRIS
@@ -46,14 +46,14 @@ void UBuzzzFragment::RegisterReplicationFragments(UE::Net::FFragmentRegistration
 
 void UBuzzzFragment::InitializeFragment()
 {
-    OnInitialized(GetHostItemInstance());
+    OnInitialized(GetHostItem());
 }
 
 void UBuzzzFragment::OnDestroy_Implementation()
 {
 }
 
-UBuzzzInstance* UBuzzzFragment::GetHostItemInstance() const
+UBuzzzItem* UBuzzzFragment::GetHostItem() const
 {
-    return GetTypedOuter<UBuzzzInstance>();
+    return GetTypedOuter<UBuzzzItem>();
 }

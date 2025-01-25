@@ -1,6 +1,6 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
-#include "Buzzz/Presets/BuzzzInstance_UNIQUE.h"
+#include "Buzzz/Presets/BuzzzItem_UNIQUE.h"
 
 #include "Buzzz/Core/Container/BuzzzContainer.h"
 #include "Buzzz/Helpers/BuzzzAction_WaitForContainerOperation.h"
@@ -8,17 +8,17 @@
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "Misc/EngineVersionComparison.h"
 
-AActor* UBuzzzInstance_UNIQUE::GetOwnerActor_Implementation() const
+AActor* UBuzzzItem_UNIQUE::GetOwnerActor_Implementation() const
 {
     return GetTypedOuter<AActor>();
 }
 
-UBuzzzContainer* UBuzzzInstance_UNIQUE::GetOwnerContainer() const
+UBuzzzContainer* UBuzzzItem_UNIQUE::GetOwnerContainer() const
 {
     return Cast<UBuzzzContainer>(GetOuter());
 }
 
-void UBuzzzInstance_UNIQUE::HandlePutInAction(const FBuzzzCellAssignmentContext& Context)
+void UBuzzzItem_UNIQUE::HandlePutInAction(const FBuzzzCellAssignmentContext& Context)
 {
     // Might Be Moved among One Same Container
     if (IsValid(Context.TargetContainer)
@@ -30,7 +30,7 @@ void UBuzzzInstance_UNIQUE::HandlePutInAction(const FBuzzzCellAssignmentContext&
     }
 }
 
-void UBuzzzInstance_UNIQUE::HandleDisconnectAction(UBuzzzInstance* ItemInstance,
+void UBuzzzItem_UNIQUE::HandleDisconnectAction(UBuzzzItem* Item,
                                                        const UBuzzzContainer* Container)
 {
     // Might Be Moved among One Same Container
@@ -40,7 +40,7 @@ void UBuzzzInstance_UNIQUE::HandleDisconnectAction(UBuzzzInstance* ItemInstance,
     }
 }
 
-void UBuzzzInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContainer)
+void UBuzzzItem_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContainer)
 {
     if (IsValid(NewContainer))
     {
@@ -62,7 +62,7 @@ void UBuzzzInstance_UNIQUE::ChangeOwnerContainer(UBuzzzContainer* NewContainer)
     }
 }
 
-void UBuzzzInstance_UNIQUE::BeginDestroy()
+void UBuzzzItem_UNIQUE::BeginDestroy()
 {
     Super::BeginDestroy();
 
@@ -76,14 +76,14 @@ void UBuzzzInstance_UNIQUE::BeginDestroy()
     }
 }
 
-void UBuzzzInstance_UNIQUE::Initialize_Implementation()
+void UBuzzzItem_UNIQUE::Initialize_Implementation()
 {
     WaitDisconnectAction = UBuzzzAction_WaitForInstanceDisconnect::WaitForInstanceDisconnect(this);
-    WaitDisconnectAction->Triggered.AddDynamic(this, &UBuzzzInstance_UNIQUE::HandleDisconnectAction);
+    WaitDisconnectAction->Triggered.AddDynamic(this, &UBuzzzItem_UNIQUE::HandleDisconnectAction);
     WaitDisconnectAction->Activate();
 
     WaitPuInAction = UBuzzzAction_WaitForContainerOperation::WaitForPutInContainer(this);
-    WaitPuInAction->Triggered.AddDynamic(this, &UBuzzzInstance_UNIQUE::HandlePutInAction);
+    WaitPuInAction->Triggered.AddDynamic(this, &UBuzzzItem_UNIQUE::HandlePutInAction);
     WaitPuInAction->Activate();
 
     Super::Initialize_Implementation();

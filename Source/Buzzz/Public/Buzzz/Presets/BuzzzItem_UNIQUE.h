@@ -4,28 +4,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuzzzInstancingMode_PerItem.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
-#include "BuzzzInstance_UNIQUE.generated.h"
+#include "BuzzzInstancingMode_Unique.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
+#include "BuzzzItem_UNIQUE.generated.h"
 
 class UBuzzzAction_WaitForInstanceDisconnect;
 class UBuzzzAction_WaitForContainerOperation;
 class UBuzzzContainer;
-class UBuzzzDefinition;
 struct FBuzzzCellAssignmentContext;
 
 /**
  * 
  */
 UCLASS(Abstract, Blueprintable)
-class BUZZZ_API UBuzzzInstance_UNIQUE : public UBuzzzInstance
+class BUZZZ_API UBuzzzItem_UNIQUE : public UBuzzzItem
 {
     GENERATED_BODY()
 
 public:
-    UBuzzzInstance_UNIQUE()
+    UBuzzzItem_UNIQUE()
     {
-        InstancingMode = UBuzzzInstancingMode_PerItem::StaticClass();
+        InstancingMode = UBuzzzInstancingMode_Unique::StaticClass();
     }
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
@@ -43,7 +42,7 @@ protected:
     virtual void HandlePutInAction(const FBuzzzCellAssignmentContext& Context);
 
     UFUNCTION()
-    virtual void HandleDisconnectAction(UBuzzzInstance* ItemInstance, const UBuzzzContainer* Container);
+    virtual void HandleDisconnectAction(UBuzzzItem* Item, const UBuzzzContainer* Container);
 
     UPROPERTY()
     TObjectPtr<UBuzzzAction_WaitForContainerOperation> WaitPuInAction;

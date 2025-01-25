@@ -8,7 +8,7 @@
 
 class UBuzzzDefinition;
 struct FBuzzzContainerCell;
-class UBuzzzInstance;
+class UBuzzzItem;
 class UBuzzzContainer;
 /**
  * 

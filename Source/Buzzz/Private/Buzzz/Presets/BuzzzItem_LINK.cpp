@@ -1,18 +1,18 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
 
-#include "Buzzz/Presets/BuzzzInstance_LINK.h"
+#include "Buzzz/Presets/BuzzzItem_LINK.h"
 
 #include "Buzzz/Core/Container/BuzzzContainer.h"
-#include "Buzzz/Core/Item/BuzzzInstance.h"
+#include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Net/UnrealNetwork.h"
 
-bool UBuzzzInstance_LINK::CheckSourceValid_Implementation() const
+bool UBuzzzItem_LINK::CheckSourceValid_Implementation() const
 {
     return IsValid(SourceInstance);
 }
 
-const UBuzzzFragment* UBuzzzInstance_LINK::FindFragmentByClass_Implementation(
+const UBuzzzFragment* UBuzzzItem_LINK::FindFragmentByClass_Implementation(
     const TSubclassOf<UBuzzzFragment> FragmentClass, const bool Exact) const
 {
     if (IsValid(SourceInstance))
@@ -22,7 +22,7 @@ const UBuzzzFragment* UBuzzzInstance_LINK::FindFragmentByClass_Implementation(
     return nullptr;
 }
 
-void UBuzzzInstance_LINK::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UBuzzzItem_LINK::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -32,18 +32,18 @@ void UBuzzzInstance_LINK::GetLifetimeReplicatedProps(TArray<class FLifetimePrope
     DOREPLIFETIME_WITH_PARAMS(ThisClass, IsSourceValid, IsSourceValidParam);
 }
 
-void UBuzzzInstance_LINK::HandleSourceDisconnect(UBuzzzInstance* ItemInstance, const UBuzzzContainer* Container)
+void UBuzzzItem_LINK::HandleSourceDisconnect(UBuzzzItem* Item, const UBuzzzContainer* Container)
 {
-    Client_ReceiveSourceDisconnect(ItemInstance, Container);
+    Client_ReceiveSourceDisconnect(Item, Container);
 }
 
-void UBuzzzInstance_LINK::Client_ReceiveSourceDisconnect_Implementation(
-    UBuzzzInstance* InSourceInstance, const UBuzzzContainer* Container)
+void UBuzzzItem_LINK::Client_ReceiveSourceDisconnect_Implementation(
+    UBuzzzItem* InSourceInstance, const UBuzzzContainer* Container)
 {
     check(Container->IsNetMode(NM_Client));
 }
 
-void UBuzzzInstance_LINK::OnInitialization_Implementation()
+void UBuzzzItem_LINK::OnInitialization_Implementation()
 {
     check(IsValid(SourceInstance));
 

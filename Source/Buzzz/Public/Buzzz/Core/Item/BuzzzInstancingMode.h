@@ -6,8 +6,7 @@
 #include "UObject/Object.h"
 #include "BuzzzInstancingMode.generated.h"
 
-class UBuzzzDefinition;
-class UBuzzzInstance;
+class UBuzzzItem;
 /**
  * 
  */
@@ -17,17 +16,9 @@ class BUZZZ_API UBuzzzInstancingMode : public UObject
     GENERATED_BODY()
 
 public:
-    UBuzzzInstancingMode()
-    {
-    }
-
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz", DisplayName="MakeInstance", meta=(DeterminesOutputType="InstanceClass"))
-    static UBuzzzInstance* MakeInstance_Static(const UBuzzzDefinition* Definition,
-                                               TSubclassOf<UBuzzzInstance> InstanceClass,
-                                               AActor* Creator);
+  
 
     UFUNCTION(BlueprintNativeEvent, Category="Buzzz")
-    UBuzzzInstance* MakeInstance(const UBuzzzDefinition* Definition,
-                                 TSubclassOf<UBuzzzInstance> InstanceClass, AActor* Creator) const;
+    UBuzzzItem* MakeInstance(
+        TSubclassOf<UBuzzzItem> InstanceClass, AActor* Creator) const;
 };

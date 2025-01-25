@@ -6,7 +6,7 @@
 #include "UObject/Object.h"
 #include "BuzzzSharedTypes.generated.h"
 
-class UBuzzzInstance;
+class UBuzzzItem;
 class UBuzzzContainer;
 
 
@@ -33,7 +33,7 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     int32 TargetIndex = INDEX_NONE;
 
     UPROPERTY(BlueprintReadWrite)
-    TObjectPtr<UBuzzzInstance> UpcomingInstance;
+    TObjectPtr<UBuzzzItem> UpcomingInstance;
 
     UPROPERTY(BlueprintReadWrite)
     int32 UpcomingStackCount = -1;
@@ -47,7 +47,7 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     // Output
 
     UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<UBuzzzInstance> PreviousInstance;
+    TObjectPtr<UBuzzzItem> PreviousInstance;
 
     UPROPERTY(BlueprintReadOnly)
     int32 PreviousStackCount = -1;
@@ -93,5 +93,5 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate,
                                                const TArray<int32>&, Indices,
                                                const EBuzzzHiveMutationType, Type);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzInstance*,
-                                             ItemInstance, const UBuzzzContainer*, Container);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzItem*,
+                                             Item, const UBuzzzContainer*, Container);

@@ -9,7 +9,7 @@
 #include "BuzzzContainer.generated.h"
 
 class UBuzzzDefinition;
-class UBuzzzInstance;
+class UBuzzzItem;
 class UBuzzzContainer;
 struct FBuzzzCellAssignmentContext;
 
@@ -70,10 +70,10 @@ public:
     const TArray<FBuzzzContainerCell>& GetCells() const;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
-    bool CheckItemCompatible(const UBuzzzInstance* ItemInstance) const;
+    bool CheckItemCompatible(const UBuzzzItem* Item) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz")
-    bool CheckItemInstanceOwned(const UBuzzzInstance* ItemInstance) const;
+    bool CheckItemOwned(const UBuzzzItem* Item) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     bool CheckCellEmpty(const int32& Index) const;
@@ -81,18 +81,8 @@ public:
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     const FBuzzzContainerCell& GetCell(const int32& Index, bool& IsValidIndex) const;
 
-    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
-    bool CheckCellHasItemByDefinition(const int32& Index, const UBuzzzDefinition* ItemDefinition) const;
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index,DefinitionClass"))
-    bool CheckCellHasItemByDefinitionClass(const int32& Index, const TSubclassOf<UBuzzzDefinition>& DefinitionClass,
-                                           bool bStrict) const;
-
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="Amount"))
-    int32 CalcTotalAmountByDefinition(const UBuzzzDefinition* ItemDefinition) const;
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="Amount"))
-    int32 CalcTotalAmountByInstance(const UBuzzzInstance* ItemInstance) const;
+    int32 CalcTotalAmountByInstance(const UBuzzzItem* Item) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(ReturnDisplayName="EmptyIndex"))
     int32 FindEmptyCell(bool& Found) const;
@@ -101,14 +91,23 @@ public:
     bool CheckIndexIsValid(const int32& Index) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz")
-    void FindIndexByInstance(const UBuzzzInstance* ItemInstance, TArray<int32>& OutIndexArray, int32& First,
+    void FindIndexByInstance(const UBuzzzItem* Item,
+                             TArray<int32>& OutIndexArray,
+                             int32& First,
                              int32& Last,
                              bool& Found) const;
 
+    UFUNCTION(BlueprintPure, Category = "Buzzz", meta=(AutoCreateRefTerm="InstanceClass"))
+    void FindIndexByInstanceClass(const TSubclassOf<UBuzzzItem>& InstanceClass,
+                                  bool Explicit,
+                                  TArray<int32>& OutIndexArray,
+                                  int32& First,
+                                  int32& Last,
+                                  bool& Found) const;
+
     UFUNCTION(BlueprintPure, Category = "Buzzz")
-    void FindIndexByDefinition(const UBuzzzDefinition* Definition, bool bStrict, TArray<int32>& OutIndexArray,
-                               int32& First, int32& Last,
-                               bool& Found) const;
+    int32 CalcTotalAmount(UBuzzzItem* Instance);
+
 #pragma endregion
 
 #pragma region Client
@@ -143,7 +142,7 @@ private:
     TArray<int32> Internal_Batched_RemovedIndices;
 
     UPROPERTY()
-    TArray<TObjectPtr<UBuzzzInstance>> Internal_MayBeDisconnected_Instances;
+    TArray<TObjectPtr<UBuzzzItem>> Internal_MayBeDisconnected_Instances;
 #pragma endregion
 
 

@@ -9,7 +9,7 @@
 
 class UBuzzzSubsystem;
 struct FBuzzzCellAssignmentContext;
-class UBuzzzInstance;
+class UBuzzzItem;
 /**
  * 
  */
@@ -35,21 +35,21 @@ public:
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Assigned To Cell")
-    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzInstance* ItemInstance);
+    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzItem* Item);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Cleared From Cell")
     static UBuzzzAction_WaitForContainerOperation* WaitForClearedFromCell(
-        UBuzzzInstance* ItemInstance);
+        UBuzzzItem* Item);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Put In Container")
     static UBuzzzAction_WaitForContainerOperation* WaitForPutInContainer(
-        UBuzzzInstance* ItemInstance);
+        UBuzzzItem* Item);
 
 protected:
     UPROPERTY()
-    TObjectPtr<UBuzzzInstance> TargetItemInstance;
+    TObjectPtr<UBuzzzItem> TargetItem;
 
     EOperationMode OperationMode;
 

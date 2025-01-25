@@ -38,7 +38,7 @@ void UBuzzzTransaction_Swap::K2_OnExecute_Implementation()
     }
 
     // Check Is Not Same Instance So We Can Swap
-    if (UpcomingCellInfo.ItemInstance == TargetContainer->GetCells()[TargetIndex].ItemInstance)
+    if (UpcomingCellInfo.Item == TargetContainer->GetCells()[TargetIndex].Item)
     {
         MarkTransactionFailed();
         return;
@@ -50,7 +50,7 @@ void UBuzzzTransaction_Swap::K2_OnExecute_Implementation()
     InContext.TargetIndex = TargetIndex;
 
     InContext.UpcomingStackCount = UpcomingCellInfo.StackCount;
-    InContext.UpcomingInstance = UpcomingCellInfo.ItemInstance;
+    InContext.UpcomingInstance = UpcomingCellInfo.Item;
 
     InContext.FromContainer = FromContainer;
     InContext.FromIndex = FromIndex;

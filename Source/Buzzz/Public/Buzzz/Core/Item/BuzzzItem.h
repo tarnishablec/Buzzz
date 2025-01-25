@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BuzzzInstancingMode.h"
 #include "UObject/Object.h"
-#include "BuzzzInstance.generated.h"
+#include "BuzzzItem.generated.h"
 
 class UBuzzzInstancingMode;
 class UBuzzzFragment;
@@ -13,14 +13,14 @@ class UBuzzzDefinition;
 /**
  * 
  */
-UCLASS(BlueprintType, Abstract)
-class BUZZZ_API UBuzzzInstance : public UObject
+UCLASS(Blueprintable, Abstract)
+class BUZZZ_API UBuzzzItem : public UObject
 {
     GENERATED_BODY()
 
 public:
     friend class UBuzzzDefinition;
-    UBuzzzInstance();
+    UBuzzzItem();
 
 #pragma region Overrides
     virtual bool IsSupportedForNetworking() const override { return true; };
@@ -41,23 +41,18 @@ public:
     UPROPERTY(Replicated, BlueprintReadOnly, SaveGame)
     FGuid ItemGuid = FGuid::NewGuid();
 
-    UPROPERTY(Replicated, BlueprintReadOnly, EditDefaultsOnly, SaveGame, meta=(AllowAbstract=false))
+    UPROPERTY(Replicated, BlueprintReadOnly, EditDefaultsOnly, SaveGame,
+        meta=(AllowAbstract=false))
     TSubclassOf<UBuzzzInstancingMode> InstancingMode = UBuzzzInstancingMode::StaticClass();
 
-    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true), SaveGame)
-    TObjectPtr<const UBuzzzDefinition> Definition;
-
 protected:
-    UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true), SaveGame)
+    UPROPERTY(Replicated, BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess=true), SaveGame)
     TArray<TObjectPtr<UBuzzzFragment>> Fragments;
 
 public:
 #pragma region Helpers
     UFUNCTION(BlueprintPure, Category = "Buzzz")
     FGuid GetItemGuid() const;
-
-    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
-    const UBuzzzDefinition* GetDefinition() const;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz",
         meta = (DeterminesOutputType = "FragmentClass"))
@@ -71,10 +66,19 @@ public:
         return Cast<T>(FindFragmentByClass(T::StaticClass(), Exact));
     }
 
+    UFUNCTION(BlueprintPure, Category = "Buzzz", DisplayName="Make Instance",
+        meta=(DeterminesOutputType="ItemClass"))
+    static UBuzzzItem* MakeInstance_Static(
+        TSubclassOf<UBuzzzItem> ItemClass,
+        AActor* Creator);
+
 #pragma endregion Helpers
 
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
     void OnInitialization();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
+    void PostInitialized();
 
     UFUNCTION(BlueprintNativeEvent)
     void InitializeFragments();

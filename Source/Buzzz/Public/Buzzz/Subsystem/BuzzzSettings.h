@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuzzzManager.h"
 #include "Engine/DeveloperSettings.h"
 #include "Buzzz/Transaction/BuzzzTransactionBridge.h"
 #include "BuzzzSettings.generated.h"
@@ -21,6 +22,8 @@ public:
         return FName("Plugins");
     };
 
+    UPROPERTY(GlobalConfig, EditAnywhere, Category="Buzzz", NoClear)
+    TSubclassOf<ABuzzzManager> ManagerClass = ABuzzzManager::StaticClass();
 
     UPROPERTY(GlobalConfig, EditAnywhere, Category="Transaction", NoClear)
     TSubclassOf<ABuzzzTransactionBridge> TransactionBridgeClass = ABuzzzTransactionBridge::StaticClass();

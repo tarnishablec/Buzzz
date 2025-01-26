@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BuzzzFastArray.h"
+#include "NativeGameplayTags.h"
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "BuzzzContainer.generated.h"
 
@@ -13,6 +14,9 @@ class UBuzzzItem;
 class UBuzzzContainer;
 struct FBuzzzCellAssignmentContext;
 
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_CellMutation);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_HiveResize);
 
 UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
@@ -36,7 +40,7 @@ protected:
     UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess=true), Category="Buzzz")
     FGuid ContainerGuid;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess), Category="Buzzz")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess, ClampMin=0), Category="Buzzz")
     int32 InitialCapacity = 0;
 
 public:
@@ -127,8 +131,7 @@ private:
     virtual void Internal_HandlePostCellChanged(const FBuzzzCellAssignmentContext& Context);
 
     UFUNCTION()
-    virtual void Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
-                                               EBuzzzHiveMutationType ResizeType);
+    virtual void Internal_HandlePostHiveResize(const FBuzzzHiveMutationContext& Context);
 
     // Internal Used Properties
     // Reset In Each Tick
@@ -168,12 +171,6 @@ public:
     FBuzzzHiveMutationDelegate PostHiveResize;
     UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
     FBuzzzCellMutationDelegate OnAssignFailed;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzInstanceDisconnectDelegate OnInstanceDisconnect;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzInstanceDisconnectDelegate PostInstanceDisconnect;
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category = "Buzzz | Authority")
-    FBuzzzInstanceDisconnectDelegate PreInstanceDisconnect;
 
 #pragma endregion
 

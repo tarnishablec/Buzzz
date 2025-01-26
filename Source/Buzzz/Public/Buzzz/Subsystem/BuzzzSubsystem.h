@@ -10,6 +10,7 @@
 #include "Buzzz/Transaction/BuzzzTransactionBridge.h"
 #include "BuzzzSubsystem.generated.h"
 
+class ABuzzzManager;
 struct FInstancedStruct;
 class ABuzzzTransactionBridge;
 class UBuzzzTransaction;
@@ -21,15 +22,6 @@ class UBuzzzContainer;
 template <typename T>
 concept pointer_convertible_to_buzzz_item_instance =
     std::is_convertible_v<T*, UBuzzzItem*>;
-
-USTRUCT()
-struct FItemRegistryEntry
-{
-    GENERATED_BODY()
-
-    UPROPERTY()
-    TSet<TObjectPtr<UBuzzzItem>> InstanceSet;
-};
 
 /**
  * 
@@ -43,11 +35,6 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
-    FBuzzzCellMutationDelegate ReceiveContainerCellMutation;
-
-    UPROPERTY(BlueprintAssignable, BlueprintAuthorityOnly, Category="Buzzz")
-    FBuzzzInstanceDisconnectDelegate ReceiveInstanceDisconnect;
 
     UFUNCTION(BlueprintCallable, Category="Buzzz")
     void RegisterInstance(UBuzzzItem* Instance);
@@ -100,8 +87,8 @@ public:
 private:
     bool bInitialized = false;
 
+    TObjectPtr<ABuzzzManager> Manager;
+
     TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<ABuzzzTransactionBridge>> BridgeRegistry;
 
-    UPROPERTY()
-    TMap<TSubclassOf<UBuzzzItem>, FItemRegistryEntry> ItemRegistry;
 };

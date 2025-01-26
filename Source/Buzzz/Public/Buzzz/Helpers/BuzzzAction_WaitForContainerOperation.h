@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Beeep/BeeepMessageSubsystem.h"
 #include "Buzzz/Core/Container/BuzzzContainer.h"
 #include "Engine/CancellableAsyncAction.h"
 #include "BuzzzAction_WaitForContainerOperation.generated.h"
@@ -34,25 +35,26 @@ public:
     FBuzzzCellMutationDelegate Triggered;
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
-        DisplayName="Wait For Assigned To Cell")
-    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UBuzzzItem* Item);
+        DisplayName="Wait For Assigned To Cell", meta=(WorldContext="WorldContextObject"))
+    static UBuzzzAction_WaitForContainerOperation* WaitForAssignToCell(UWorld* WorldContextObject,
+                                                                       UBuzzzItem* Item);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
-        DisplayName="Wait For Cleared From Cell")
-    static UBuzzzAction_WaitForContainerOperation* WaitForClearedFromCell(
-        UBuzzzItem* Item);
+        DisplayName="Wait For Cleared From Cell", meta=(WorldContext="WorldContextObject"))
+    static UBuzzzAction_WaitForContainerOperation* WaitForClearedFromCell(UWorld* WorldContextObject,
+                                                                          UBuzzzItem* Item);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
-        DisplayName="Wait For Put In Container")
-    static UBuzzzAction_WaitForContainerOperation* WaitForPutInContainer(
-        UBuzzzItem* Item);
+        DisplayName="Wait For Put In Container", meta=(WorldContext="WorldContextObject"))
+    static UBuzzzAction_WaitForContainerOperation* WaitForPutInContainer(UWorld* WorldContextObject,
+                                                                         UBuzzzItem* Item);
 
 protected:
     UPROPERTY()
     TObjectPtr<UBuzzzItem> TargetItem;
 
     EOperationMode OperationMode;
+    TWeakObjectPtr<UWorld> WorldPtr;
 
-    UFUNCTION()
-    void HandleReceivedContainerMutation(const FBuzzzCellAssignmentContext& Context);
+    TSharedPtr<FBeeepMessageListenerHandle> Handle = MakeShared<FBeeepMessageListenerHandle>();
 };

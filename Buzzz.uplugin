@@ -7,7 +7,7 @@
   "Category": "Buzzz",
   "CreatedBy": "tarnishablec",
   "CreatedByURL": "https://github.com/tarnishablec",
-  "DocsURL": "",
+  "DocsURL": "https://github.com/tarnishablec/Buzzz",
   "MarketplaceURL": "",
   "CanContainContent": true,
   "IsBetaVersion": false,
@@ -28,6 +28,10 @@
   "Plugins": [
     {
       "Name": "StructUtils",
+      "Enabled": true
+    },
+    {
+      "Name": "Beeep",
       "Enabled": true
     }
   ]

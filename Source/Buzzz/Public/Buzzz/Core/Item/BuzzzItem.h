@@ -13,7 +13,7 @@ class UBuzzzDefinition;
 /**
  * 
  */
-UCLASS(Blueprintable, Abstract)
+UCLASS(Blueprintable, Abstract, meta=(DontUseGenericSpawnObject="true"))
 class BUZZZ_API UBuzzzItem : public UObject
 {
     GENERATED_BODY()

@@ -3,8 +3,9 @@
 
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
 #include "GameFramework/GameModeBase.h"
-#include "Buzzz/Helpers/BuzzzSettings.h"
+#include "Buzzz/Subsystem/BuzzzSettings.h"
 #include "Buzzz/Core/Item/BuzzzItem.h"
+#include "Buzzz/Subsystem/BuzzzManager.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
 #include "Buzzz/Transaction/BuzzzTransactionBridge.h"
 
@@ -14,20 +15,34 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
     if (HasAuthority())
     {
+        FWorldDelegates::OnPreWorldInitialization.AddWeakLambda(
+            this, [this](UWorld* World, UWorld::InitializationValues)
+            {
+                if (!World->IsInSeamlessTravel())
+                {
+                    World->OnWorldPreBeginPlay.AddWeakLambda(this, [this,World]()
+                    {
+                        if (IsValid(World) && World->GetNetMode() != NM_Client)
+                        {
+                            this->Manager = World->SpawnActor<ABuzzzManager>(UBuzzzSettings::Get()->ManagerClass);
+                        }
+                    });
+                }
+            });
+
         FGameModeEvents::GameModePostLoginEvent
-            .AddWeakLambda(this, [this]
-                       (AGameModeBase* GameMode, APlayerController* PlayerController)
-                           {
-                               if (PlayerController->HasAuthority() && !BridgeRegistry.Find(PlayerController))
-                               {
-                                   const auto NewBridget = GetWorld()->SpawnActor<ABuzzzTransactionBridge>(
-                                       UBuzzzSettings::Get()->TransactionBridgeClass);
-                                   NewBridget->SetOwner(PlayerController);
-                               }
-                           });
+            .AddWeakLambda(this, [this](AGameModeBase*, APlayerController* PlayerController)
+            {
+                if (PlayerController->HasAuthority() && !BridgeRegistry.Find(PlayerController))
+                {
+                    const auto NewBridget = GetWorld()->SpawnActor<ABuzzzTransactionBridge>(
+                        UBuzzzSettings::Get()->TransactionBridgeClass);
+                    NewBridget->SetOwner(PlayerController);
+                }
+            });
 
         FGameModeEvents::GameModeLogoutEvent.AddWeakLambda(
-            this, [this](AGameModeBase* GameMode, AController* Controller)
+            this, [this](AGameModeBase*, AController* Controller)
             {
                 const auto PC = CastChecked<APlayerController>(Controller);
                 if (PC->HasAuthority())
@@ -45,15 +60,28 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     bInitialized = true;
 }
 
+
+void UBuzzzSubsystem::Deinitialize()
+{
+    Super::Deinitialize();
+
+    FGameModeEvents::GameModePostLoginEvent.RemoveAll(this);
+    FGameModeEvents::GameModeLogoutEvent.RemoveAll(this);
+    // Manager->ItemRegistry.Reset();
+    // Manager->Destroy();
+    bInitialized = false;
+}
+
+
 void UBuzzzSubsystem::RegisterInstance(UBuzzzItem* Instance)
 {
-    auto [InstanceSet] = ItemRegistry.FindOrAdd(Instance->GetClass());
+    auto [InstanceSet] = Manager->ItemRegistry.FindOrAdd(Instance->GetClass());
     InstanceSet.Add(Instance);
 }
 
 bool UBuzzzSubsystem::CheckInstanceRegistered(const UBuzzzItem* Instance) const
 {
-    const auto Entry = ItemRegistry.Find(Instance->GetClass());
+    const auto Entry = Manager->ItemRegistry.Find(Instance->GetClass());
     if (Entry)
     {
         return Entry->InstanceSet.Contains(Instance);
@@ -135,13 +163,4 @@ bool UBuzzzSubsystem::HasAuthority() const
 {
     const auto NetMode = GetWorld()->GetNetMode();
     return NetMode == NM_Standalone || NetMode == NM_DedicatedServer || NetMode == NM_ListenServer;
-}
-
-void UBuzzzSubsystem::Deinitialize()
-{
-    Super::Deinitialize();
-    FGameModeEvents::GameModePostLoginEvent.RemoveAll(this);
-    FGameModeEvents::GameModeLogoutEvent.RemoveAll(this);
-    ItemRegistry.Reset();
-    bInitialized = false;
 }

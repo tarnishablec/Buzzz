@@ -27,28 +27,9 @@ public:
         InstancingMode = UBuzzzInstancingMode_Unique::StaticClass();
     }
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Buzzz")
-    AActor* GetOwnerActor() const;
-
-    UFUNCTION(BlueprintPure, Category = "Buzzz")
-    UBuzzzContainer* GetOwnerContainer() const;
-
     virtual void BeginDestroy() override;
 
     virtual void Initialize_Implementation() override;
 
 protected:
-    UFUNCTION()
-    virtual void HandlePutInAction(const FBuzzzCellAssignmentContext& Context);
-
-    UFUNCTION()
-    virtual void HandleDisconnectAction(UBuzzzItem* Item, const UBuzzzContainer* Container);
-
-    UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForContainerOperation> WaitPuInAction;
-
-    UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForInstanceDisconnect> WaitDisconnectAction;
-
-    virtual void ChangeOwnerContainer(UBuzzzContainer* NewContainer);
 };

@@ -5,7 +5,13 @@
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Net/UnrealNetwork.h"
+#include "Beeep/BeeepMessageSubsystem.h"
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
+
+UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent, "BuzzzEvent");
+UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_CellMutation, "BuzzzEvent.CellMutation");
+UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_HiveResize, "BuzzzEvent.HiveResize");
+
 
 // void UBuzzzContainer::OnRep_Hive_Implementation()
 // {
@@ -22,6 +28,13 @@ UBuzzzContainer::UBuzzzContainer()
 
 #if UE_WITH_IRIS
 #endif
+}
+
+#pragma region Helpers
+
+bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItem* Item) const
+{
+    return true;
 }
 
 int32 UBuzzzContainer::GetCapacity() const
@@ -167,9 +180,10 @@ int32 UBuzzzContainer::CalcTotalAmount(UBuzzzItem* Instance)
             Result += Hive.Cells[Index].StackCount;
         }
     }
-    
+
     return Result;
 }
+#pragma endregion
 
 void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
 {
@@ -177,17 +191,17 @@ void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
 
     if (Internal_Batched_RemovedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove);
+        Client_ReceiveHiveMutation.Broadcast({this, Internal_Batched_RemovedIndices, EBuzzzHiveMutationType::Remove});
     }
 
     if (Internal_Batched_AddedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_AddedIndices, EBuzzzHiveMutationType::Add);
+        Client_ReceiveHiveMutation.Broadcast({this, Internal_Batched_AddedIndices, EBuzzzHiveMutationType::Add});
     }
 
     if (Internal_Batched_ChangedIndices.Num())
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Internal_Batched_ChangedIndices, EBuzzzHiveMutationType::Change);
+        Client_ReceiveHiveMutation.Broadcast({this, Internal_Batched_ChangedIndices, EBuzzzHiveMutationType::Change});
     }
 }
 
@@ -206,14 +220,13 @@ void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellAssignmentC
     }
 }
 
-void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Container, const TArray<int32>& Indices,
-                                                    const EBuzzzHiveMutationType ResizeType)
+void UBuzzzContainer::Internal_HandlePostHiveResize(const FBuzzzHiveMutationContext& Context)
 {
     // TODO : Should be Optimized
     {
-        if (ResizeType == EBuzzzHiveMutationType::Add)
+        if (Context.MutationType == EBuzzzHiveMutationType::Add)
         {
-            for (auto Index : Indices)
+            for (auto Index : Context.Indices)
             {
                 const auto Count = Internal_Batched_RemovedIndices.Remove(Index);
                 if (Count == 0)
@@ -223,9 +236,9 @@ void UBuzzzContainer::Internal_HandlePostHiveResize(const UBuzzzContainer* Conta
             }
         }
 
-        if (ResizeType == EBuzzzHiveMutationType::Remove)
+        if (Context.MutationType == EBuzzzHiveMutationType::Remove)
         {
-            for (auto Index : Indices)
+            for (auto Index : Context.Indices)
             {
                 const auto Count = Internal_Batched_AddedIndices.Remove(Index);
                 if (Count == 0)
@@ -278,12 +291,18 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 
     if (RemovedIndices.Num() > 0)
     {
-        PostHiveResize.Broadcast(this, RemovedIndices, EBuzzzHiveMutationType::Remove);
+        const FBuzzzHiveMutationContext Context{this, RemovedIndices, EBuzzzHiveMutationType::Remove};
+        PostHiveResize.Broadcast(Context);
+
+        UBeeepMessageSubsystem::Get(this)->BroadcastMessage(Tag_BuzzzEvent_HiveResize, FInstancedStruct::Make(Context));
     }
 
     if (AddedIndices.Num() > 0)
     {
-        PostHiveResize.Broadcast(this, AddedIndices, EBuzzzHiveMutationType::Add);
+        const FBuzzzHiveMutationContext Context{this, AddedIndices, EBuzzzHiveMutationType::Add};
+        PostHiveResize.Broadcast(Context);
+
+        UBeeepMessageSubsystem::Get(this)->BroadcastMessage(Tag_BuzzzEvent_HiveResize, FInstancedStruct::Make(Context));
     }
 
     return true;
@@ -312,6 +331,8 @@ FBuzzzCellAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int3
 FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCellAssignmentContext& Context)
 {
     FScopeLock ScopeLock(&ContainerCS);
+
+#pragma region Validation
 
     if (Context.State == EBuzzzExecutionState::None)
     {
@@ -357,6 +378,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
         Context.PreviousInstance = Hive.Cells[Context.TargetIndex].Item;
         Context.PreviousStackCount = Hive.Cells[Context.TargetIndex].StackCount;
     }
+#pragma endregion
 
     // Handle Failed
     if (Context.State == EBuzzzExecutionState::Failed)
@@ -406,18 +428,17 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
         Context.State = EBuzzzExecutionState::Success;
     }
 
-    // Forward To Subsystem
-    {
-        const auto BuzzzSubsystem = UBuzzzSubsystem::Get(this);
-        if (IsValid(BuzzzSubsystem))
-        {
-            BuzzzSubsystem->ReceiveContainerCellMutation.Broadcast(Context);
-        }
-    }
 
     // Server Post Change Callback
     {
         PostCellChange.Broadcast(Context);
+    }
+
+    // Global Listener
+    {
+        UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
+            Tag_BuzzzEvent_CellMutation,
+            FInstancedStruct::Make<const FBuzzzCellAssignmentContext>(Context));
     }
 
     return Context;
@@ -429,11 +450,9 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
 
 void UBuzzzContainer::InitializeComponent()
 {
-    Super::InitializeComponent();
-
     Hive.ReceiveRemoteHiveMutation.AddLambda([this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
     {
-        Client_ReceiveHiveMutation.Broadcast(this, Indices, Type);
+        Client_ReceiveHiveMutation.Broadcast({this, Indices, Type});
     });
 
     if (GetOwner()->HasAuthority())
@@ -445,6 +464,8 @@ void UBuzzzContainer::InitializeComponent()
 
         OnInitialization();
     }
+
+    Super::InitializeComponent();
 }
 
 void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick TickType,
@@ -459,24 +480,24 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
         Internal_Locally_TrySubmitMutationInfoToClient();
     }
 
-    if (GetOwner()->HasAuthority())
-    {
-        for (auto&& InstanceMayBeDisconnected : Internal_MayBeDisconnected_Instances)
-        {
-            if (!CheckItemOwned(InstanceMayBeDisconnected))
-            {
-                PreInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-                OnInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-                const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-                if (IsValid(Subsystem))
-                {
-                    Subsystem->ReceiveInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-                }
-
-                PostInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-            }
-        }
-    }
+    // if (GetOwner()->HasAuthority())
+    // {
+    //     for (auto&& InstanceMayBeDisconnected : Internal_MayBeDisconnected_Instances)
+    //     {
+    //         if (!CheckItemOwned(InstanceMayBeDisconnected))
+    //         {
+    //             PreInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+    //             OnInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+    //             const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
+    //             if (IsValid(Subsystem))
+    //             {
+    //                 Subsystem->ReceiveInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+    //             }
+    //
+    //             PostInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
+    //         }
+    //     }
+    // }
 
     {
         Internal_Batched_RemovedIndices.Reset();
@@ -487,20 +508,14 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
 }
 
 
-bool UBuzzzContainer::CheckItemCompatible_Implementation(const UBuzzzItem* Item) const
-{
-    return true;
-}
-
-
 void UBuzzzContainer::BeginPlay()
 {
-    Super::BeginPlay();
-
     if (GetOwner()->HasAuthority())
     {
         Resize(InitialCapacity);
     }
+
+    Super::BeginPlay();
 }
 
 void UBuzzzContainer::BeginDestroy()

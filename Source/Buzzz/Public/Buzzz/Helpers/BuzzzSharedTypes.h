@@ -85,13 +85,26 @@ struct FBuzzzTransactionPayload_Common
     int32 FromIndex = INDEX_NONE;
 };
 
+USTRUCT(BlueprintType)
+struct BUZZZ_API FBuzzzHiveMutationContext
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
+    TObjectPtr<UBuzzzContainer> Container;
+
+    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
+    TArray<int32> Indices;
+
+    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
+    EBuzzzHiveMutationType MutationType = EBuzzzHiveMutationType::None;
+};
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellAssignmentContext&, Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBuzzzHiveMutationDelegate,
-                                               const UBuzzzContainer*, Container,
-                                               const TArray<int32>&, Indices,
-                                               const EBuzzzHiveMutationType, Type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzHiveMutationDelegate,
+                                            const FBuzzzHiveMutationContext&, Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzItem*,
                                              Item, const UBuzzzContainer*, Container);

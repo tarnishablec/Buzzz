@@ -7,7 +7,6 @@
 
 #define LOCTEXT_NAMESPACE "FBuzzzEditorModule"
 
-TSharedPtr<FSlateStyleSet> StyleSet = nullptr;
 
 void FBuzzzEditorModule::StartupModule()
 {
@@ -16,20 +15,26 @@ void FBuzzzEditorModule::StartupModule()
                                              FOnGetDetailCustomizationInstance::CreateStatic(
                                                  &FBuzzzFragmentCustomization::MakeInstance));
 
-    StyleSet = MakeShareable(new FSlateStyleSet("BuzzzStyleSet"));
+    BuzzzStyleSet = MakeShareable(new FSlateStyleSet("BuzzzStyleSet"));
     const FString ResourcePath = IPluginManager::Get().FindPlugin("Buzzz")->GetBaseDir() / TEXT("Resources");
-    StyleSet->Set("ClassThumbnail.BuzzzContainer",
-                  new FSlateImageBrush(ResourcePath / TEXT("Hive.png"), FVector2D(256, 256)));
-    FSlateStyleRegistry::RegisterSlateStyle(*StyleSet.Get());
+    BuzzzStyleSet->Set("ClassThumbnail.BuzzzContainer",
+                       new FSlateImageBrush(ResourcePath / TEXT("Hive.png"),
+                                            FVector2D(512, 512)));
+    BuzzzStyleSet->Set("ClassThumbnail.BuzzzItem",
+                      new FSlateImageBrush(ResourcePath / TEXT("Bee.png"),
+                                           FVector2D(512, 512)));
+
+
+    
+    FSlateStyleRegistry::RegisterSlateStyle(*BuzzzStyleSet.Get());
 }
 
 void FBuzzzEditorModule::ShutdownModule()
 {
     auto& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
     PropertyModule.UnregisterCustomClassLayout(UBuzzzFragment::StaticClass()->GetFName());
-
-    FSlateStyleRegistry::UnRegisterSlateStyle(*StyleSet.Get());
-    StyleSet.Reset();
+    FSlateStyleRegistry::UnRegisterSlateStyle(*BuzzzStyleSet.Get());
+    BuzzzStyleSet.Reset();
 }
 
 #undef LOCTEXT_NAMESPACE

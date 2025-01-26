@@ -20,7 +20,8 @@ public class BuzzzEditor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "Projects"
             }
         );
     }

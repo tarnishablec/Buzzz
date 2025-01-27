@@ -11,7 +11,7 @@
 class UBuzzzAction_WaitForItemRemovalOrAddition;
 class UBuzzzAction_WaitForItemAssignment;
 class UBuzzzContainer;
-struct FBuzzzCellAssignmentContext;
+struct FBuzzzAssignmentContext;
 
 /**
  * 

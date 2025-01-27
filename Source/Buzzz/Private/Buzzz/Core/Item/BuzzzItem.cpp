@@ -42,7 +42,7 @@ int32 UBuzzzItem::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
         const auto CallSpace = OuterActor->GetFunctionCallspace(Function, Stack);
         return CallSpace;
     }
-    return FunctionCallspace::Local;
+    return GEngine->GetGlobalFunctionCallspace(Function, this, Stack);
 }
 
 bool UBuzzzItem::CallRemoteFunction(UFunction* Function, void* Params, struct FOutParmRec* OutParams,
@@ -52,7 +52,8 @@ bool UBuzzzItem::CallRemoteFunction(UFunction* Function, void* Params, struct FO
     {
         if (const auto NewDriver = OwningActor->GetNetDriver())
         {
-            return NewDriver->CallRemoteFunction(Function, Params, OutParams, Stack);
+            NewDriver->ProcessRemoteFunction(OwningActor, Function, Params, OutParams, Stack, this);
+            return true;
         }
     }
     return false;
@@ -122,7 +123,7 @@ void UBuzzzItem::Initialize_Implementation()
     {
         return;
     }
-    
+
     InitializeFragments();
     OnInitialization();
     bInitialized = true;

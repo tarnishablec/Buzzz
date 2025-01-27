@@ -38,14 +38,5 @@ public:
 
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-    UFUNCTION()
-    void HandleSourceDisconnect(UBuzzzItem* Item, const UBuzzzContainer* Container);
-
-    UFUNCTION(Client, Reliable)
-    void Client_ReceiveSourceDisconnect(UBuzzzItem* InSourceInstance, const UBuzzzContainer* Container);
-
     virtual void OnInitialization_Implementation() override;
-
-    UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForItemRemovalOrAddition> WaitSourceDisconnectAction;
 };

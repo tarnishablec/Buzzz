@@ -30,7 +30,7 @@ enum class EBuzzzHiveMutationType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzCellAssignmentContext
+struct BUZZZ_API FBuzzzAssignmentContext
 {
     GENERATED_BODY()
 
@@ -68,9 +68,9 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     // UPROPERTY(BlueprintReadOnly)
     // FGuid ContextID = FGuid::NewGuid();
 
-    static FBuzzzCellAssignmentContext& GetEmptyContext()
+    static FBuzzzAssignmentContext& GetEmptyContext()
     {
-        thread_local FBuzzzCellAssignmentContext EmptyContext{};
+        thread_local FBuzzzAssignmentContext EmptyContext{};
         return EmptyContext;
     }
 
@@ -114,7 +114,7 @@ struct BUZZZ_API FBuzzzHiveMutationContext
 };
 
 USTRUCT(BlueprintType)
-struct BUZZZ_API FBuzzzItemDisconnectContext
+struct BUZZZ_API FBuzzzItemTransferContext
 {
     GENERATED_BODY()
 
@@ -127,10 +127,10 @@ struct BUZZZ_API FBuzzzItemDisconnectContext
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate,
-                                            const FBuzzzCellAssignmentContext&, Context);
+                                            const FBuzzzAssignmentContext&, Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzHiveMutationDelegate,
                                             const FBuzzzHiveMutationContext&, Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzInstanceDisconnectDelegate,
-                                            const FBuzzzItemDisconnectContext&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzInstanceTransferDelegate,
+                                            const FBuzzzItemTransferContext&, Context);

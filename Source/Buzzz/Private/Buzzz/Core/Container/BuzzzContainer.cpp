@@ -200,7 +200,7 @@ void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
     }
 }
 
-void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzCellAssignmentContext& Context)
+void UBuzzzContainer::Internal_HandlePostCellChanged(const FBuzzzAssignmentContext& Context)
 {
     // if (GetNetMode() == NM_Standalone)
     {
@@ -260,7 +260,7 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
     // Clear Cell While NewCapacity is smaller
     for (int i = NewCapacity; i < GetCapacity(); ++i)
     {
-        FBuzzzCellAssignmentContext Context{};
+        FBuzzzAssignmentContext Context{};
         ClearCell(i, Context);
 
         if (Context.State != EBuzzzExecutionState::Success)
@@ -304,8 +304,8 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 }
 
 
-FBuzzzCellAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int32& Index,
-                                                                      FBuzzzCellAssignmentContext& OutContext)
+FBuzzzAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int32& Index,
+                                                                      FBuzzzAssignmentContext& OutContext)
 {
     OutContext.Reset();
     OutContext.TargetIndex = Index;
@@ -323,7 +323,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int3
 }
 
 
-FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCellAssignmentContext& Context)
+FBuzzzAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzAssignmentContext& Context)
 {
     FScopeLock ScopeLock(&ContainerCS);
 
@@ -433,7 +433,7 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
     {
         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
             Tag_BuzzzEvent_CellMutation,
-            FInstancedStruct::Make<const FBuzzzCellAssignmentContext>(Context));
+            FInstancedStruct::Make<const FBuzzzAssignmentContext>(Context));
     }
 
     return Context;

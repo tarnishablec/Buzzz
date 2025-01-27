@@ -10,8 +10,7 @@
 
 
 UBuzzzAction_WaitForItemAssignment* UBuzzzAction_WaitForItemAssignment::WaitForAssignToCell(
-    UWorld* WorldContextObject,
-    UBuzzzItem* Item)
+    const UWorld* WorldContextObject, UBuzzzItem* Item)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForItemAssignment>();
     Action->WorldPtr = WorldContextObject->GetWorld();
@@ -30,7 +29,7 @@ void UBuzzzAction_WaitForItemAssignment::Activate()
         {
             auto Callback = [this](FGameplayTag, const FInstancedStruct& Payload)
             {
-                const auto Context = Payload.GetPtr<const FBuzzzCellAssignmentContext>();
+                const auto Context = Payload.GetPtr<const FBuzzzAssignmentContext>();
                 if (!Context)
                 {
                     return;

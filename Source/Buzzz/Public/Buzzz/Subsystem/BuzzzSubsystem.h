@@ -15,7 +15,7 @@ struct FInstancedStruct;
 class ABuzzzTransactionBridge;
 class UBuzzzTransaction;
 class UBuzzzItem;
-struct FBuzzzCellAssignmentContext;
+struct FBuzzzAssignmentContext;
 class UBuzzzContainer;
 
 

@@ -20,6 +20,7 @@ ABuzzzManager::ABuzzzManager()
     SetReplicatingMovement(false);
     SetCanBeDamaged(false);
     bEnableAutoLODGeneration = false;
+    bNetLoadOnClient = false;
 }
 
 AActor* ABuzzzManager::TryAchieveItemOwner(UBuzzzItem* Item)
@@ -44,7 +45,7 @@ void ABuzzzManager::PostInitializeComponents()
 
     auto Callback = [this](FGameplayTag, const FInstancedStruct& Payload)
     {
-        if (const auto* Context = Payload.GetPtr<FBuzzzCellAssignmentContext>())
+        if (const auto* Context = Payload.GetPtr<FBuzzzAssignmentContext>())
         {
             if (IsValid(Context->TargetContainer))
             {
@@ -88,7 +89,7 @@ void ABuzzzManager::Tick(const float DeltaTime)
                     {
                         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
                             Tag_BuzzzEvent_ItemRemoval, FInstancedStruct::Make(
-                                FBuzzzItemDisconnectContext{
+                                FBuzzzItemTransferContext{
                                     Item.Get(), Container.Get()
                                 }));
                     }
@@ -97,7 +98,7 @@ void ABuzzzManager::Tick(const float DeltaTime)
                     {
                         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
                             Tag_BuzzzEvent_ItemAddition, FInstancedStruct::Make(
-                                FBuzzzItemDisconnectContext{
+                                FBuzzzItemTransferContext{
                                     Item.Get(), Container.Get()
                                 }));
                     }

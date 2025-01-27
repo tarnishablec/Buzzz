@@ -3,7 +3,6 @@
 
 #include "Buzzz/Presets/BuzzzItem_LINK.h"
 
-#include "Buzzz/Core/Container/BuzzzContainer.h"
 #include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Net/UnrealNetwork.h"
 
@@ -32,21 +31,8 @@ void UBuzzzItem_LINK::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
     DOREPLIFETIME_WITH_PARAMS(ThisClass, IsSourceValid, IsSourceValidParam);
 }
 
-void UBuzzzItem_LINK::HandleSourceDisconnect(UBuzzzItem* Item, const UBuzzzContainer* Container)
-{
-    Client_ReceiveSourceDisconnect(Item, Container);
-}
-
-void UBuzzzItem_LINK::Client_ReceiveSourceDisconnect_Implementation(
-    UBuzzzItem* InSourceInstance, const UBuzzzContainer* Container)
-{
-    check(Container->IsNetMode(NM_Client));
-}
-
 void UBuzzzItem_LINK::OnInitialization_Implementation()
 {
     check(IsValid(SourceInstance));
-
-
     Super::OnInitialization_Implementation();
 }

@@ -12,7 +12,7 @@
 class UBuzzzDefinition;
 class UBuzzzItem;
 class UBuzzzContainer;
-struct FBuzzzCellAssignmentContext;
+struct FBuzzzAssignmentContext;
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_CellMutation);
@@ -128,7 +128,7 @@ public:
 private:
 #pragma region Internal
     UFUNCTION()
-    virtual void Internal_HandlePostCellChanged(const FBuzzzCellAssignmentContext& Context);
+    virtual void Internal_HandlePostCellChanged(const FBuzzzAssignmentContext& Context);
 
     UFUNCTION()
     virtual void Internal_HandlePostHiveResize(const FBuzzzHiveMutationContext& Context);
@@ -181,13 +181,13 @@ public:
 
 #pragma region Assign Operation
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz")
-    FBuzzzCellAssignmentContext AssignCell(UPARAM(ref) FBuzzzCellAssignmentContext& Context);
+    FBuzzzAssignmentContext AssignCell(UPARAM(ref) FBuzzzAssignmentContext& Context);
 #pragma endregion
 
 
 #pragma region Wrapper Operations
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz",
         meta = (AutoCreateRefTerm = "Index", ReturnDisplayName="Success"))
-    FBuzzzCellAssignmentContext ClearCell(const int32& Index, FBuzzzCellAssignmentContext& OutContext);
+    FBuzzzAssignmentContext ClearCell(const int32& Index, FBuzzzAssignmentContext& OutContext);
 #pragma endregion
 };

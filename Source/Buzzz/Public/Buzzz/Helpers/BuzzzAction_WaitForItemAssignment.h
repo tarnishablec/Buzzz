@@ -9,7 +9,7 @@
 #include "BuzzzAction_WaitForItemAssignment.generated.h"
 
 class UBuzzzSubsystem;
-struct FBuzzzCellAssignmentContext;
+struct FBuzzzAssignmentContext;
 class UBuzzzItem;
 /**
  * 
@@ -29,8 +29,8 @@ public:
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buzzz", BlueprintInternalUseOnly,
         DisplayName="Wait For Assigned To Cell", meta=(WorldContext="WorldContextObject"))
-    static UBuzzzAction_WaitForItemAssignment* WaitForAssignToCell(UWorld* WorldContextObject,
-                                                                   UBuzzzItem* Item);
+    static UBuzzzAction_WaitForItemAssignment* WaitForAssignToCell(
+        const UWorld* WorldContextObject, UBuzzzItem* Item);
 
 protected:
     TWeakObjectPtr<UBuzzzItem> TargetItem;

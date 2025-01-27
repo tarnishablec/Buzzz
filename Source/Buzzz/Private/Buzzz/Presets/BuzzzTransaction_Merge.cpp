@@ -47,7 +47,7 @@ void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
     }
 #pragma endregion
 
-    FBuzzzCellAssignmentContext InContext{};
+    FBuzzzAssignmentContext InContext{};
     InContext.TargetContainer = TargetContainer;
     InContext.TargetIndex = TargetIndex;
 

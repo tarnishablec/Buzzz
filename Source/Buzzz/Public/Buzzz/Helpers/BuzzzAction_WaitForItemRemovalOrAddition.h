@@ -30,20 +30,20 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintInternalUseOnly, Category = "Buzzz",
         DisplayName="Wait For Removal From Container", meta=(WorldContext="WorldContextObject"))
     static UBuzzzAction_WaitForItemRemovalOrAddition* WaitForRemoval(
-        UObject* WorldContextObject,
+        const UObject* WorldContextObject,
         UBuzzzItem* Item);
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintInternalUseOnly, Category = "Buzzz",
         DisplayName="Wait For Addition To Container", meta=(WorldContext="WorldContextObject"))
     static UBuzzzAction_WaitForItemRemovalOrAddition* WaitForAddition(
-        UObject* WorldContextObject,
+        const UObject* WorldContextObject,
         UBuzzzItem* Item);
 
     virtual void Activate() override;
     virtual void SetReadyToDestroy() override;
 
     UPROPERTY(BlueprintAssignable)
-    FBuzzzInstanceDisconnectDelegate Triggered;
+    FBuzzzInstanceTransferDelegate Triggered;
 
 protected:
     EAdditionOrRemoval ActionMode = EAdditionOrRemoval::None;

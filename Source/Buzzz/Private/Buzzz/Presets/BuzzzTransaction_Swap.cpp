@@ -45,7 +45,7 @@ void UBuzzzTransaction_Swap::K2_OnExecute_Implementation()
     }
 #pragma endregion
 
-    FBuzzzCellAssignmentContext InContext{};
+    FBuzzzAssignmentContext InContext{};
     InContext.TargetContainer = TargetContainer;
     InContext.TargetIndex = TargetIndex;
 
@@ -59,7 +59,7 @@ void UBuzzzTransaction_Swap::K2_OnExecute_Implementation()
 
     if (InContext.State == EBuzzzExecutionState::Success)
     {
-        FBuzzzCellAssignmentContext FromContext{};
+        FBuzzzAssignmentContext FromContext{};
         FromContext.TargetContainer = FromContainer;
         FromContext.TargetIndex = FromIndex;
 

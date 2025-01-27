@@ -8,7 +8,7 @@
 #include "Buzzz/Subsystem/BuzzzManager.h"
 
 UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddition::WaitForRemoval(
-    UObject* WorldContextObject,
+    const UObject* WorldContextObject,
     UBuzzzItem* Item
 )
 {
@@ -20,7 +20,7 @@ UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddi
 }
 
 UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddition::WaitForAddition(
-    UObject* WorldContextObject, UBuzzzItem* Item)
+    const UObject* WorldContextObject, UBuzzzItem* Item)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForItemRemovalOrAddition>();
     Action->TargetItem = Item;
@@ -52,7 +52,7 @@ void UBuzzzAction_WaitForItemRemovalOrAddition::Activate()
                 EBeeepChannelMatchMode::ExactMatch,
                 [this](FGameplayTag Channel, const FInstancedStruct& Payload)
                 {
-                    if (const auto Context = Payload.GetPtr<FBuzzzItemDisconnectContext>())
+                    if (const auto Context = Payload.GetPtr<FBuzzzItemTransferContext>())
                     {
                         if (Context->Item == TargetItem)
                         {

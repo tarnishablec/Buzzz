@@ -13,7 +13,6 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_ItemDisconnect, "BuzzzEvent.ItemDisconnect
 // Sets default values
 ABuzzzManager::ABuzzzManager()
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
     SetHidden(true);
@@ -30,15 +29,32 @@ void ABuzzzManager::ReceivedCellMutation_Implementation(const FBuzzzCellAssignme
 void ABuzzzManager::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+void ABuzzzManager::BeginDestroy()
+{
+    Super::BeginDestroy();
+}
+
+void ABuzzzManager::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
 
     auto Callback = [this](FGameplayTag, const FInstancedStruct& Payload)
     {
         if (const auto* Context = Payload.GetPtr<FBuzzzCellAssignmentContext>())
         {
-            // TODO: Should Have Some Bug
-            if (IsValid(Context->TargetContainer) && IsValid(Context->PreviousInstance))
+            if (IsValid(Context->TargetContainer))
             {
-                Recycler.Add(Context->PreviousInstance, Context->TargetContainer);
+                if (IsValid(Context->PreviousInstance))
+                {
+                    Recycler.Throw(Context->PreviousInstance, Context->TargetContainer);
+                }
+
+                if (IsValid(Context->UpcomingInstance))
+                {
+                    Recycler.Pick(Context->UpcomingInstance, Context->TargetContainer);
+                }
             }
         }
     };
@@ -55,22 +71,36 @@ void ABuzzzManager::Tick(const float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (Recycler.Num() > 0)
+    for (auto&& Entry : Recycler.ContainerMap)
     {
-        for (auto&& Conditional : Recycler)
+        const auto Container = Entry.Key;
+        const auto ItemSet = Entry.Value.ItemCountMap;
+        if (Container.IsValid() && IsValid(Container.Get()))
         {
-            if (!Conditional.Value->CheckItemOwned(Conditional.Key))
+            for (auto&& ItemCountEntry : ItemSet)
             {
-                UBeeepMessageSubsystem::Get(this)->BroadcastMessage(Tag_BuzzzEvent_ItemDisconnect);
+                const auto Item = ItemCountEntry.Key;
+                if (Item.IsValid() && IsValid(Item.Get()))
+                {
+                    if (ItemCountEntry.Value > 0)
+                    {
+                        UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
+                            Tag_BuzzzEvent_ItemDisconnect, FInstancedStruct::Make(FBuzzzItemDisconnectContext
+                                {
+                                    Item.Get(), Container.Get()
+                                }));
+                    }
+                }
             }
         }
-
-        Recycler.Reset();
     }
+
+    Recycler.Reset();
 }
 
-void ABuzzzManager::BeginDestroy()
+
+void ABuzzzManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    // UBeeepMessageSubsystem::Get(this)->UnregisterListener(CellMutationListenerHandle);
-    Super::BeginDestroy();
+    UBeeepMessageSubsystem::Get(this)->UnregisterListener(CellMutationListenerHandle);
+    Super::EndPlay(EndPlayReason);
 }

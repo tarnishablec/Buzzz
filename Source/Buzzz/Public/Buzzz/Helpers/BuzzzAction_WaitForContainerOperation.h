@@ -50,11 +50,8 @@ public:
                                                                          UBuzzzItem* Item);
 
 protected:
-    UPROPERTY()
-    TObjectPtr<UBuzzzItem> TargetItem;
-
-    EOperationMode OperationMode;
+    TWeakObjectPtr<UBuzzzItem> TargetItem;
     TWeakObjectPtr<UWorld> WorldPtr;
-
+    EOperationMode OperationMode;
     TSharedPtr<FBeeepMessageListenerHandle> Handle = MakeShared<FBeeepMessageListenerHandle>();
 };

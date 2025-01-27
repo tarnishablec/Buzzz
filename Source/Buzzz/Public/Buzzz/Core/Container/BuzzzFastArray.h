@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "UObject/Object.h"
 #include "Net/Serialization/FastArraySerializer.h"
 
@@ -11,15 +12,6 @@
 
 class UBuzzzContainer;
 class UBuzzzItem;
-
-UENUM(BlueprintType)
-enum class EBuzzzHiveMutationType : uint8
-{
-    None UMETA(Hidden),
-    Remove,
-    Add,
-    Change,
-};
 
 
 USTRUCT(BlueprintType)

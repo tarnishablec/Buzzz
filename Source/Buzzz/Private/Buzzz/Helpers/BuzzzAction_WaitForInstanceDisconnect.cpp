@@ -3,38 +3,56 @@
 
 #include "Buzzz/Helpers/BuzzzAction_WaitForInstanceDisconnect.h"
 
+#include "Beeep/BeeepMessageSubsystem.h"
 #include "Buzzz/Core/Item/BuzzzItem.h"
-#include "Buzzz/Subsystem/BuzzzSubsystem.h"
+#include "Buzzz/Subsystem/BuzzzManager.h"
 
 UBuzzzAction_WaitForInstanceDisconnect* UBuzzzAction_WaitForInstanceDisconnect::WaitForInstanceDisconnect(
-    UBuzzzItem* Item)
+    UObject* WorldContextObject,
+    UBuzzzItem* Item
+)
 {
     const auto Action = NewObject<UBuzzzAction_WaitForInstanceDisconnect>();
     Action->TargetItem = Item;
+    Action->WorldPtr = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
     return Action;
 }
 
 void UBuzzzAction_WaitForInstanceDisconnect::Activate()
 {
     Super::Activate();
-}
 
-void UBuzzzAction_WaitForInstanceDisconnect::Cancel()
-{
-    Super::Cancel();
-
-    if (TargetItem)
+    if (WorldPtr.IsValid())
     {
-        Triggered.RemoveAll(TargetItem);
+        UBeeepMessageSubsystem::Get(WorldPtr.Get())->RegisterListener(
+            {
+                Tag_BuzzzEvent_ItemDisconnect,
+                EBeeepChannelMatchMode::ExactMatch,
+                [this](FGameplayTag Channel, const FInstancedStruct& Payload)
+                {
+                    if (const auto Context = Payload.GetPtr<FBuzzzItemDisconnectContext>())
+                    {
+                        if (Context->Item == TargetItem)
+                        {
+                            Triggered.Broadcast(*Context);
+                        }
+                    }
+                }
+            }, WaitForDisconnectListenerHandle);
     }
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void UBuzzzAction_WaitForInstanceDisconnect::HandleReceivedInstanceDisconnect(UBuzzzItem* Item,
-                                                                              const UBuzzzContainer* Container)
+void UBuzzzAction_WaitForInstanceDisconnect::SetReadyToDestroy()
 {
-    if (Item == TargetItem)
+    if (const auto World = WorldPtr.Get())
     {
-        Triggered.Broadcast(Item, Container);
+        UBeeepMessageSubsystem::Get(World)->UnregisterListener(WaitForDisconnectListenerHandle);
     }
+
+    if (TargetItem.IsValid())
+    {
+        Triggered.RemoveAll(TargetItem.Get());
+    }
+
+    Super::SetReadyToDestroy();
 }

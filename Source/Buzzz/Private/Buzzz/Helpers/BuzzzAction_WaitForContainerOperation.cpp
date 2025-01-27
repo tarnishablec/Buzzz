@@ -92,7 +92,7 @@ void UBuzzzAction_WaitForContainerOperation::Activate()
                     }
                 }
             };
-            
+
             UBeeepMessageSubsystem::Get(World)->RegisterListener({
                                                                      Tag_BuzzzEvent_CellMutation,
                                                                      EBeeepChannelMatchMode::ExactMatch, Callback
@@ -105,9 +105,9 @@ void UBuzzzAction_WaitForContainerOperation::Cancel()
 {
     Super::Cancel();
 
-    if (TargetItem)
+    if (TargetItem.IsValid())
     {
-        Triggered.RemoveAll(TargetItem);
+        Triggered.RemoveAll(TargetItem.Get());
 
         if (const auto World = WorldPtr.Get())
         {

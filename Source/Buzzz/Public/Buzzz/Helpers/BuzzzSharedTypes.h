@@ -19,6 +19,16 @@ enum class EBuzzzExecutionState : uint8
     Failed,
 };
 
+
+UENUM(BlueprintType)
+enum class EBuzzzHiveMutationType : uint8
+{
+    None UMETA(Hidden),
+    Remove,
+    Add,
+    Change,
+};
+
 USTRUCT(BlueprintType)
 struct BUZZZ_API FBuzzzCellAssignmentContext
 {
@@ -55,6 +65,9 @@ struct BUZZZ_API FBuzzzCellAssignmentContext
     UPROPERTY(BlueprintReadOnly)
     EBuzzzExecutionState State = EBuzzzExecutionState::None;
 
+    // UPROPERTY(BlueprintReadOnly)
+    // FGuid ContextID = FGuid::NewGuid();
+
     static FBuzzzCellAssignmentContext& GetEmptyContext()
     {
         thread_local FBuzzzCellAssignmentContext EmptyContext{};
@@ -72,16 +85,16 @@ struct FBuzzzTransactionPayload_Common
 {
     GENERATED_BODY()
 
-    UPROPERTY(BlueprintReadWrite, Category="Buzzz")
+    UPROPERTY(BlueprintReadWrite)
     TObjectPtr<UBuzzzContainer> TargetContainer;
 
-    UPROPERTY(BlueprintReadWrite, Category="Buzzz")
+    UPROPERTY(BlueprintReadWrite)
     int32 TargetIndex = INDEX_NONE;
 
-    UPROPERTY(BlueprintReadWrite, Category="Buzzz")
+    UPROPERTY(BlueprintReadWrite)
     TObjectPtr<UBuzzzContainer> FromContainer;
 
-    UPROPERTY(BlueprintReadWrite, Category="Buzzz")
+    UPROPERTY(BlueprintReadWrite)
     int32 FromIndex = INDEX_NONE;
 };
 
@@ -90,21 +103,34 @@ struct BUZZZ_API FBuzzzHiveMutationContext
 {
     GENERATED_BODY()
 
-    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
-    TObjectPtr<UBuzzzContainer> Container;
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<const UBuzzzContainer> Container;
 
-    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
+    UPROPERTY(BlueprintReadOnly)
     TArray<int32> Indices;
 
-    UPROPERTY(BlueprintReadOnly, Category="Buzzz")
+    UPROPERTY(BlueprintReadOnly)
     EBuzzzHiveMutationType MutationType = EBuzzzHiveMutationType::None;
 };
 
+USTRUCT(BlueprintType)
+struct BUZZZ_API FBuzzzItemDisconnectContext
+{
+    GENERATED_BODY()
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate, const FBuzzzCellAssignmentContext&, Context);
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<UBuzzzItem> Item;
+
+    UPROPERTY(BlueprintReadOnly)
+    TObjectPtr<const UBuzzzContainer> Container;
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzCellMutationDelegate,
+                                            const FBuzzzCellAssignmentContext&, Context);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzHiveMutationDelegate,
                                             const FBuzzzHiveMutationContext&, Context);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBuzzzInstanceDisconnectDelegate, UBuzzzItem*,
-                                             Item, const UBuzzzContainer*, Container);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBuzzzInstanceDisconnectDelegate,
+                                            const FBuzzzItemDisconnectContext&, Context);

@@ -76,6 +76,7 @@ void UBuzzzSubsystem::Deinitialize()
 void UBuzzzSubsystem::RegisterInstance(UBuzzzItem* Instance)
 {
     auto [InstanceSet] = Manager->ItemRegistry.FindOrAdd(Instance->GetClass());
+    Instance->Rename(nullptr, Manager);
     InstanceSet.Add(Instance);
 }
 
@@ -96,7 +97,7 @@ UBuzzzItem* UBuzzzSubsystem::Instantiate(
     if (IsValid(FinalInstance))
     {
         this->RegisterInstance(FinalInstance);
-        FinalInstance->Initialize();
+        FinalInstance->Initialize(); 
     }
     return FinalInstance;
 }

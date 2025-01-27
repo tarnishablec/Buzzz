@@ -8,7 +8,8 @@
 #include "Buzzz/Core/Item/BuzzzItem.h"
 #include "StructUtils/InstancedStruct.h"
 
-UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_ItemDisconnect, "BuzzzEvent.ItemDisconnect");
+UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_ItemRemoval, "BuzzzEvent.ItemRemoval");
+UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_ItemAddition, "BuzzzEvent.ItemAddition");
 
 // Sets default values
 ABuzzzManager::ABuzzzManager()
@@ -21,8 +22,9 @@ ABuzzzManager::ABuzzzManager()
     bEnableAutoLODGeneration = false;
 }
 
-void ABuzzzManager::ReceivedCellMutation_Implementation(const FBuzzzCellAssignmentContext& Context)
+AActor* ABuzzzManager::TryAchieveItemOwner(UBuzzzItem* Item)
 {
+    return this;
 }
 
 // Called when the game starts or when spawned
@@ -75,18 +77,27 @@ void ABuzzzManager::Tick(const float DeltaTime)
     {
         const auto Container = Entry.Key;
         const auto ItemSet = Entry.Value.ItemCountMap;
-        if (Container.IsValid() && IsValid(Container.Get()))
+        if (Container.IsValid())
         {
             for (auto&& ItemCountEntry : ItemSet)
             {
                 const auto Item = ItemCountEntry.Key;
-                if (Item.IsValid() && IsValid(Item.Get()))
+                if (Item.IsValid())
                 {
+                    if (ItemCountEntry.Value < 0)
+                    {
+                        UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
+                            Tag_BuzzzEvent_ItemRemoval, FInstancedStruct::Make(
+                                FBuzzzItemDisconnectContext{
+                                    Item.Get(), Container.Get()
+                                }));
+                    }
+
                     if (ItemCountEntry.Value > 0)
                     {
                         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
-                            Tag_BuzzzEvent_ItemDisconnect, FInstancedStruct::Make(FBuzzzItemDisconnectContext
-                                {
+                            Tag_BuzzzEvent_ItemAddition, FInstancedStruct::Make(
+                                FBuzzzItemDisconnectContext{
                                     Item.Get(), Container.Get()
                                 }));
                     }

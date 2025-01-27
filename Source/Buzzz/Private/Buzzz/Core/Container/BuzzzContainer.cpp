@@ -12,11 +12,6 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent, "BuzzzEvent");
 UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_CellMutation, "BuzzzEvent.CellMutation");
 UE_DEFINE_GAMEPLAY_TAG(Tag_BuzzzEvent_HiveResize, "BuzzzEvent.HiveResize");
 
-
-// void UBuzzzContainer::OnRep_Hive_Implementation()
-// {
-// }
-
 UBuzzzContainer::UBuzzzContainer()
 {
     PrimaryComponentTick.bCanEverTick = true;
@@ -355,11 +350,11 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
     }
 
     // StackCount Should be Positive ? Should Be?
-    // check(Context.UpcomingStackCount >= 0);
-    // if (Context.UpcomingStackCount < 0)
-    // {
-    //    Context.State = EBuzzzExecutionState::Failed;
-    // }
+    check(Context.UpcomingStackCount >= 0);
+    if (Context.UpcomingStackCount < 0)
+    {
+       Context.State = EBuzzzExecutionState::Failed;
+    }
 
     // if Empty Instance, StackCount Should Be 0
     if (!IsValid(Context.UpcomingInstance))
@@ -444,16 +439,13 @@ FBuzzzCellAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzCel
     return Context;
 }
 
-// void UBuzzzContainer::OnRep_Hive_Implementation()
-// {
-// }
-
 void UBuzzzContainer::InitializeComponent()
 {
-    Hive.ReceiveRemoteHiveMutation.AddLambda([this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
-    {
-        Client_ReceiveHiveMutation.Broadcast({this, Indices, Type});
-    });
+    Hive.ReceiveRemoteHiveMutation.AddWeakLambda(
+        this, [this](const TArray<int32>& Indices, const EBuzzzHiveMutationType Type)
+        {
+            Client_ReceiveHiveMutation.Broadcast({this, Indices, Type});
+        });
 
     if (GetOwner()->HasAuthority())
     {
@@ -479,25 +471,6 @@ void UBuzzzContainer::TickComponent(const float DeltaTime, const enum ELevelTick
     {
         Internal_Locally_TrySubmitMutationInfoToClient();
     }
-
-    // if (GetOwner()->HasAuthority())
-    // {
-    //     for (auto&& InstanceMayBeDisconnected : Internal_MayBeDisconnected_Instances)
-    //     {
-    //         if (!CheckItemOwned(InstanceMayBeDisconnected))
-    //         {
-    //             PreInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-    //             OnInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-    //             const auto Subsystem = GetOwner()->GetGameInstance()->GetSubsystem<UBuzzzSubsystem>();
-    //             if (IsValid(Subsystem))
-    //             {
-    //                 Subsystem->ReceiveInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-    //             }
-    //
-    //             PostInstanceDisconnect.Broadcast(InstanceMayBeDisconnected, this);
-    //         }
-    //     }
-    // }
 
     {
         Internal_Batched_RemovedIndices.Reset();

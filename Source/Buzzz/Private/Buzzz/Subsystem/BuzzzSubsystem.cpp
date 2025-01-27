@@ -73,9 +73,10 @@ void UBuzzzSubsystem::Deinitialize()
 }
 
 
+// ReSharper disable once CppUE4BlueprintCallableFunctionMayBeConst
 void UBuzzzSubsystem::RegisterInstance(UBuzzzItem* Instance)
 {
-    auto [InstanceSet] = Manager->ItemRegistry.FindOrAdd(Instance->GetClass());
+    auto& [InstanceSet] = Manager->ItemRegistry.FindOrAdd(Instance->GetClass());
     Instance->Rename(nullptr, Manager);
     InstanceSet.Add(Instance);
 }
@@ -147,6 +148,7 @@ void UBuzzzSubsystem::UnregisterBridgeLink(AActor* PlayerControllerOrBridge)
 
 void UBuzzzSubsystem::Tick(float DeltaTime)
 {
+    
 }
 
 

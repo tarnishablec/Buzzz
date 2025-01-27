@@ -8,7 +8,7 @@
 #include "BuzzzItem_UNIQUE.h"
 #include "BuzzzItem_LINK.generated.h"
 
-class UBuzzzAction_WaitForInstanceDisconnect;
+class UBuzzzAction_WaitForItemRemovalOrAddition;
 /**
  * 
  */
@@ -47,5 +47,5 @@ public:
     virtual void OnInitialization_Implementation() override;
 
     UPROPERTY()
-    TObjectPtr<UBuzzzAction_WaitForInstanceDisconnect> WaitSourceDisconnectAction;
+    TObjectPtr<UBuzzzAction_WaitForItemRemovalOrAddition> WaitSourceDisconnectAction;
 };

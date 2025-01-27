@@ -23,16 +23,16 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
     {
     };
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadOnly, Transient)
     TObjectPtr<UBuzzzItem> Item;
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadOnly, Transient)
     int32 StackCount = 0;
 
-    UPROPERTY()
+    UPROPERTY(Transient)
     TObjectPtr<UBuzzzContainer> Container;
 
-    UPROPERTY()
+    UPROPERTY(Transient)
     int32 Index = INDEX_NONE;
 };
 

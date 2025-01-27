@@ -39,7 +39,7 @@ int32 UBuzzzItem::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
     const auto OuterActor = GetTypedOuter<AActor>();
     if (IsValid(OuterActor))
     {
-        const auto CallSpace = GetTypedOuter<AActor>()->GetFunctionCallspace(Function, Stack);
+        const auto CallSpace = OuterActor->GetFunctionCallspace(Function, Stack);
         return CallSpace;
     }
     return FunctionCallspace::Local;

@@ -8,8 +8,8 @@
 #include "Buzzz/Core/Item/BuzzzItem.h"
 #include "BuzzzItem_UNIQUE.generated.h"
 
-class UBuzzzAction_WaitForInstanceDisconnect;
-class UBuzzzAction_WaitForContainerOperation;
+class UBuzzzAction_WaitForItemRemovalOrAddition;
+class UBuzzzAction_WaitForItemAssignment;
 class UBuzzzContainer;
 struct FBuzzzCellAssignmentContext;
 

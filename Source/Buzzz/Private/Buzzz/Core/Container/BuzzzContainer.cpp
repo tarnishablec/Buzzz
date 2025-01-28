@@ -64,7 +64,7 @@ bool UBuzzzContainer::CheckCellEmpty(const int32& Index) const
         return true;
     }
 
-    return Hive.Cells[Index].Item != nullptr;
+    return Hive.Cells[Index].Item == nullptr;
 }
 
 const FBuzzzContainerCell& UBuzzzContainer::GetCell(const int32& Index, bool& IsValidIndex) const

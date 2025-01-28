@@ -19,7 +19,7 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_ItemRemoval);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_ItemAddition);
 
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, NotPlaceable)
 class BUZZZ_API ABuzzzManager : public AActor
 {
     GENERATED_BODY()
@@ -28,14 +28,14 @@ public:
     // Sets default values for this actor's properties
     ABuzzzManager();
 
-    struct FBuzzzRecycler
+    struct FBuzzzManagerMutationCounter
     {
-        struct FBuzzzRecyclerEntry
+        struct FBuzzzManagerMutationCountEntry
         {
             TMap<TWeakObjectPtr<UBuzzzItem>, int32> ItemCountMap;
         };
 
-        TMap<TWeakObjectPtr<UBuzzzContainer>, FBuzzzRecyclerEntry> ContainerMap;
+        TMap<TWeakObjectPtr<UBuzzzContainer>, FBuzzzManagerMutationCountEntry> ContainerMap;
 
         void Throw(UBuzzzItem* Item, UBuzzzContainer* Container)
         {
@@ -59,7 +59,7 @@ public:
         }
     };
 
-    FBuzzzRecycler Recycler;
+    FBuzzzManagerMutationCounter MutationCounter;
 
     struct FItemRegistryEntry
     {
@@ -83,6 +83,7 @@ public:
 
     virtual void BeginDestroy() override;
 
+
     virtual void PostInitializeComponents() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -95,4 +96,8 @@ public:
 
     FBeeepMessageListenerHandle CellMutationListenerHandle;
     HIDE_ACTOR_TRANSFORM_FUNCTIONS();
+
+protected:
+    UFUNCTION()
+    void HandleCellMutationMessage(FGameplayTag Channel, const FInstancedStruct& Payload);
 };

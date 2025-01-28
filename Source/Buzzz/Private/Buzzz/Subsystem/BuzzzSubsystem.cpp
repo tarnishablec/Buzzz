@@ -7,7 +7,7 @@
 #include "Buzzz/Core/Item/BuzzzItem.h"
 #include "Buzzz/Subsystem/BuzzzManager.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 
 void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -35,7 +35,7 @@ void UBuzzzSubsystem::Initialize(FSubsystemCollectionBase& Collection)
             {
                 if (PlayerController->HasAuthority() && !BridgeRegistry.Find(PlayerController))
                 {
-                    const auto NewBridget = GetWorld()->SpawnActor<ABuzzzTransactionBridge>(
+                    const auto NewBridget = GetWorld()->SpawnActor<ABuzzzBridge>(
                         UBuzzzSettings::Get()->TransactionBridgeClass);
                     NewBridget->SetOwner(PlayerController);
                 }
@@ -98,7 +98,7 @@ UBuzzzItem* UBuzzzSubsystem::Instantiate(
     if (IsValid(FinalInstance))
     {
         this->RegisterInstance(FinalInstance);
-        FinalInstance->Initialize(); 
+        FinalInstance->Initialize();
     }
     return FinalInstance;
 }
@@ -108,6 +108,12 @@ void UBuzzzSubsystem::Try_Process_Server_Transaction(APlayerController*& Instiga
                                                      const FInstancedStruct& Payload)
 {
     check(Instigator);
+
+    if (!IsValid(TransactionClass))
+    {
+        return;
+    }
+
     check(TransactionClass->IsChildOf(UBuzzzTransaction::StaticClass()));
 
     if (Instigator->IsNetMode(NM_DedicatedServer))
@@ -125,7 +131,7 @@ void UBuzzzSubsystem::Try_Process_Server_Transaction(APlayerController*& Instiga
     }
 }
 
-void UBuzzzSubsystem::RegisterBridgeLink(APlayerController* PlayerController, ABuzzzTransactionBridge* Bridge)
+void UBuzzzSubsystem::RegisterBridgeLink(APlayerController* PlayerController, ABuzzzBridge* Bridge)
 {
     BridgeRegistry.Add(PlayerController, Bridge);
 }
@@ -136,7 +142,7 @@ void UBuzzzSubsystem::UnregisterBridgeLink(AActor* PlayerControllerOrBridge)
     {
         BridgeRegistry.Remove(PC);
     }
-    else if (const auto Bridge = Cast<ABuzzzTransactionBridge>(PlayerControllerOrBridge))
+    else if (const auto Bridge = Cast<ABuzzzBridge>(PlayerControllerOrBridge))
     {
         const auto PCPtr = BridgeRegistry.FindKey(Bridge);
         if (PCPtr)
@@ -148,7 +154,6 @@ void UBuzzzSubsystem::UnregisterBridgeLink(AActor* PlayerControllerOrBridge)
 
 void UBuzzzSubsystem::Tick(float DeltaTime)
 {
-    
 }
 
 

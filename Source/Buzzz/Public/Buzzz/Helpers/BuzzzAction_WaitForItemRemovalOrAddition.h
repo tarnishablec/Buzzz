@@ -50,4 +50,7 @@ protected:
     TWeakObjectPtr<UBuzzzItem> TargetItem;
     TWeakObjectPtr<UWorld> WorldPtr;
     FBeeepMessageListenerHandle ListenerHandle;
+
+    UFUNCTION()
+    void HandleMessage(FGameplayTag Channel, const FInstancedStruct& Payload);
 };

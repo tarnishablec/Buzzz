@@ -4,13 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
-#include "BuzzzTransaction_Demolish.generated.h"
+#include "Buzzz/Transaction/BuzzzBridgeBin.h"
+#include "BuzzzTransaction_Recycle.generated.h"
+
+class UBuzzzBridgeBin;
 
 /**
  * 
  */
-UCLASS(DisplayName = "Demolish (Buzzz)")
-class BUZZZ_API UBuzzzTransaction_Demolish : public UBuzzzTransaction
+UCLASS(DisplayName = "Recycle (Buzzz)")
+class BUZZZ_API UBuzzzTransaction_Recycle : public UBuzzzTransaction
 {
     GENERATED_BODY()
 

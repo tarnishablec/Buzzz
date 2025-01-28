@@ -19,6 +19,21 @@ UBuzzzAction_WaitForItemAssignment* UBuzzzAction_WaitForItemAssignment::WaitForA
     return Action;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UBuzzzAction_WaitForItemAssignment::HandleMessage(FGameplayTag Channel, const FInstancedStruct& Payload)
+{
+    const auto Context = Payload.GetPtr<const FBuzzzAssignmentContext>();
+    if (!Context)
+    {
+        return;
+    }
+
+    if (Context->UpcomingInstance == this->TargetItem)
+    {
+        this->Triggered.Broadcast(*Context);
+    }
+}
+
 
 void UBuzzzAction_WaitForItemAssignment::Activate()
 {
@@ -28,25 +43,15 @@ void UBuzzzAction_WaitForItemAssignment::Activate()
     {
         if (const auto World = WorldPtr.Get())
         {
-            auto Callback = [this](FGameplayTag, const FInstancedStruct& Payload)
-            {
-                const auto Context = Payload.GetPtr<const FBuzzzAssignmentContext>();
-                if (!Context)
-                {
-                    return;
-                }
-
-                if (Context->UpcomingInstance == this->TargetItem)
-                {
-                    this->Triggered.Broadcast(*Context);
-                }
+            FBeeepMessageListenerParams Params{
+                Tag_BuzzzEvent_CellMutation,
+                EBeeepChannelMatchMode::ExactMatch
             };
 
+            Params.MessageReceived.BindDynamic(this, &UBuzzzAction_WaitForItemAssignment::HandleMessage);
+
             UBeeepMessageSubsystem::Get(World)->RegisterListener(
-                {
-                    Tag_BuzzzEvent_CellMutation,
-                    EBeeepChannelMatchMode::ExactMatch, Callback
-                }, *Handle);
+                Params, *Handle);
         }
     }
 }

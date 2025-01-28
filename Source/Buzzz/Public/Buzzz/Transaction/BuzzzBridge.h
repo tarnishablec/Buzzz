@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "StructUtils/InstancedStruct.h"
-#include "BuzzzTransactionBridge.generated.h"
+#include "BuzzzBridge.generated.h"
 
+class UBuzzzBridgeBin;
 struct FInstancedStruct;
 class UBuzzzTransaction;
 
@@ -20,13 +21,13 @@ concept pointer_convertible_to_buzzz_transaction =
     std::is_convertible_v<T*, UBuzzzTransaction*>;
 
 
-UCLASS(Blueprintable, NotPlaceable)
-class BUZZZ_API ABuzzzTransactionBridge : public AActor
+UCLASS(Blueprintable)
+class BUZZZ_API ABuzzzBridge : public AActor
 {
     GENERATED_BODY()
 
 public:
-    ABuzzzTransactionBridge();
+    ABuzzzBridge();
     virtual void BeginPlay() override;
     virtual void BeginDestroy() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -51,6 +52,10 @@ public:
 
 private:
     HIDE_ACTOR_TRANSFORM_FUNCTIONS();
+
+public:
+    UPROPERTY(Replicated, BlueprintReadOnly, Category="Buzzz")
+    TObjectPtr<UBuzzzBridgeBin> Bin;
 
 protected:
     UPROPERTY(ReplicatedUsing = OnRep_OwnerPlayerController)

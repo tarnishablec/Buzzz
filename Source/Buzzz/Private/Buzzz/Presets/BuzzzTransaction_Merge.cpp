@@ -6,7 +6,7 @@
 #include "Buzzz/Core/Container/BuzzzContainer.h"
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "Buzzz/Presets/BuzzzTransaction_Clear.h"
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 
 void UBuzzzTransaction_Merge::K2_OnExecute_Implementation()
 {

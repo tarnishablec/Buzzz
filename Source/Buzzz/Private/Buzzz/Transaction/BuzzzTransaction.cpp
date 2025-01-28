@@ -2,7 +2,7 @@
 
 
 #include "Buzzz/Transaction/BuzzzTransaction.h"
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 
 void UBuzzzTransaction::K2_OnExecute_Implementation()
 {
@@ -18,9 +18,9 @@ void UBuzzzTransaction::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
     // DOREPLIFETIME_WITH_PARAMS(ThisClass, TransactionID, Params);
 }
 
-ABuzzzTransactionBridge* UBuzzzTransaction::GetBridge() const
+ABuzzzBridge* UBuzzzTransaction::GetBridge() const
 {
-    return CastChecked<ABuzzzTransactionBridge>(GetOuter());
+    return CastChecked<ABuzzzBridge>(GetOuter());
 }
 
 

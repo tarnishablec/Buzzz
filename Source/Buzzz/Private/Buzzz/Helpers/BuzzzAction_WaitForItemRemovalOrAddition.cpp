@@ -31,12 +31,24 @@ UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddi
     return Action;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UBuzzzAction_WaitForItemRemovalOrAddition::HandleMessage(FGameplayTag Channel, const FInstancedStruct& Payload)
+{
+    if (const auto Context = Payload.GetPtr<FBuzzzItemTransferContext>())
+    {
+        if (Context->Item == TargetItem)
+        {
+            Triggered.Broadcast(*Context);
+        }
+    }
+}
+
 void UBuzzzAction_WaitForItemRemovalOrAddition::Activate()
 {
     Super::Activate();
 
     FGameplayTag EventTag;
-    
+
     switch (ActionMode)
     {
     case EAdditionOrRemoval::Addition:
@@ -51,24 +63,17 @@ void UBuzzzAction_WaitForItemRemovalOrAddition::Activate()
         }
     default: ;
     }
-
     if (WorldPtr.IsValid() && EventTag.IsValid())
     {
+        FBeeepMessageListenerParams Params{
+            EventTag,
+            EBeeepChannelMatchMode::ExactMatch
+        };
+
+        Params.MessageReceived.BindDynamic(this, &UBuzzzAction_WaitForItemRemovalOrAddition::HandleMessage);
+
         UBeeepMessageSubsystem::Get(WorldPtr.Get())->RegisterListener(
-            {
-                EventTag,
-                EBeeepChannelMatchMode::ExactMatch,
-                [this](FGameplayTag Channel, const FInstancedStruct& Payload)
-                {
-                    if (const auto Context = Payload.GetPtr<FBuzzzItemTransferContext>())
-                    {
-                        if (Context->Item == TargetItem)
-                        {
-                            Triggered.Broadcast(*Context);
-                        }
-                    }
-                }
-            }, ListenerHandle);
+            Params, ListenerHandle);
     }
 }
 

@@ -36,7 +36,7 @@ void UBuzzzItem_UNIQUE::PreKilled_Implementation()
 {
     Super::PreKilled_Implementation();
 
-    FBuzzzItemTransferContext Context{};
+    FBuzzzItemTransferContext Context;
     Context.Container = Cast<UBuzzzContainer>(this->GetOuter());
     Context.Item = this;
     Context.TransferType = EBuzzzItemTransferType::Removal;
@@ -68,17 +68,17 @@ void UBuzzzItem_UNIQUE::HandleAdditionToContainer(const FBuzzzItemTransferContex
 void UBuzzzItem_UNIQUE::HandleRemovalFromContainer(const FBuzzzItemTransferContext& Context)
 {
     const auto Container = Context.Container;
-
+    
     if (Container->IsValidLowLevelFast())
     {
         LowLevelRename(GetFName(), GetTransientPackage());
     }
-
-    Container->RemoveReplicatedSubObject(this);
-    TArray<UObject*> NetObjList{};
-    this->GetSubobjectsWithStableNamesForNetworking(NetObjList);
-    for (auto&& NetSubObject : NetObjList)
-    {
-        Container->RemoveReplicatedSubObject(NetSubObject);
-    }
+    //
+    // Container->RemoveReplicatedSubObject(this);
+    // TArray<UObject*> NetObjList{};
+    // this->GetSubobjectsWithStableNamesForNetworking(NetObjList);
+    // for (auto&& NetSubObject : NetObjList)
+    // {
+    //     Container->RemoveReplicatedSubObject(NetSubObject);
+    // }
 }

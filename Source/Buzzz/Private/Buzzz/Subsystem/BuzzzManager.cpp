@@ -43,31 +43,14 @@ void ABuzzzManager::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
 
-    auto Callback = [this](FGameplayTag, const FInstancedStruct& Payload)
-    {
-        if (const auto* Context = Payload.GetPtr<FBuzzzAssignmentContext>())
-        {
-            if (IsValid(Context->TargetContainer))
-            {
-                // We Should Throw First
-                if (IsValid(Context->PreviousInstance))
-                {
-                    Recycler.Throw(Context->PreviousInstance, Context->TargetContainer);
-                }
-
-                if (IsValid(Context->UpcomingInstance))
-                {
-                    Recycler.Pick(Context->UpcomingInstance, Context->TargetContainer);
-                }
-            }
-        }
+    FBeeepMessageListenerParams Params{
+        Tag_BuzzzEvent_CellMutation,
+        EBeeepChannelMatchMode::ExactMatch
     };
 
-    UBeeepMessageSubsystem::Get(this)->RegisterListener({
-                                                            Tag_BuzzzEvent_CellMutation,
-                                                            EBeeepChannelMatchMode::ExactMatch,
-                                                            Callback
-                                                        }, CellMutationListenerHandle);
+    Params.MessageReceived.BindDynamic(this, &ABuzzzManager::HandleCellMutationMessage);
+
+    UBeeepMessageSubsystem::Get(this)->RegisterListener(Params, CellMutationListenerHandle);
 }
 
 // Called every frame
@@ -75,7 +58,7 @@ void ABuzzzManager::Tick(const float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    for (auto&& Entry : Recycler.ContainerMap)
+    for (auto&& Entry : MutationCounter.ContainerMap)
     {
         const auto Container = Entry.Key;
         const auto ItemSet = Entry.Value.ItemCountMap;
@@ -112,7 +95,7 @@ void ABuzzzManager::Tick(const float DeltaTime)
         }
     }
 
-    Recycler.Reset();
+    MutationCounter.Reset();
 }
 
 
@@ -120,4 +103,24 @@ void ABuzzzManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     UBeeepMessageSubsystem::Get(this)->UnregisterListener(CellMutationListenerHandle);
     Super::EndPlay(EndPlayReason);
+}
+
+void ABuzzzManager::HandleCellMutationMessage(FGameplayTag Channel, const FInstancedStruct& Payload)
+{
+    if (const auto* Context = Payload.GetPtr<FBuzzzAssignmentContext>())
+    {
+        if (IsValid(Context->TargetContainer))
+        {
+            // We Should Throw First
+            if (IsValid(Context->PreviousInstance))
+            {
+                MutationCounter.Throw(Context->PreviousInstance, Context->TargetContainer);
+            }
+
+            if (IsValid(Context->UpcomingInstance))
+            {
+                MutationCounter.Pick(Context->UpcomingInstance, Context->TargetContainer);
+            }
+        }
+    }
 }

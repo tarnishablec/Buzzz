@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BuzzzManager.h"
 #include "Engine/DeveloperSettings.h"
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 #include "BuzzzSettings.generated.h"
 
 /**
@@ -26,7 +26,7 @@ public:
     TSubclassOf<ABuzzzManager> ManagerClass = ABuzzzManager::StaticClass();
 
     UPROPERTY(GlobalConfig, EditAnywhere, Category="Transaction", NoClear)
-    TSubclassOf<ABuzzzTransactionBridge> TransactionBridgeClass = ABuzzzTransactionBridge::StaticClass();
+    TSubclassOf<ABuzzzBridge> TransactionBridgeClass = ABuzzzBridge::StaticClass();
 
     static UBuzzzSettings* Get()
     {

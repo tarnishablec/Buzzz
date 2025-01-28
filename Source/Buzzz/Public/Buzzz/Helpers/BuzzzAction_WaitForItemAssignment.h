@@ -37,4 +37,7 @@ protected:
     TWeakObjectPtr<UBuzzzItem> TargetItem;
     TWeakObjectPtr<UWorld> WorldPtr;
     TSharedPtr<FBeeepMessageListenerHandle> Handle = MakeShared<FBeeepMessageListenerHandle>();
+
+    UFUNCTION()
+    void HandleMessage(FGameplayTag Channel, const FInstancedStruct& Payload);
 };

@@ -1,8 +1,9 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
 
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 #include "Buzzz/Subsystem/BuzzzSubsystem.h"
+#include "Buzzz/Transaction/BuzzzBridgeBin.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
@@ -12,7 +13,7 @@
 #endif
 
 // Sets default values
-ABuzzzTransactionBridge::ABuzzzTransactionBridge()
+ABuzzzBridge::ABuzzzBridge()
 {
     PrimaryActorTick.bCanEverTick = false;
     bNetLoadOnClient = false;
@@ -23,26 +24,28 @@ ABuzzzTransactionBridge::ABuzzzTransactionBridge()
     SetReplicatingMovement(false);
     SetCanBeDamaged(false);
     bEnableAutoLODGeneration = false;
+
+    Bin = CreateDefaultSubobject<UBuzzzBridgeBin>(TEXT("BridgeBin"));
 }
 
 // Called when the game starts or when spawned
-void ABuzzzTransactionBridge::BeginPlay()
+void ABuzzzBridge::BeginPlay()
 {
     Super::BeginPlay();
 }
 
-void ABuzzzTransactionBridge::BeginDestroy()
+void ABuzzzBridge::BeginDestroy()
 {
     Super::BeginDestroy();
 }
 
-void ABuzzzTransactionBridge::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ABuzzzBridge::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     Super::EndPlay(EndPlayReason);
     UBuzzzSubsystem::Get(this)->UnregisterBridgeLink(this);
 }
 
-void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void ABuzzzBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -50,9 +53,10 @@ void ABuzzzTransactionBridge::GetLifetimeReplicatedProps(TArray<class FLifetimeP
     Params.Condition = COND_OwnerOnly;
     Params.bIsPushBased = true;
     DOREPLIFETIME_WITH_PARAMS(ThisClass, OwnerPlayerController, Params);
+    DOREPLIFETIME_WITH_PARAMS(ThisClass, Bin, Params);
 }
 
-void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
+void ABuzzzBridge::OnRep_OwnerPlayerController()
 {
     if (OwnerPlayerController)
     {
@@ -64,7 +68,7 @@ void ABuzzzTransactionBridge::OnRep_OwnerPlayerController()
     }
 }
 
-UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransaction_Implementation(
+UBuzzzTransaction* ABuzzzBridge::ProcessTransaction_Implementation(
     const TSubclassOf<UBuzzzTransaction> TransactionClass, const FInstancedStruct& Payload)
 {
     const auto TransactionInstance = MakeTransaction(TransactionClass, Payload);
@@ -72,7 +76,7 @@ UBuzzzTransaction* ABuzzzTransactionBridge::ProcessTransaction_Implementation(
     return TransactionInstance;
 }
 
-UBuzzzTransaction* ABuzzzTransactionBridge::MakeTransaction_Implementation(
+UBuzzzTransaction* ABuzzzBridge::MakeTransaction_Implementation(
     const TSubclassOf<UBuzzzTransaction> TransactionClass, const FInstancedStruct& Payload)
 {
     const auto Result = NewObject<UBuzzzTransaction>(this, TransactionClass);
@@ -81,7 +85,7 @@ UBuzzzTransaction* ABuzzzTransactionBridge::MakeTransaction_Implementation(
 }
 
 
-void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
+void ABuzzzBridge::SetOwner(AActor* NewOwner)
 {
     Super::SetOwner(NewOwner);
 
@@ -103,14 +107,14 @@ void ABuzzzTransactionBridge::SetOwner(AActor* NewOwner)
 }
 
 #if UE_WITH_IRIS
-void ABuzzzTransactionBridge::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
+void ABuzzzBridge::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
                                                            UE::Net::EFragmentRegistrationFlags RegistrationFlags)
 {
     UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
 }
 #endif
 
-void ABuzzzTransactionBridge::Server_ProcessTransaction_Implementation(
+void ABuzzzBridge::Server_ProcessTransaction_Implementation(
     const TSubclassOf<UBuzzzTransaction> TransactionClass,
     const FInstancedStruct& Payload
 )

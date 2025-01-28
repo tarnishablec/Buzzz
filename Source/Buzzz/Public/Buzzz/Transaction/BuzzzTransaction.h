@@ -9,7 +9,7 @@
 #include "BuzzzTransaction.generated.h"
 
 class UBuzzzSubsystem;
-class ABuzzzTransactionBridge;
+class ABuzzzBridge;
 
 /**
  * 
@@ -37,7 +37,7 @@ public:
     EBuzzzExecutionState State = EBuzzzExecutionState::None;
 
     UFUNCTION(BlueprintPure, Category="Buzzz")
-    ABuzzzTransactionBridge* GetBridge() const;
+    ABuzzzBridge* GetBridge() const;
 
     UFUNCTION(BlueprintPure, Category="Buzzz")
     APlayerController* GetBridgeController() const;

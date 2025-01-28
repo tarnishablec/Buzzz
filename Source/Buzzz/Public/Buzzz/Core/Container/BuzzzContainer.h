@@ -18,7 +18,7 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_CellMutation);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_BuzzzEvent_HiveResize);
 
-UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz), meta=(BlueprintSpawnableComponent))
+UCLASS(Blueprintable, Abstract, ClassGroup=(Buzzz))
 class BUZZZ_API UBuzzzContainer : public UActorComponent
 {
     GENERATED_BODY()
@@ -80,7 +80,7 @@ public:
     bool CheckItemOwned(const UBuzzzItem* Item) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
-    bool CheckCellEmpty(const int32& Index) const;
+    UPARAM(DisplayName="IsEmpty") bool CheckCellEmpty(const int32& Index) const;
 
     UFUNCTION(BlueprintPure, Category = "Buzzz", meta = (AutoCreateRefTerm = "Index"))
     const FBuzzzContainerCell& GetCell(const int32& Index, bool& IsValidIndex) const;

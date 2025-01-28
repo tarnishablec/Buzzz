@@ -7,12 +7,12 @@
 #include "Engine/GameInstance.h"
 #include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Buzzz/Transaction/BuzzzTransactionBridge.h"
+#include "Buzzz/Transaction/BuzzzBridge.h"
 #include "BuzzzSubsystem.generated.h"
 
 class ABuzzzManager;
 struct FInstancedStruct;
-class ABuzzzTransactionBridge;
+class ABuzzzBridge;
 class UBuzzzTransaction;
 class UBuzzzItem;
 struct FBuzzzAssignmentContext;
@@ -69,7 +69,7 @@ public:
     );
 
     // This Will Run Both in Server And Client
-    void RegisterBridgeLink(APlayerController* PlayerController, ABuzzzTransactionBridge* Bridge);
+    void RegisterBridgeLink(APlayerController* PlayerController, ABuzzzBridge* Bridge);
     void UnregisterBridgeLink(AActor* PlayerControllerOrBridge);
 
 #pragma region Tickable
@@ -89,6 +89,6 @@ private:
 
     TObjectPtr<ABuzzzManager> Manager;
 
-    TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<ABuzzzTransactionBridge>> BridgeRegistry;
+    TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<ABuzzzBridge>> BridgeRegistry;
 
 };

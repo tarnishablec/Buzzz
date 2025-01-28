@@ -8,21 +8,21 @@
 #include "Buzzz/Helpers/BuzzzAction_WaitForItemRemovalOrAddition.h"
 #include "Net/UnrealNetwork.h"
 
-bool UBuzzzItem_LINK::CheckSourceValid_Implementation() const
+bool UBuzzzItem_LINK::CheckSourceAccessible_Implementation() const
 {
-    return IsValid(SourceInstance);
+    return IsValid(SourceItem);
 }
 
-void UBuzzzItem_LINK::OnRep_IsSourceValid()
+void UBuzzzItem_LINK::OnRep_SourceItem_Implementation()
 {
 }
 
 const UBuzzzFragment* UBuzzzItem_LINK::FindFragmentByClass_Implementation(
     const TSubclassOf<UBuzzzFragment> FragmentClass, const bool Exact) const
 {
-    if (IsValid(SourceInstance))
+    if (IsValid(SourceItem))
     {
-        return SourceInstance->FindFragmentByClass(FragmentClass, Exact);
+        return SourceItem->FindFragmentByClass(FragmentClass, Exact);
     }
     return nullptr;
 }
@@ -31,29 +31,24 @@ void UBuzzzItem_LINK::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    constexpr FDoRepLifetimeParams SourceInstanceParam{COND_InitialOnly, REPNOTIFY_OnChanged, true};
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, SourceInstance, SourceInstanceParam);
-    constexpr FDoRepLifetimeParams IsSourceValidParam{COND_OwnerOnly, REPNOTIFY_OnChanged, true};
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, IsSourceValid, IsSourceValidParam);
+    constexpr FDoRepLifetimeParams SourceInstanceParam{COND_OwnerOnly, REPNOTIFY_OnChanged, true};
+    DOREPLIFETIME_WITH_PARAMS(ThisClass, SourceItem, SourceInstanceParam);
 }
 
 void UBuzzzItem_LINK::OnInitialization_Implementation()
 {
-    check(IsValid(SourceInstance));
+    check(IsValid(SourceItem));
     Super::OnInitialization_Implementation();
 
-    IsSourceValid = CheckSourceValid();
-
     WaitForSourceRemovalAction = UBuzzzAction_WaitForItemRemovalOrAddition::WaitForRemoval(
-        SourceInstance, SourceInstance);
-
+        SourceItem, SourceItem);
     WaitForSourceRemovalAction->Triggered.AddDynamic(this, &UBuzzzItem_LINK::HandleSourceRemoval);
     WaitForSourceRemovalAction->Activate();
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void UBuzzzItem_LINK::HandleSourceRemoval(const FBuzzzItemTransferContext& Context)
 {
-    IsSourceValid = CheckSourceValid();
     const auto OwnerContainer = Cast<UBuzzzContainer>(GetOuter());
     if (IsValid(OwnerContainer))
     {
@@ -69,8 +64,8 @@ void UBuzzzItem_LINK::HandleSourceRemoval(const FBuzzzItemTransferContext& Conte
     }
 }
 
-void UBuzzzItem_LINK::PreDemolish_Implementation()
+void UBuzzzItem_LINK::PreKilled_Implementation()
 {
     WaitForSourceRemovalAction->Cancel();
-    Super::PreDemolish_Implementation();
+    Super::PreKilled_Implementation();
 }

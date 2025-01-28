@@ -90,10 +90,10 @@ public:
     void PostInitialized();
     
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-    virtual void Demolish();
+    virtual void Kill();
 
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
-    void PreDemolish();
+    void PreKilled();
 
 #pragma endregion
 

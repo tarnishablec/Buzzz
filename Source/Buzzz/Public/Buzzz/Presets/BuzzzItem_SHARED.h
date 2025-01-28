@@ -21,8 +21,8 @@ class BUZZZ_API UBuzzzItem_SHARED final : public UBuzzzItem
         InstancingMode = UBuzzzInstancingMode_ShareDefault::StaticClass();
     };
 
-    // bool operator==(const UBuzzzItem& Other) const
-    // {
-    //     return Other.GetClass() == GetClass();
-    // }
+    virtual void Kill() override
+    {
+        // Should Do Nothing
+    };
 };

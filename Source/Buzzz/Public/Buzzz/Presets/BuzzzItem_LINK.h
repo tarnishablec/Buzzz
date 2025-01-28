@@ -17,23 +17,20 @@ class BUZZZ_API UBuzzzItem_LINK : public UBuzzzItem_UNIQUE
     GENERATED_BODY()
 
 public:
-    UPROPERTY(Category="Buzzz", Replicated, Setter, BlueprintReadWrite, SaveGame, meta=(ExposeOnSpawn))
-    TObjectPtr<UBuzzzItem> SourceInstance;
+    UPROPERTY(Category="Buzzz", ReplicatedUsing="OnRep_SourceItem", Setter, BlueprintReadWrite, SaveGame,
+        meta=(ExposeOnSpawn))
+    TObjectPtr<UBuzzzItem> SourceItem;
 
-    void SetSourceInstance(UBuzzzItem* InSourceInstance)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic)
+    void OnRep_SourceItem();
+
+    void SetSourceItem(UBuzzzItem* InSourceItem)
     {
-        IsSourceValid = CheckSourceValid();
-        SourceInstance = InSourceInstance;
+        SourceItem = InSourceItem;
     };
 
-    UPROPERTY(BlueprintReadOnly, Category="Buzzz", ReplicatedUsing=OnRep_IsSourceValid)
-    bool IsSourceValid = false;
-
-    UFUNCTION()
-    void OnRep_IsSourceValid();
-    
-    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, BlueprintPure, Category="Buzzz")
-    bool CheckSourceValid() const;
+    UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category="Buzzz")
+    bool CheckSourceAccessible() const;
 
     virtual const UBuzzzFragment* FindFragmentByClass_Implementation(TSubclassOf<UBuzzzFragment> FragmentClass,
                                                                      bool Exact = true) const override;
@@ -42,7 +39,7 @@ public:
 
     virtual void OnInitialization_Implementation() override;
 
-    virtual void PreDemolish_Implementation() override;
+    virtual void PreKilled_Implementation() override;
 
 protected:
     UPROPERTY()

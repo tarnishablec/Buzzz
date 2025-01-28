@@ -31,7 +31,12 @@ public:
     virtual void BeginDestroy() override;
     virtual void Initialize() override;
 
-    virtual void PreDemolish_Implementation() override;
+    virtual void PreKilled_Implementation() override;
+
+    virtual void Kill() override;
+
+    UFUNCTION(BlueprintPure, Category = "Buzzz")
+    UBuzzzContainer* GetOwnerContainer() const;
 
 protected:
     UPROPERTY()

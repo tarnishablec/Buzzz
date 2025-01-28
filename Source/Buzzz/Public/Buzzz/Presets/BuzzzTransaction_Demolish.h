@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Buzzz/Transaction/BuzzzTransaction.h"
-#include "BuzzzTransaction_Kill.generated.h"
+#include "BuzzzTransaction_Demolish.generated.h"
 
 /**
  * 
  */
-UCLASS(DisplayName = "Kill (Buzzz)")
-class BUZZZ_API UBuzzzTransaction_Kill : public UBuzzzTransaction
+UCLASS(DisplayName = "Demolish (Buzzz)")
+class BUZZZ_API UBuzzzTransaction_Demolish : public UBuzzzTransaction
 {
     GENERATED_BODY()
 

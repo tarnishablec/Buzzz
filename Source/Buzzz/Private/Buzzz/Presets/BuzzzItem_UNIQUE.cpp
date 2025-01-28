@@ -32,34 +32,53 @@ void UBuzzzItem_UNIQUE::Initialize()
     PostInitialized();
 }
 
-void UBuzzzItem_UNIQUE::PreDemolish_Implementation()
+void UBuzzzItem_UNIQUE::PreKilled_Implementation()
 {
-    Super::PreDemolish_Implementation();
+    Super::PreKilled_Implementation();
+
+    FBuzzzItemTransferContext Context{};
+    Context.Container = Cast<UBuzzzContainer>(this->GetOuter());
+    Context.Item = this;
+    Context.TransferType = EBuzzzItemTransferType::Removal;
+    HandleRemovalFromContainer(Context);
 
     AdditionAction->Cancel();
     RemovalAction->Cancel();
 }
 
+void UBuzzzItem_UNIQUE::Kill()
+{
+    Super::Kill();
+}
+
+UBuzzzContainer* UBuzzzItem_UNIQUE::GetOwnerContainer() const
+{
+    return Cast<UBuzzzContainer>(GetOuter());
+}
+
 void UBuzzzItem_UNIQUE::HandleAdditionToContainer(const FBuzzzItemTransferContext& Context)
 {
     const auto Container = Context.Container;
-    LowLevelRename(GetFName(), static_cast<UObject*>(Container));
+    if (Container != GetOuter())
+    {
+        LowLevelRename(GetFName(), Container);
+    }
 }
 
 void UBuzzzItem_UNIQUE::HandleRemovalFromContainer(const FBuzzzItemTransferContext& Context)
 {
     const auto Container = Context.Container;
-    Container->RemoveReplicatedSubObject(this);
 
+    if (Container->IsValidLowLevelFast())
+    {
+        LowLevelRename(GetFName(), GetTransientPackage());
+    }
+
+    Container->RemoveReplicatedSubObject(this);
     TArray<UObject*> NetObjList{};
     this->GetSubobjectsWithStableNamesForNetworking(NetObjList);
     for (auto&& NetSubObject : NetObjList)
     {
         Container->RemoveReplicatedSubObject(NetSubObject);
-    }
-
-    if (Context.Container->IsValidLowLevelFast())
-    {
-        LowLevelRename(GetFName(), GetTransientPackage());
     }
 }

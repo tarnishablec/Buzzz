@@ -182,13 +182,12 @@ UBuzzzItem* UBuzzzItem::MakeInstance_Static(
     return FinalInstance;
 }
 
-void UBuzzzItem::Demolish()
+void UBuzzzItem::Kill()
 {
-    PreDemolish();
-
+    PreKilled();
     this->ConditionalBeginDestroy();
 }
 
-void UBuzzzItem::PreDemolish_Implementation()
+void UBuzzzItem::PreKilled_Implementation()
 {
 }

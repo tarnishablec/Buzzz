@@ -49,6 +49,7 @@ void ABuzzzManager::PostInitializeComponents()
         {
             if (IsValid(Context->TargetContainer))
             {
+                // We Should Throw First
                 if (IsValid(Context->PreviousInstance))
                 {
                     Recycler.Throw(Context->PreviousInstance, Context->TargetContainer);
@@ -90,7 +91,9 @@ void ABuzzzManager::Tick(const float DeltaTime)
                         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
                             Tag_BuzzzEvent_ItemRemoval, FInstancedStruct::Make(
                                 FBuzzzItemTransferContext{
-                                    Item.Get(), Container.Get()
+                                    Item.Get(),
+                                    Container.Get(),
+                                    EBuzzzItemTransferType::Removal
                                 }));
                     }
 
@@ -99,7 +102,9 @@ void ABuzzzManager::Tick(const float DeltaTime)
                         UBeeepMessageSubsystem::Get(this)->BroadcastMessage(
                             Tag_BuzzzEvent_ItemAddition, FInstancedStruct::Make(
                                 FBuzzzItemTransferContext{
-                                    Item.Get(), Container.Get()
+                                    Item.Get(),
+                                    Container.Get(),
+                                    EBuzzzItemTransferType::Addition
                                 }));
                     }
                 }

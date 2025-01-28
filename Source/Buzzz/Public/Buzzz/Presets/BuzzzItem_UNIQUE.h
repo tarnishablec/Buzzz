@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "BuzzzInstancingMode_Unique.h"
 #include "Buzzz/Core/Item/BuzzzItem.h"
+#include "Buzzz/Helpers/BuzzzSharedTypes.h"
 #include "BuzzzItem_UNIQUE.generated.h"
 
 class UBuzzzAction_WaitForItemRemovalOrAddition;
@@ -28,8 +29,20 @@ public:
     }
 
     virtual void BeginDestroy() override;
+    virtual void Initialize() override;
 
-    virtual void Initialize_Implementation() override;
+    virtual void PreDemolish_Implementation() override;
 
 protected:
+    UPROPERTY()
+    TObjectPtr<UBuzzzAction_WaitForItemRemovalOrAddition> AdditionAction;
+
+    UPROPERTY()
+    TObjectPtr<UBuzzzAction_WaitForItemRemovalOrAddition> RemovalAction;
+
+    UFUNCTION()
+    void HandleAdditionToContainer(const FBuzzzItemTransferContext& Context);
+
+    UFUNCTION()
+    void HandleRemovalFromContainer(const FBuzzzItemTransferContext& Context);
 };

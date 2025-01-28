@@ -21,6 +21,8 @@ UBuzzzContainer::UBuzzzContainer()
 
     ContainerGuid = FGuid::NewGuid();
 
+    Hive.OwningObject = this;
+
 #if UE_WITH_IRIS
 #endif
 }
@@ -178,6 +180,15 @@ int32 UBuzzzContainer::CalcTotalAmount(UBuzzzItem* Instance)
 
     return Result;
 }
+
+void UBuzzzContainer::MarkIndexDirty(const int32 Index, const bool bForce)
+{
+    if (bForce)
+    {
+        Hive.Cells[Index].ForceDirtyFlag = !Hive.Cells[Index].ForceDirtyFlag;
+    }
+    Hive.MarkItemDirty(Hive.Cells[Index]);
+}
 #pragma endregion
 
 void UBuzzzContainer::Internal_Locally_TrySubmitMutationInfoToClient()
@@ -305,7 +316,7 @@ bool UBuzzzContainer::Resize(const int32& NewCapacity)
 
 
 FBuzzzAssignmentContext UBuzzzContainer::ClearCell_Implementation(const int32& Index,
-                                                                      FBuzzzAssignmentContext& OutContext)
+                                                                  FBuzzzAssignmentContext& OutContext)
 {
     OutContext.Reset();
     OutContext.TargetIndex = Index;
@@ -353,7 +364,7 @@ FBuzzzAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzAssignm
     check(Context.UpcomingStackCount >= 0);
     if (Context.UpcomingStackCount < 0)
     {
-       Context.State = EBuzzzExecutionState::Failed;
+        Context.State = EBuzzzExecutionState::Failed;
     }
 
     // if Empty Instance, StackCount Should Be 0
@@ -415,7 +426,7 @@ FBuzzzAssignmentContext UBuzzzContainer::AssignCell_Implementation(FBuzzzAssignm
 
     // FastArray Mark Dirty
     {
-        Hive.MarkItemDirty(Hive.Cells[Context.TargetIndex]);
+        MarkIndexDirty(Context.TargetIndex);
     }
 
     // Mark as Success

@@ -69,6 +69,11 @@ class UWorld* UBuzzzItem::GetWorld() const
     return GEngine->GetCurrentPlayWorld();
 }
 
+void UBuzzzItem::PreDestroyFromReplication()
+{
+    UObject::PreDestroyFromReplication();
+}
+
 #if UE_WITH_IRIS
 void UBuzzzItem::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
                                               const UE::Net::EFragmentRegistrationFlags RegistrationFlags)
@@ -117,7 +122,7 @@ const UBuzzzFragment* UBuzzzItem::FindFragmentByClass_Implementation(
     return nullptr;
 }
 
-void UBuzzzItem::Initialize_Implementation()
+void UBuzzzItem::Initialize()
 {
     if (bInitialized)
     {
@@ -175,4 +180,15 @@ UBuzzzItem* UBuzzzItem::MakeInstance_Static(
         ItemClass, Creator);
 
     return FinalInstance;
+}
+
+void UBuzzzItem::Demolish()
+{
+    PreDemolish();
+
+    this->ConditionalBeginDestroy();
+}
+
+void UBuzzzItem::PreDemolish_Implementation()
+{
 }

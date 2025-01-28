@@ -15,6 +15,7 @@ UBuzzzAction_WaitForItemAssignment* UBuzzzAction_WaitForItemAssignment::WaitForA
     const auto Action = NewObject<UBuzzzAction_WaitForItemAssignment>();
     Action->WorldPtr = WorldContextObject->GetWorld();
     Action->TargetItem = Item;
+    Action->RegisterWithGameInstance(WorldContextObject);
     return Action;
 }
 
@@ -41,10 +42,11 @@ void UBuzzzAction_WaitForItemAssignment::Activate()
                 }
             };
 
-            UBeeepMessageSubsystem::Get(World)->RegisterListener({
-                                                                     Tag_BuzzzEvent_CellMutation,
-                                                                     EBeeepChannelMatchMode::ExactMatch, Callback
-                                                                 }, *Handle);
+            UBeeepMessageSubsystem::Get(World)->RegisterListener(
+                {
+                    Tag_BuzzzEvent_CellMutation,
+                    EBeeepChannelMatchMode::ExactMatch, Callback
+                }, *Handle);
         }
     }
 }
@@ -52,7 +54,10 @@ void UBuzzzAction_WaitForItemAssignment::Activate()
 void UBuzzzAction_WaitForItemAssignment::Cancel()
 {
     Super::Cancel();
+}
 
+void UBuzzzAction_WaitForItemAssignment::SetReadyToDestroy()
+{
     if (TargetItem.IsValid())
     {
         Triggered.RemoveAll(TargetItem.Get());
@@ -62,4 +67,5 @@ void UBuzzzAction_WaitForItemAssignment::Cancel()
             UBeeepMessageSubsystem::Get(World)->UnregisterListener(*Handle);
         }
     }
+    Super::SetReadyToDestroy();
 }

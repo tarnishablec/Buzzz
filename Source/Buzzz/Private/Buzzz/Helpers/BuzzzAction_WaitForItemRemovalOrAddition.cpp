@@ -16,6 +16,7 @@ UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddi
     Action->TargetItem = Item;
     Action->ActionMode = EAdditionOrRemoval::Removal;
     Action->WorldPtr = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+    Action->RegisterWithGameInstance(WorldContextObject);
     return Action;
 }
 
@@ -26,6 +27,7 @@ UBuzzzAction_WaitForItemRemovalOrAddition* UBuzzzAction_WaitForItemRemovalOrAddi
     Action->TargetItem = Item;
     Action->ActionMode = EAdditionOrRemoval::Addition;
     Action->WorldPtr = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+    Action->RegisterWithGameInstance(WorldContextObject);
     return Action;
 }
 
@@ -34,13 +36,19 @@ void UBuzzzAction_WaitForItemRemovalOrAddition::Activate()
     Super::Activate();
 
     FGameplayTag EventTag;
-
+    
     switch (ActionMode)
     {
-    case EAdditionOrRemoval::Addition: EventTag = Tag_BuzzzEvent_ItemAddition;
-        break;
-    case EAdditionOrRemoval::Removal: EventTag = Tag_BuzzzEvent_ItemRemoval;
-        break;
+    case EAdditionOrRemoval::Addition:
+        {
+            EventTag = Tag_BuzzzEvent_ItemAddition;
+            break;
+        }
+    case EAdditionOrRemoval::Removal:
+        {
+            EventTag = Tag_BuzzzEvent_ItemRemoval;
+            break;
+        }
     default: ;
     }
 
@@ -75,6 +83,7 @@ void UBuzzzAction_WaitForItemRemovalOrAddition::SetReadyToDestroy()
     {
         Triggered.RemoveAll(TargetItem.Get());
     }
+
 
     Super::SetReadyToDestroy();
 }

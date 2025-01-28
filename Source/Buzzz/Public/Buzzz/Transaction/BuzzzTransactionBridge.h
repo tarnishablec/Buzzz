@@ -76,8 +76,7 @@ public:
     template <pointer_convertible_to_buzzz_transaction T>
     T* ProcessTransaction(const FInstancedStruct& Payload = FInstancedStruct())
     {
-        // ReSharper disable once CppCStyleCast
-        return (T*)ProcessTransaction(T::StaticClass(), Payload);
+        return static_cast<T*>(ProcessTransaction(T::StaticClass(), Payload));
     }
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly, Category="Buzzz")

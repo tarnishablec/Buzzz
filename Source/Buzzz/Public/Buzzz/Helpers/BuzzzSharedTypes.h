@@ -104,13 +104,21 @@ struct BUZZZ_API FBuzzzHiveMutationContext
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<const UBuzzzContainer> Container;
+    TObjectPtr<UBuzzzContainer> Container;
 
     UPROPERTY(BlueprintReadOnly)
     TArray<int32> Indices;
 
     UPROPERTY(BlueprintReadOnly)
     EBuzzzHiveMutationType MutationType = EBuzzzHiveMutationType::None;
+};
+
+UENUM(BlueprintType)
+enum class EBuzzzItemTransferType : uint8
+{
+    None = 0 UMETA(Hidden),
+    Addition,
+    Removal
 };
 
 USTRUCT(BlueprintType)
@@ -122,7 +130,10 @@ struct BUZZZ_API FBuzzzItemTransferContext
     TObjectPtr<UBuzzzItem> Item;
 
     UPROPERTY(BlueprintReadOnly)
-    TObjectPtr<const UBuzzzContainer> Container;
+    TObjectPtr<UBuzzzContainer> Container;
+
+    UPROPERTY(BlueprintReadOnly)
+    EBuzzzItemTransferType TransferType = EBuzzzItemTransferType::None;
 };
 
 

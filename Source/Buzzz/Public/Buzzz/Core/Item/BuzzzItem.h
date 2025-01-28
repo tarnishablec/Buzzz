@@ -30,6 +30,7 @@ public:
                                     FFrame* Stack) override;
     virtual void BeginDestroy() override;
     virtual class UWorld* GetWorld() const override;
+    virtual void PreDestroyFromReplication() override;
 
 #if UE_WITH_IRIS
     virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
@@ -74,17 +75,27 @@ public:
 
 #pragma endregion Helpers
 
+#pragma region LifeCycle
+
+    UFUNCTION(BlueprintNativeEvent)
+    void InitializeFragments();
+
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+    virtual void Initialize();
+
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
     void OnInitialization();
 
     UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
     void PostInitialized();
+    
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+    virtual void Demolish();
 
-    UFUNCTION(BlueprintNativeEvent)
-    void InitializeFragments();
+    UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
+    void PreDemolish();
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintAuthorityOnly)
-    void Initialize();
+#pragma endregion
 
 protected:
     bool bInitialized = false;

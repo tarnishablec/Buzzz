@@ -23,6 +23,7 @@ class BUZZZ_API UBuzzzAction_WaitForItemAssignment : public UCancellableAsyncAct
 public:
     virtual void Activate() override;
     virtual void Cancel() override;
+    virtual void SetReadyToDestroy() override;
 
     UPROPERTY(BlueprintAssignable)
     FBuzzzCellMutationDelegate Triggered;

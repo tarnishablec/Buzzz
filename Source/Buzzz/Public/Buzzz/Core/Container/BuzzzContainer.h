@@ -112,6 +112,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Buzzz")
     int32 CalcTotalAmount(UBuzzzItem* Instance);
 
+    UFUNCTION(BlueprintCallable, Category="Buzzz")
+    void MarkIndexDirty(const int32 Index, bool bForce = false);
+
 #pragma endregion
 
 #pragma region Client

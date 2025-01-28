@@ -34,6 +34,9 @@ struct BUZZZ_API FBuzzzContainerCell : public FFastArraySerializerItem
 
     UPROPERTY(Transient)
     int32 Index = INDEX_NONE;
+
+    UPROPERTY(Transient)
+    bool ForceDirtyFlag = false;
 };
 
 
